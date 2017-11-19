@@ -1,1 +1,1 @@
-node .\server\src\builder.js
+node ./server/src/builder.js
