@@ -14,13 +14,13 @@ const path     = require('path');
 var cron_jobs = [];
 
 exports.load_app_cfg = function(product_id) {
-	return JSON.parse(fs.readFileSync(__dirname + "/../../_config/config.json", 'utf8'));
+	return JSON.parse(fs.readFileSync(__dirname + "/../../_cfg/config.json", 'utf8'));
 }
 
 exports.load_cfg = function(product_id) {
 	//sys.log(product_id);
 	let config = exports.load_app_cfg();
-	let def = JSON.parse(fs.readFileSync(__dirname + "/../../_config/script_defaults.json", 'utf8'));
+	let def = JSON.parse(fs.readFileSync(__dirname + "/../../_cfg/script_defaults.json", 'utf8'));
 	let cfg = JSON.parse(fs.readFileSync(__dirname + "/../../" + config['script_dir'] + product_id + '/script.cfg', 'utf8'));
 	let srv = JSON.parse(fs.readFileSync(__dirname + "/../../" + config['script_dir'] + product_id + '/server.cfg', 'utf8'));
 	//for(var key in json_svr) json_cfg[key]=json_svr[key]; //json merge
