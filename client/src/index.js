@@ -11,10 +11,16 @@ import {BuilderContainer} from './components/Main/Builder'
 import {ResultsContainer} from './components/Results'
 import {ConnectionStateContainer} from './components/common/ConnectionState'
 
-require('./style.css');
+
+require('./style.css')
+const cfg = require('../../_cfg/config.json')
+console.log(cfg)
+console.log(cfg.server_address)
+console.log(cfg.server_port)
+
 
 //const socket = io(`${location.protocol}//${location.hostname}:8090`)
-const socket = io('http://localhost:1234')
+const socket = io(cfg.server_address + ':' + cfg.server_port)
 
 const createStoreWithMiddleware = applyMiddleware(
   remoteActionMiddleware(socket)
