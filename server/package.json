@@ -1,0 +1,27 @@
+{
+  "name": "builder-server",
+  "version": "0.0.1",
+  "description": "Automatated builds/tasks server",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/Gediminas/builder.git"
+  },
+  "keywords": [
+    "automated",
+    "build",
+    "server",
+    "http",
+    "web",
+    "html"
+  ],
+  "author": "Gediminas Lūžys",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Gediminas/builder/issues"
+  },
+  "homepage": "https://github.com/Gediminas/builder#readme"
+}
