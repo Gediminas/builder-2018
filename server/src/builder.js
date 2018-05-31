@@ -105,11 +105,16 @@ io.on('connection', function(socket){
 const execFile = require('child_process').execFile;
 
 function generate_log_name(log_combi) {
-  let name = '';
-  log_combi.forEach((sub_counter) => {
-    name = name + sub_counter; 
-    //log_cnt.pad(5)
-  });
+  let name = log_combi.reduce((cobined_name, sub_nr) => {
+    let sub_txt = sub_nr.pad(3);
+    if (!cobined_name) {
+      cobined_name = sub_txt;
+    }
+    else {
+      cobined_name = cobined_name + '-' + sub_txt;
+    }
+    return cobined_name;
+  }, false);
   if (name == '') {
     name = '_main';
   }
@@ -126,6 +131,7 @@ function queue_on_execute(resolve, reject, job)
   sys.ensure_dir(produxt_dir);
   sys.ensure_dir(working_dir);
   let log_combi = [];
+  let log_combi_last_sub = 0;
   let buf_stdout = {buffer: ''};
   let buf_stderr = {buffer: ''};
   
@@ -141,7 +147,7 @@ function queue_on_execute(resolve, reject, job)
     sys.buf_to_full_lines(buf_stdout, (line) => {
         //console.log('= ' + line);
         if (line == '}}}}}}}}}}') {
-            log_combi.pop();
+            log_combi_last_sub = log_combi.pop();
             let log_file = working_dir + generate_log_name(log_combi);
             fs.appendFileSync(log_file, line+'\n', {encoding: "utf8"}, function(){ if (err) { return console.error(err); }});
             return;
@@ -149,26 +155,20 @@ function queue_on_execute(resolve, reject, job)
         else if (line == '{{{{{{{{{{') {
             let log_file = working_dir + generate_log_name(log_combi);
             fs.appendFileSync(log_file, line+'\n', {encoding: "utf8"}, function(){ if (err) { return console.error(err); }});
-            log_combi.push('0');
+            log_combi.push(log_combi_last_sub+1);
+            log_combi_last_sub = 0;
             return;
         }
-        console.log('> '+line);
         let log_file = working_dir + generate_log_name(log_combi);
-        fs.appendFileSync(log_file, line+'\n', {encoding: "utf8"}, function(){ if (err) { return console.error(err); }});
+        fs.appendFileSync(log_file, '> '+line+'\n', {encoding: "utf8"}, function(){ if (err) { return console.error(err); }});
     });
   });
 	
   child.stderr.on('data', function(data) {
     buf_stderr.buffer += data;
     sys.buf_to_full_lines(buf_stderr, (line) => {
-        //let line = lines[i];
-        console.log('ERROR! '+line);
-        //let log_file = working_dir + log_cnt.pad(5) + '.log';
-        //fs.appendFileSync(log_file, line+'\n', {encoding: "utf8"}, function(){
-        //  if (err) {
-        //    return console.error(err);
-        //  }
-        //});
+        let log_file = working_dir + generate_log_name(log_combi);
+        fs.appendFileSync(log_file, '!! '+line+'\n', {encoding: "utf8"}, function(){ if (err) { return console.error(err); }});
     });
   });
 	
