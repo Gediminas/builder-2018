@@ -75,12 +75,18 @@ Number.prototype.pad = function(size) {
   return s;
 }
 
-exports.buf_to_full_lines = function (ref_buffer) {
+exports.buf_to_full_lines = function (ref_buffer, fnDoOnLine) {
   let lines = ref_buffer.buffer.split("\n");
   if (ref_buffer.buffer[ref_buffer.buffer.length-1] != '\n') {
     ref_buffer.buffer = lines.pop();
   }else{
     ref_buffer.buffer = '';
   }
+  if (fnDoOnLine !== false) {
+    for (let line of lines) {
+      fnDoOnLine(line)
+    }
+  }
   return lines;
 }
+

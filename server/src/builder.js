@@ -138,34 +138,38 @@ function queue_on_execute(resolve, reject, job)
 	
   child.stdout.on('data', function(data) {
     buf_stdout.buffer += data;
-    let lines = sys.buf_to_full_lines(buf_stdout);
-    for (let i = 0; i < lines.length - 1; i++) {
-      let line = lines[i];
-      if (line == '{{{{{{{{{{') {
+    sys.buf_to_full_lines(buf_stdout, (line) => {
+        //console.log('= ' + line);
+        if (line == '}}}}}}}}}}') {
+            log_combi.pop();
+            let log_file = working_dir + generate_log_name(log_combi);
+            fs.appendFileSync(log_file, line+'\n', {encoding: "utf8"}, function(){ if (err) { return console.error(err); }});
+            return;
+        }
+        else if (line == '{{{{{{{{{{') {
+            let log_file = working_dir + generate_log_name(log_combi);
+            fs.appendFileSync(log_file, line+'\n', {encoding: "utf8"}, function(){ if (err) { return console.error(err); }});
+            log_combi.push('0');
+            return;
+        }
+        console.log('> '+line);
         let log_file = working_dir + generate_log_name(log_combi);
         fs.appendFileSync(log_file, line+'\n', {encoding: "utf8"}, function(){ if (err) { return console.error(err); }});
-        log_combi.push('0');
-        continue;
-      }
-      console.log('> '+line);
-      let log_file = working_dir + generate_log_name(log_combi);
-      fs.appendFileSync(log_file, line+'\n', {encoding: "utf8"}, function(){ if (err) { return console.error(err); }});
-    }
+    });
   });
 	
   child.stderr.on('data', function(data) {
     buf_stderr.buffer += data;
-    let lines = sys.buf_to_full_lines(buf_stderr);
-    for (let i = 0; i < lines.length - 1; i++) {
-      //let line = lines[i];
-      //console.log('! '+line);
-      //let log_file = working_dir + log_cnt.pad(5) + '.log';
-      //fs.appendFileSync(log_file, line+'\n', {encoding: "utf8"}, function(){
-      //  if (err) {
-      //    return console.error(err);
-      //  }
-      //});
-    }
+    let lines = sys.buf_to_full_lines(buf_stderr, (line) => {
+        //let line = lines[i];
+        console.log('ERROR! '+line);
+        //let log_file = working_dir + log_cnt.pad(5) + '.log';
+        //fs.appendFileSync(log_file, line+'\n', {encoding: "utf8"}, function(){
+        //  if (err) {
+        //    return console.error(err);
+        //  }
+        //});
+    });
   });
 	
 	child.on('close', function(exitCode) {
