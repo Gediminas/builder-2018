@@ -146,17 +146,25 @@ function queue_on_execute(resolve, reject, job)
     buf_stdout.buffer += data;
     sys.buf_to_full_lines(buf_stdout, (line) => {
         //console.log('= ' + line);
-        if (line == '}}}}}}}}}}') {
-            log_combi_last_sub = log_combi.pop();
+        if (0 === line.indexOf('{{{')) {
+            let title = line.substr(4);
+            if (!title) {
+                title = '<no-name>';
+            }
             let log_file = working_dir + generate_log_name(log_combi);
-            fs.appendFileSync(log_file, line+'\n', {encoding: "utf8"}, function(){ if (err) { return console.error(err); }});
-            return;
-        }
-        else if (line == '{{{{{{{{{{') {
-            let log_file = working_dir + generate_log_name(log_combi);
-            fs.appendFileSync(log_file, line+'\n', {encoding: "utf8"}, function(){ if (err) { return console.error(err); }});
+            fs.appendFileSync(log_file, '==> '+title+'\n', {encoding: "utf8"}, function(){ if (err) { return console.error(err); }});
             log_combi.push(log_combi_last_sub+1);
             log_combi_last_sub = 0;
+            log_file = working_dir + generate_log_name(log_combi);
+            fs.appendFileSync(log_file, title+'\n----------\n', {encoding: "utf8"}, function(){ if (err) { return console.error(err); }});
+            return;
+        }
+        else if (0 === line.indexOf('}}}')) {
+            let log_file = working_dir + generate_log_name(log_combi);
+            fs.appendFileSync(log_file, '----------\n', {encoding: "utf8"}, function(){ if (err) { return console.error(err); }});
+            if (log_combi.length) {
+                log_combi_last_sub = log_combi.pop();
+            }
             return;
         }
         let log_file = working_dir + generate_log_name(log_combi);
