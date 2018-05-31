@@ -160,7 +160,7 @@ function queue_on_execute(resolve, reject, job)
 	
   child.stderr.on('data', function(data) {
     buf_stderr.buffer += data;
-    let lines = sys.buf_to_full_lines(buf_stderr, (line) => {
+    sys.buf_to_full_lines(buf_stderr, (line) => {
         //let line = lines[i];
         console.log('ERROR! '+line);
         //let log_file = working_dir + log_cnt.pad(5) + '.log';
