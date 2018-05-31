@@ -141,15 +141,22 @@ function queue_on_execute(resolve, reject, job)
 
 	//spawn
 	const child = execFile('node', [script_js], { cwd: working_dir });
+  var title = false;
 	
   child.stdout.on('data', function(data) {
     buf_stdout.buffer += data;
     sys.buf_to_full_lines(buf_stdout, (line) => {
         //console.log('= ' + line);
-        if (0 === line.indexOf('{{{')) {
-            let title = line.substr(4);
+        if (0 === line.indexOf('@title')) {
+            title = line.substr(6);
+            return
+        }
+        else if (0 === line.indexOf('@sub')) {
             if (!title) {
-                title = '<no-name>';
+                title = line.substr(4);
+                if (!title) {
+                    title = '<no-name>';
+                }
             }
             let log_file = working_dir + generate_log_name(log_combi);
             fs.appendFileSync(log_file, '==> '+title+'\n', {encoding: "utf8"}, function(){ if (err) { return console.error(err); }});
@@ -159,7 +166,7 @@ function queue_on_execute(resolve, reject, job)
             fs.appendFileSync(log_file, title+'\n----------\n', {encoding: "utf8"}, function(){ if (err) { return console.error(err); }});
             return;
         }
-        else if (0 === line.indexOf('}}}')) {
+        else if (0 === line.indexOf('@end')) {
             let log_file = working_dir + generate_log_name(log_combi);
             fs.appendFileSync(log_file, '----------\n', {encoding: "utf8"}, function(){ if (err) { return console.error(err); }});
             if (log_combi.length) {
@@ -167,6 +174,7 @@ function queue_on_execute(resolve, reject, job)
             }
             return;
         }
+        title = false;
         let log_file = working_dir + generate_log_name(log_combi);
         fs.appendFileSync(log_file, '> '+line+'\n', {encoding: "utf8"}, function(){ if (err) { return console.error(err); }});
     });
