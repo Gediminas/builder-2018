@@ -159,16 +159,16 @@ function queue_on_execute(resolve, reject, job)
                 }
             }
             let log_file = working_dir + generate_log_name(log_combi);
-            fs.appendFileSync(log_file, '==> '+title+'\n', {encoding: "utf8"}, function(){ if (err) { return console.error(err); }});
+            sys.log_file(log_file, `* ${title}\n`);
             log_combi.push(log_combi_last_sub+1);
             log_combi_last_sub = 0;
             log_file = working_dir + generate_log_name(log_combi);
-            fs.appendFileSync(log_file, title+'\n----------\n', {encoding: "utf8"}, function(){ if (err) { return console.error(err); }});
+            sys.log_file(log_file, title+'\n----------\n');
             return;
         }
         else if (0 === line.indexOf('@end')) {
             let log_file = working_dir + generate_log_name(log_combi);
-            fs.appendFileSync(log_file, '----------\n', {encoding: "utf8"}, function(){ if (err) { return console.error(err); }});
+            sys.log_file(log_file, '----------\n');
             if (log_combi.length) {
                 log_combi_last_sub = log_combi.pop();
             }
@@ -176,7 +176,12 @@ function queue_on_execute(resolve, reject, job)
         }
         title = false;
         let log_file = working_dir + generate_log_name(log_combi);
-        fs.appendFileSync(log_file, '> '+line+'\n', {encoding: "utf8"}, function(){ if (err) { return console.error(err); }});
+        if (line === '') {
+          sys.log_file(log_file, '>>>>\n');
+        }
+        else {
+          sys.log_file(log_file, '>> '+line+'\n');
+        }
     });
   });
 	
@@ -184,7 +189,7 @@ function queue_on_execute(resolve, reject, job)
     buf_stderr.buffer += data;
     sys.buf_to_full_lines(buf_stderr, (line) => {
         let log_file = working_dir + generate_log_name(log_combi);
-        fs.appendFileSync(log_file, '!! '+line+'\n', {encoding: "utf8"}, function(){ if (err) { return console.error(err); }});
+        sys.log_file(log_file, '!! '+line+'\n');
     });
   });
 	

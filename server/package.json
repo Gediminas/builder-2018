@@ -26,6 +26,7 @@
   },
   "homepage": "https://github.com/Gediminas/builder#readme",
   "dependencies": {
+    "assert": "^1.4.1",
     "cron": "^1.3.0",
     "glob": "^7.1.2",
     "lokijs": "^1.5.4",
