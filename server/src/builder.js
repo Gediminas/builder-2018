@@ -141,30 +141,36 @@ function queue_on_execute(resolve, reject, job)
 
 	//spawn
 	const child = execFile('node', [script_js], { cwd: working_dir });
-  var title = false;
+  var title_renamed = '';
 	
   child.stdout.on('data', function(data) {
     buf_stdout.buffer += data;
     sys.buf_to_full_lines(buf_stdout, (line) => {
-        //console.log('= ' + line);
         if (0 === line.indexOf('@title')) {
-            title = line.substr(6);
-            return
+            title_renamed = line.substr(7);
         }
         else if (0 === line.indexOf('@sub')) {
-            if (!title) {
-                title = line.substr(4);
-                if (!title) {
-                    title = '<no-name>';
-                }
+            let title_orig = line.substr(5);
+            if (!title_orig) {
+                title_orig = '<no-name>';
             }
-            let log_file = working_dir + generate_log_name(log_combi);
-            sys.log_file(log_file, `* ${title}\n`);
+            let title = title_renamed !== '' ? title_renamed : title_orig;
+
+            let log_name_main = generate_log_name(log_combi);
+            let log_file_main = working_dir + log_name_main;
             log_combi.push(log_combi_last_sub+1);
             log_combi_last_sub = 0;
-            log_file = working_dir + generate_log_name(log_combi);
-            sys.log_file(log_file, title+'\n----------\n');
-            return;
+            let log_name_sub = generate_log_name(log_combi);
+            let log_file_sub = working_dir + log_name_sub;
+
+            sys.log_file(log_file_main, `* [${title}] (${log_name_sub})\n`);
+
+            if (title_renamed) {
+                sys.log_file(log_file_sub,  `${title_renamed}`);
+            }
+            sys.log_file(log_file_sub,  `${title_orig}\n`);
+            sys.log_file(log_file_sub,  `[back] (${log_name_main})\n`);
+            sys.log_file(log_file_sub,  '----------\n');
         }
         else if (0 === line.indexOf('@end')) {
             let log_file = working_dir + generate_log_name(log_combi);
@@ -172,15 +178,11 @@ function queue_on_execute(resolve, reject, job)
             if (log_combi.length) {
                 log_combi_last_sub = log_combi.pop();
             }
-            return;
-        }
-        title = false;
-        let log_file = working_dir + generate_log_name(log_combi);
-        if (line === '') {
-          sys.log_file(log_file, '>>>>\n');
         }
         else {
-          sys.log_file(log_file, '>> '+line+'\n');
+            title_renamed = '';
+            let log_file = working_dir + generate_log_name(log_combi);
+            sys.log_file(log_file, `${line}\n`);
         }
     });
   });
