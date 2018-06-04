@@ -1,6 +1,7 @@
 import React, { PureComponent } from 'react'
 import {connect} from 'react-redux'
 import * as actionCreators from '../../action_creators'
+//import axios from 'axios'
 
 import Products from './Products'
 import ActiveJobs from './ActiveJobs'
@@ -10,6 +11,17 @@ import FinishedJobs from './FinishedJobs'
 import 'immutable-console-log'
 
 export class Builder extends PureComponent {
+
+  componentDidMount() {
+    /*
+    axios.get(`http://www.reddit.com/r/${this.props.subreddit}.json`)
+      .then(res => {
+        const posts = res.data.data.children.map(obj => obj.data);
+        this.setState({ posts });
+      });
+      */
+  }
+
   render() {
         //<h3>TEST Active Jobs:</h3>
         //<ActiveJobs jobs={tmp_jobs} kill_job={this.props.kill_job} />
