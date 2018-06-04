@@ -38,6 +38,6 @@ export function time_to_now(time_start) {
   return s_duration
 }
 
-export function time_to_uid(time) {
+export function time_to_dir(time) {
   return moment(time).format('YYYY-MM-DD_hh-mm-ss_SSS')
 }

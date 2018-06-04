@@ -1,7 +1,7 @@
 import React, { PureComponent } from 'react'
 import {connect} from 'react-redux'
 import * as actionCreators from '../../action_creators'
-import {time_to_uid} from '../../tools/date_time.js'
+import {time_to_dir} from '../../tools/date_time.js'
 
 export class LogViewer extends PureComponent {
   render() {
@@ -16,7 +16,7 @@ export class LogViewer extends PureComponent {
         return <div> <h2>LogViewer</h2><div>No logs exist for product "{prod_id}"</div> </div>
       }
       let time_start = product.getIn(['last_job', 'time_start'])
-      job_uid = time_to_uid(time_start)
+      job_uid = time_to_dir(time_start)
       return <html><meta httpEquiv='refresh' content={'0; URL=' + prod_id + '/' + job_uid} /><div>Redirecting to last log</div></html>
     }
     return (
