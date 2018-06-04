@@ -8,10 +8,10 @@ import {
 import {List, Map} from 'immutable'
 import {expect} from 'chai'
 
-import {Results} from './Results'
+import {LogViewer} from './LogViewer'
 
 
-describe('Results', () => {
+describe('LogViewer', () => {
 
   it('test', () => {
   })

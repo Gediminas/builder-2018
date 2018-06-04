@@ -6,6 +6,7 @@ export default class extends PureComponent {
     //console.log(this.props.product.toJS())
 
 
+    let product_id   = this.props.product.get('product_id')
     let product_name = this.props.product.get('product_name')
     let job_id       = this.props.product.getIn(['last_job', 'id'])
     let comment      = this.props.product.getIn(['last_job', 'data', 'comment'])
@@ -24,7 +25,8 @@ export default class extends PureComponent {
     let time_start_t   = toTime(time_start)
     let time_diff_t   = toHHMMSS(time_diff)
 
-    let log_link = `log?prod=${product_name}&time=${time_start_d}`
+    let log_link = `log_prod/${product_id}`
+    //let log_link = `log_time/${time_start_d}`
 
     return (
       <div className='row'>

@@ -1,3 +1,5 @@
+import moment from 'moment'
+
 export function toHHMMSS(text) {
   if (!text || text === '' || text === ' ') {
     return '-'
@@ -17,11 +19,13 @@ export function toHHMMSS(text) {
 }
 
 export function toDate(time_start) {
-  return new Date(time_start).toLocaleDateString()
+  //return new Date(time_start).toLocaleDateString()
+  return moment(time_start).format('YYYY-MM-DD')
 }
 
 export function toTime(time_start) {
-  return new Date(time_start).toLocaleTimeString()
+  //return new Date(time_start).toLocaleTimeString()
+  return moment(time_start).format('hh:ss')
 }
 
 export function time_to_now(time_start) {
@@ -34,3 +38,6 @@ export function time_to_now(time_start) {
   return s_duration
 }
 
+export function time_to_uid(time) {
+  return moment(time).format('YYYY-MM-DD_hh-mm-ss_SSS')
+}
