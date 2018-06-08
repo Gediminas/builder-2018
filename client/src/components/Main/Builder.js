@@ -33,6 +33,8 @@ export class Builder extends PureComponent {
         <ActiveJobs jobs={this.props.jobs} kill_job={this.props.kill_job} />
         <h3>Finnished Jobs:</h3>
         <FinishedJobs hjobs={this.props.hjobs} />
+        <hr />
+        debug: {this.debug}
       </div>
     )
   }
@@ -43,6 +45,7 @@ function mapStateToProps(state, ownProps) {
     products: state.get('products'),
     jobs: state.get('jobs'),
     hjobs: state.get('hjobs'),
+    debug: state.get('debug'),
   }
 }
 
