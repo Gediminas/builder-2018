@@ -10,20 +10,22 @@ import remoteActionMiddleware from './remote_action_middleware'
 import {BuilderContainer} from './components/Main/Builder'
 import {LogViewerContainer} from './components/LogViewer/LogViewer'
 import {ConnectionStateContainer} from './components/common/ConnectionState'
-import Gun from 'gun'
+import Gun from 'gun/gun'
 
 require('./style.css')
 const cfg = require('../../_cfg/config.json')
-console.log(cfg)
-console.log(cfg.server_address)
-console.log(cfg.server_port)
-
+console.log('CFG:', cfg)
+console.log(`Socket-Address: ${cfg.server_address}:${cfg.server_port}`, )
 
 //const socket = io(`${location.protocol}//${location.hostname}:8090`)
 const socket = io(cfg.server_address + ':' + cfg.server_port)
 
-console.log(cfg.server_address)
-let gun = Gun(cfg.server_address + ':8080')
+console.log('=========');
+var gun = Gun(cfg.server_address + ':' + cfg.gun_port + '/gun')
+console.log('Client started on ' + cfg.server_address + ':' + cfg.gun_port + '/gun');
+gun.get('key').map().on(data => console.log('key received' + data))
+
+console.log('=========');
 
 const createStoreWithMiddleware = applyMiddleware(
   remoteActionMiddleware(socket)
@@ -43,10 +45,19 @@ connection_events.forEach(ev =>
   socket.on(ev, () => store.dispatch(set_connection_state(ev, socket.connected)))
 )
 
-socket.on('state', state => {
-  state['debug'] = gun.get('debug')
-  const actionSetState = set_state(state)
-  store.dispatch(actionSetState)
+gun.get('state').map().on((data, key) => {
+  switch (key) {
+  case 'core':
+    let state = JSON.parse(data)
+    console.log('on GUN state: ', state)
+    state.debug = 'aaaaaaaaaaaaa'
+    const actionSetState = set_state(state)
+    store.dispatch(actionSetState)
+    break
+  default:
+    console.log('on GUN state: ', key, data)
+    break
+  }
 })
 
 function onShutdownClick() {

@@ -13,20 +13,26 @@ const db      = require('./builder_db_utils.js');
 const queue   = require('./queue_util.js');
 
 const app_cfg     = script.load_app_cfg();
-console.log(app_cfg);
+const cfg     = script.load_app_cfg();
 
 const socket_port = app_cfg['server_port'];
 const io          = require('socket.io')(socket_port);
 
-console.log("Socket server starting on port: " + socket_port);
+//console.log("Socket server starting on port: " + socket_port);
+console.log('CFG:', app_cfg)
 
+console.log('=============================================');
 
-
-const server = require('http').createServer().listen(8080);;
+const server = require('http').createServer().listen(cfg.gun_port);
 const Gun = require('gun');
 let gun = Gun({web: server, file: 'data.json'});
-gun.get('debug').set({'test': 'test'})
 
+console.log('=============================================');
+console.log('Server started on ' + cfg.server_address + ':' + cfg.gun_port + '/gun');
+console.log('=============================================');
+
+//let gun_address = cfg.server_address + ':8080'
+//console.log(gun)
 
 
 const Update_None     =  0 // 000000
@@ -36,12 +42,7 @@ const Update_History  =  4 // 000100
 const Update_ALL      = 63 // 111111
 
 var emit_state = function(state, client_socket) {
-    if (!client_socket) {
-      io.emit('state', state);
-    }
-    else {
-      client_socket.emit('state', state);
-    }
+    gun.get('state').put({'core': JSON.stringify(state)})
 }
 
 var update_client = function(update_flags, client_socket) {
@@ -68,6 +69,10 @@ var update_client = function(update_flags, client_socket) {
     emit_state(state, client_socket);
   }
 }
+
+gun.get('state').on(()=>{
+  console.log('STATE CHANGED')
+})
 
 io.on('connection', function(socket){
 	sys.log("Client connected ****", socket.conn.remoteAddress);
