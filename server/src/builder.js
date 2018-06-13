@@ -25,7 +25,7 @@ console.log('=============================================');
 
 const server = require('http').createServer().listen(cfg.gun_port);
 const Gun = require('gun');
-let gun = Gun({web: server, file: 'data.json'});
+let gun = Gun({web: server, file: '../_working/data.json'});
 
 console.log('=============================================');
 console.log('Server started on ' + cfg.server_address + ':' + cfg.gun_port + '/gun');
@@ -41,17 +41,17 @@ const Update_Jobs     =  2 // 000010
 const Update_History  =  4 // 000100
 const Update_ALL      = 63 // 111111
 
-var emit_state = function(state, client_socket) {
+var emit_state = function(state) {
     gun.get('state').put({'core': JSON.stringify(state)})
 }
 
-var update_client = function(update_flags, client_socket) {
+var update_client = function(update_flags) {
   if ((update_flags & Update_Products) != 0) {
     script.get_products((products) => {
       var state = {}
       state['products'] = products;
       //console.log('delayed');
-      emit_state(state, client_socket)
+      emit_state(state)
     });
   }
   var state = {}
@@ -66,7 +66,7 @@ var update_client = function(update_flags, client_socket) {
   }
   if (Object.keys(state).length !== 0) {
     //console.log('direct');
-    emit_state(state, client_socket);
+    emit_state(state);
   }
 }
 
@@ -77,11 +77,11 @@ gun.get('state').on(()=>{
 io.on('connection', function(socket){
 	sys.log("Client connected ****", socket.conn.remoteAddress);
 
-  update_client(Update_ALL, socket);
+  update_client(Update_ALL);
 
 	socket.on('job_add', function(data){
 		script.add_job(data.product_id, "user comment");
-    update_client(Update_Products | Update_Jobs, socket)
+    update_client(Update_Products | Update_Jobs)
 	});
 
 	socket.on('job_kill', function(data){
@@ -91,11 +91,11 @@ io.on('connection', function(socket){
 				let job = db.findLast_history({"data.pid": pid})
 				job.data.status = "HALT";
 				sys.log("KILLED", data, pid);
-        update_client(Update_ALL, socket)
+        update_client(Update_ALL)
 			});
 		} else {
 			queue.remove_job(data.job_uid);
-      update_client(Update_Products | Update_Jobs, socket)
+      update_client(Update_Products | Update_Jobs)
 		}
 	});
 
@@ -110,7 +110,7 @@ io.on('connection', function(socket){
 	});
 
 	setInterval(function () {
-    update_client(Update_Jobs, socket)
+    update_client(Update_Jobs)
 	}, 1000);
 });
 
