@@ -32,18 +32,8 @@ const createStoreWithMiddleware = applyMiddleware(
 )(createStore)
 const store = createStoreWithMiddleware(reducer)
 
-let connection_events = [
-  'connect',
-  'connect_error',
-  'connect_timeout',
-  'reconnect',
-  'reconnecting',
-  'reconnect_error',
-  'reconnect_failed'
-]
-connection_events.forEach(ev =>
-  socket.on(ev, () => store.dispatch(set_connection_state(ev, socket.connected)))
-)
+gun.on('hi', peer => store.dispatch(set_connection_state('database connected', true)))
+gun.on('bye', peer => store.dispatch(set_connection_state('database offline', false)))
 
 gun.get('state').map().on((data, key) => {
   switch (key) {
