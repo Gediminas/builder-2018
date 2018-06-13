@@ -74,17 +74,19 @@ gun.get('state').on(()=>{
   console.log('STATE CHANGED')
 })
 
-io.on('connection', function(socket){
-	sys.log("Client connected ****", socket.conn.remoteAddress);
+gun.on('hi', peer => console.log('client connected:', peer.id))
+gun.on('bye', peer => console.log('client disconnected:', peer.id))
 
-  update_client(Update_ALL);
-
-	socket.on('job_add', function(data){
-		script.add_job(data.product_id, "user comment");
-    update_client(Update_Products | Update_Jobs)
-	});
-
-	socket.on('job_kill', function(data){
+gun.get('actions').on((data) => {
+  console.log('action: ', data.action)
+  switch (data.action) {
+  case 'job_add':
+    console.log(`action-prod-id: [${data.product_id}]`)
+		//script.add_job(data.product_id, "user comment");
+    //update_client(Update_Products | Update_Jobs)
+    break
+  case 'job_kill':
+    /*
 		if (data.pid && data.pid > 0) {
 			kill(data.pid, 'SIGTERM', function(){ //SIGKILL
 				let pid = parseInt(data.pid);
@@ -97,7 +99,18 @@ io.on('connection', function(socket){
 			queue.remove_job(data.job_uid);
       update_client(Update_Products | Update_Jobs)
 		}
-	});
+    */
+    break
+  default:
+    break
+  }
+  //gun.get('actions').path().put(null)
+})
+
+io.on('connection', function(socket){
+	sys.log("Client connected ****", socket.conn.remoteAddress);
+
+  update_client(Update_ALL);
 
 	socket.on('sys_shutdown', function(data){
 		sys.log("Stoping cron jobs...");

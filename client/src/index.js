@@ -15,7 +15,7 @@ import Gun from 'gun/gun'
 require('./style.css')
 const cfg = require('../../_cfg/config.json')
 console.log('CFG:', cfg)
-console.log(`Socket-Address: ${cfg.server_address}:${cfg.server_port}`, )
+console.log(`Socket-Address: ${cfg.server_address}:${cfg.server_port}`)
 
 //const socket = io(`${location.protocol}//${location.hostname}:8090`)
 const socket = io(cfg.server_address + ':' + cfg.server_port)
@@ -28,12 +28,12 @@ gun.get('key').map().on(data => console.log('key received' + data))
 console.log('=========');
 
 const createStoreWithMiddleware = applyMiddleware(
-  remoteActionMiddleware(socket)
+  remoteActionMiddleware(gun)
 )(createStore)
 const store = createStoreWithMiddleware(reducer)
 
-gun.on('hi', peer => store.dispatch(set_connection_state('database connected', true)))
-gun.on('bye', peer => store.dispatch(set_connection_state('database offline', false)))
+gun.on('hi', peer => store.dispatch(set_connection_state(`database connected ${peer.id}`, true)))
+gun.on('bye', peer => store.dispatch(set_connection_state(`database offline ${peer.id}`, false)))
 
 gun.get('state').map().on((data, key) => {
   switch (key) {
