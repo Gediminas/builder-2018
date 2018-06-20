@@ -3,7 +3,6 @@ import ReactDOM from 'react-dom'
 import { BrowserRouter, Route, Switch } from 'react-router-dom'
 import {createStore, applyMiddleware} from 'redux'
 import {Provider} from 'react-redux'
-import io from 'socket.io-client'
 import reducer from './reducer'
 import {set_state, set_connection_state} from './action_creators'
 import remoteActionMiddleware from './remote_action_middleware'
@@ -16,9 +15,6 @@ require('./style.css')
 const cfg = require('../../_cfg/config.json')
 console.log('CFG:', cfg)
 console.log(`Socket-Address: ${cfg.server_address}:${cfg.server_port}`)
-
-//const socket = io(`${location.protocol}//${location.hostname}:8090`)
-const socket = io(cfg.server_address + ':' + cfg.server_port)
 
 console.log('=========');
 var gun = Gun(cfg.server_address + ':' + cfg.gun_port + '/gun')
@@ -50,8 +46,15 @@ gun.get('state').map().on((data, key) => {
   }
 })
 
-function onShutdownClick() {
-  socket.emit('sys_shutdown')
+/* function onShutdownClick() {
+ *   gun.get('actions').set({'action': 'sys_shutdown'})
+ * }
+ * */
+function server_shutdown() {
+  console.log('SERVER_SHUTDOWN')
+  gun.get('actions').put({
+    action: 'server_shutdown',
+  })
 }
 
 ReactDOM.render((
@@ -59,7 +62,7 @@ ReactDOM.render((
   <div>
     <ConnectionStateContainer />
     <div id='div_debug'>
-      <button id='btn_sys_shutdown' type='button' onClick={onShutdownClick}>SHUTDOWN</button>
+      <button id='btn_sys_shutdown' type='button' onClick={server_shutdown}>SHUTDOWN</button>
     </div>
     <BrowserRouter> 
       <Switch>

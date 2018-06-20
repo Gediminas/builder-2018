@@ -16,6 +16,12 @@ export default gun => store => next => action => {
         'pid':     action.pid,
       })
       break
+    case 'SERVER_SHUTDOWN':
+      console.log('SERVER_SHUTDOWN')
+      gun.get('actions').put({
+        action:    'server_shutdown',
+      })
+      break
     default:
       break
     }
@@ -35,5 +41,8 @@ export default function(store) {
 
     }
   }
-}
+  }
+
+A middleware is a piece of code that is executed after an action is dispatched but before reaching the reducer
+
 */

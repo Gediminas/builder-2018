@@ -16,7 +16,6 @@ const app_cfg     = script.load_app_cfg();
 const cfg     = script.load_app_cfg();
 
 const socket_port = app_cfg['server_port'];
-const io          = require('socket.io')(socket_port);
 
 //console.log("Socket server starting on port: " + socket_port);
 console.log('CFG:', app_cfg)
@@ -43,6 +42,7 @@ const Update_ALL      = 63 // 111111
 
 var emit_state = function(state) {
     gun.get('state').put({'core': JSON.stringify(state)})
+    console.log('EMIT state');
 }
 
 var update_client = function(update_flags) {
@@ -70,18 +70,22 @@ var update_client = function(update_flags) {
   }
 }
 
+gun.on('hi', peer => console.log('>> Client connected:', peer.id, peer.wire.url))
+gun.on('bye', peer => console.log('>> Client disconnected:', peer.id))
+
 gun.get('state').on(()=>{
   console.log('STATE CHANGED')
 })
 
-gun.on('hi', peer => console.log('client connected:', peer.id))
-gun.on('bye', peer => console.log('client disconnected:', peer.id))
-
-gun.get('actions').on((data) => {
-  console.log('action: ', data.action)
+let aaa = 0;
+gun.get('actions').map().on((data, key) => {
+  if (!data) {
+    return
+  }
+  console.log('*', ++aaa, key, data, data.action)
   switch (data.action) {
   case 'job_add':
-    console.log(`action-prod-id: [${data.product_id}]`)
+    console.log(`  * product_id: [${data.product_id}]`)
 		//script.add_job(data.product_id, "user comment");
     //update_client(Update_Products | Update_Jobs)
     break
@@ -101,31 +105,28 @@ gun.get('actions').on((data) => {
 		}
     */
     break
+  case 'server_shutdown':
+    sys.log("Stoping cron jobs...");
+    /*
+    script.destroy_all();
+    setTimeout(function () {
+      sys.log("Exit.");
+      process.exit(0);
+    }, 1000)
+    */
+    break
   default:
     break
   }
   //gun.get('actions').path().put(null)
+  //gun.get('actions').set(null)
+}, {
+  change: true
 })
 
-io.on('connection', function(socket){
-	sys.log("Client connected ****", socket.conn.remoteAddress);
-
-  update_client(Update_ALL);
-
-	socket.on('sys_shutdown', function(data){
-		sys.log("Stoping cron jobs...");
-		script.destroy_all();
-	
-		setTimeout(function () {
-			sys.log("Exit.");
-			process.exit(0);
-        }, 1000)
-	});
-
-	setInterval(function () {
-    update_client(Update_Jobs)
-	}, 1000);
-});
+setInterval(function () {
+  //update_client(Update_Jobs)
+}, 1000);
 
 // QUEUE =====================================================
 
@@ -232,7 +233,6 @@ function queue_on_execute(resolve, reject, job)
 		default: job.data.status = "N/A";     break;
 		}
 		db.add_history(job);
-		//io.emit('refresh_page');
     update_client(Update_ALL)
 		sys.log(job.product_id, "finished");
 		resolve(job);
@@ -241,7 +241,6 @@ function queue_on_execute(resolve, reject, job)
 
 	job.data.status = "working";
 	job.data.pid    = child.pid;
-	//io.emit('refresh_page');
   update_client(Update_ALL)
 	sys.log(job.product_id, "started");
 }

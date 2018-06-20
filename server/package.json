@@ -5,6 +5,7 @@
   "main": "./src/builder.js",
   "scripts": {
     "start": "node ./src/builder.js",
+    "debug": "node inspect ./src/builder.js",
     "test": "npm test"
   },
   "repository": {

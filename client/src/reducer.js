@@ -16,6 +16,10 @@ export function add_job(state, entry) {
 }
 
 export function kill_job(state, entry) {
+  return state
+}
+
+export function server_shutdown(state, entry) {
     return state
 }
 
@@ -28,7 +32,9 @@ export default function(state = Map(), action) {
   case 'ADD_JOB':
     return add_job(state, action.product_id)
   case 'KILL_JOB':
-    return kill_job(state, action.job_uid, action.pid)
+    return kill_job(state)
+  case 'SERVER_SHUTDOWN':
+    return server_shutdown(state)
   default:
     break
   }

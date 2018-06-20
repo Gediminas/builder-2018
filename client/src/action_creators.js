@@ -28,3 +28,10 @@ export function kill_job(job_uid, pid) {
     pid
   }
 }
+
+export function server_shutdown(job_uid, pid) {
+  return {
+    meta: {remote: true},
+    type: 'SERVER_SHUTDOWN',
+  }
+}
