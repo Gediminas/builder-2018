@@ -15,23 +15,14 @@ const queue   = require('./queue_util.js');
 const app_cfg     = script.load_app_cfg();
 const cfg     = script.load_app_cfg();
 
-const socket_port = app_cfg['server_port'];
-
-//console.log("Socket server starting on port: " + socket_port);
 console.log('CFG:', app_cfg)
-
-console.log('=============================================');
 
 const server = require('http').createServer().listen(cfg.gun_port);
 const Gun = require('gun');
 let gun = Gun({web: server, file: '../_working/data.json'});
 
-console.log('=============================================');
 console.log('Server started on ' + cfg.server_address + ':' + cfg.gun_port + '/gun');
 console.log('=============================================');
-
-//let gun_address = cfg.server_address + ':8080'
-//console.log(gun)
 
 
 const Update_None     =  0 // 000000
@@ -40,33 +31,26 @@ const Update_Jobs     =  2 // 000010
 const Update_History  =  4 // 000100
 const Update_ALL      = 63 // 111111
 
-var emit_state = function(state) {
-    gun.get('state').put({'core': JSON.stringify(state)})
-    console.log('EMIT state');
-}
+gun.get('state').put(null)
+gun.get('state').get('core').put(null)
 
 var update_client = function(update_flags) {
   if ((update_flags & Update_Products) != 0) {
     script.get_products((products) => {
-      var state = {}
-      state['products'] = products;
-      //console.log('delayed');
-      emit_state(state)
+      gun.get('state').put({'products': JSON.stringify(products)})
+      console.log('>> EMIT state->products');
     });
   }
-  var state = {}
   if ((update_flags & Update_History) != 0) {
     var show_history_limit = app_cfg['show_history_limit'];
     var hjobs = db.get_history(show_history_limit);
-    state['hjobs'] = hjobs;
+    gun.get('state').put({'hjobs': JSON.stringify(hjobs)})
+    console.log('>> EMIT state->hjobs');
   }
   if ((update_flags & Update_Jobs) != 0) {
     var jobs = queue.get_jobs();
-    state['jobs'] = jobs; 
-  }
-  if (Object.keys(state).length !== 0) {
-    //console.log('direct');
-    emit_state(state);
+    gun.get('state').put({'jobs': JSON.stringify(jobs)})
+    console.log('>> EMIT state->jobs');
   }
 }
 
@@ -251,4 +235,5 @@ db.init(app_cfg['db_dir'])
   .then(() => {
     script.init_all();
     queue.start(queue_on_execute, 2);
+    update_client(Update_ALL)
   });

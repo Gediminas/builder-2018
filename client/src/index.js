@@ -12,15 +12,14 @@ import {ConnectionStateContainer} from './components/common/ConnectionState'
 import Gun from 'gun/gun'
 
 require('./style.css')
+
 const cfg = require('../../_cfg/config.json')
+
 console.log('CFG:', cfg)
-console.log(`Socket-Address: ${cfg.server_address}:${cfg.server_port}`)
 
-console.log('=========');
-var gun = Gun(cfg.server_address + ':' + cfg.gun_port + '/gun')
+const gun = Gun(cfg.server_address + ':' + cfg.gun_port + '/gun')
+
 console.log('Client started on ' + cfg.server_address + ':' + cfg.gun_port + '/gun');
-gun.get('key').map().on(data => console.log('key received' + data))
-
 console.log('=========');
 
 const createStoreWithMiddleware = applyMiddleware(
@@ -32,16 +31,40 @@ gun.on('hi', peer => store.dispatch(set_connection_state(`database connected ${p
 gun.on('bye', peer => store.dispatch(set_connection_state(`database offline ${peer.id}`, false)))
 
 gun.get('state').map().on((data, key) => {
+  if (!data) {
+    console.log('on GUN NULL: ', key)
+    return
+  }
   switch (key) {
-  case 'core':
-    let state = JSON.parse(data)
-    console.log('on GUN state: ', state)
-    state.debug = 'aaaaaaaaaaaaa'
-    const actionSetState = set_state(state)
-    store.dispatch(actionSetState)
+  case 'products':
+    {
+      let products = JSON.parse(data)
+      console.log('on GUN products: ', products)
+      let state = { 'products': products }
+      let actionSetState = set_state(state)
+      store.dispatch(actionSetState)
+    }
+    break
+  case 'jobs':
+    {
+      let jobs = JSON.parse(data)
+      console.log('on GUN jobs: ', jobs)
+      let state = { 'jobs': jobs }
+      let actionSetState = set_state(state)
+      store.dispatch(actionSetState)
+    }
+    break
+  case 'hjobs':
+    {
+      let hjobs = JSON.parse(data)
+      console.log('on GUN hjobs: ', hjobs)
+      let state = { 'hjobs': hjobs }
+      let actionSetState = set_state(state)
+      store.dispatch(actionSetState)
+    }
     break
   default:
-    console.log('on GUN state: ', key, data)
+    console.log('on GUN uncaught: ', key, data)
     break
   }
 })

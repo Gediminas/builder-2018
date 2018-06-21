@@ -1,6 +1,5 @@
 {
   "server_address":     "http://localhost",
-  "server_port":        "1234",
   "gun_port":           "1111",
   "server_access":      "127.0.0.1",
   "show_history_limit": "5",
