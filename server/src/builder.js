@@ -31,8 +31,8 @@ const Update_Jobs     =  2 // 000010
 const Update_History  =  4 // 000100
 const Update_ALL      = 63 // 111111
 
-gun.get('state').put(null)
-gun.get('state').get('core').put(null)
+//gun.get('state').put(null)
+//gun.get('state').get('core').put(null)
 
 var update_client = function(update_flags) {
   if ((update_flags & Update_Products) != 0) {
