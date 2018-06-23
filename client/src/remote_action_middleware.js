@@ -2,14 +2,14 @@ export default gun => store => next => action => {
   if (action.meta && action.meta.remote) {
     switch(action.type) {
     case 'ADD_JOB':
-      console.log('ADD_JOB')
+      console.log('middleware: ADD_JOB')
       gun.get('actions').put({
         action:     'job_add',
         product_id: action.product_id,
       })
       break
     case 'KILL_JOB':
-      console.log('KILL_JOB')
+      console.log('middleware: KILL_JOB')
       gun.get('actions').put({
         action:    'job_kill',
         'job_uid': action.job_uid,
@@ -17,7 +17,7 @@ export default gun => store => next => action => {
       })
       break
     case 'SERVER_SHUTDOWN':
-      console.log('SERVER_SHUTDOWN')
+      console.log('middleware: SERVER_SHUTDOWN')
       gun.get('actions').put({
         action:    'server_shutdown',
       })

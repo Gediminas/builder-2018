@@ -58,22 +58,23 @@ gun.on('hi', peer => console.log('>> Client connected:', peer.id, peer.wire.url)
 gun.on('bye', peer => console.log('>> Client disconnected:', peer.id))
 
 gun.get('state').on(()=>{
-  console.log('STATE CHANGED')
+  console.log('* STATE CHANGED')
 })
 
 let aaa = 0;
-gun.get('actions').map().on((data, key) => {
+gun.get('actions').on((data, key) => {
   if (!data) {
     return
   }
-  console.log('*', ++aaa, key, data, data.action)
+  console.log('*', ++aaa, key, data.action)
   switch (data.action) {
   case 'job_add':
-    console.log(`  * product_id: [${data.product_id}]`)
+    sys.log(`  * adding product_id: [${data.product_id}]`)
 		//script.add_job(data.product_id, "user comment");
     //update_client(Update_Products | Update_Jobs)
     break
   case 'job_kill':
+    sys.log("  * killing job");
     /*
 		if (data.pid && data.pid > 0) {
 			kill(data.pid, 'SIGTERM', function(){ //SIGKILL
@@ -90,7 +91,7 @@ gun.get('actions').map().on((data, key) => {
     */
     break
   case 'server_shutdown':
-    sys.log("Stoping cron jobs...");
+    sys.log("  * Stoping cron jobs...");
     /*
     script.destroy_all();
     setTimeout(function () {

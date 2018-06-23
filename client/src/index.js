@@ -9,6 +9,7 @@ import remoteActionMiddleware from './remote_action_middleware'
 import {BuilderContainer} from './components/Main/Builder'
 import {LogViewerContainer} from './components/LogViewer/LogViewer'
 import {ConnectionStateContainer} from './components/common/ConnectionState'
+import {server_shutdown} from './action_creators'
 import Gun from 'gun/gun'
 
 require('./style.css')
@@ -73,11 +74,10 @@ gun.get('state').map().on((data, key) => {
  *   gun.get('actions').set({'action': 'sys_shutdown'})
  * }
  * */
-function server_shutdown() {
-  console.log('SERVER_SHUTDOWN')
-  gun.get('actions').put({
-    action: 'server_shutdown',
-  })
+function server_shutdown_click() {
+  console.log('click: SERVER_SHUTDOWN')
+  let actionSetState = server_shutdown()
+  store.dispatch(actionSetState)
 }
 
 ReactDOM.render((
@@ -85,7 +85,7 @@ ReactDOM.render((
   <div>
     <ConnectionStateContainer />
     <div id='div_debug'>
-      <button id='btn_sys_shutdown' type='button' onClick={server_shutdown}>SHUTDOWN</button>
+      <button id='btn_sys_shutdown' type='button' onClick={server_shutdown_click}>SHUTDOWN</button>
     </div>
     <BrowserRouter> 
       <Switch>
