@@ -18,6 +18,10 @@ const cfg = require('../../_cfg/config.json')
 
 console.log('CFG:', cfg)
 
+// debug
+localStorage.clear()
+// END debug
+
 const gun = Gun(cfg.server_address + ':' + cfg.gun_port + '/gun')
 
 console.log('Client started on ' + cfg.server_address + ':' + cfg.gun_port + '/gun');

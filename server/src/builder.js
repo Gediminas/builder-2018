@@ -17,9 +17,23 @@ const cfg     = script.load_app_cfg();
 
 console.log('CFG:', app_cfg)
 
+// debug
+fs.unlink('../_working/data.json')
+// END debug
+
 const server = require('http').createServer().listen(cfg.gun_port);
 const Gun = require('gun');
 let gun = Gun({web: server, file: '../_working/data.json'});
+
+// debug
+//gun.get('state').get('products').put(null)
+//gun.get('state').get('actions').put(null)
+//gun.get('state').put(null)
+// END debug
+
+script.get_products((products) => {
+  gun.get('state').put({'products': JSON.stringify(products)})
+});
 
 console.log('Server started on ' + cfg.server_address + ':' + cfg.gun_port + '/gun');
 console.log('=============================================');
@@ -31,15 +45,8 @@ const Update_Jobs     =  2 // 000010
 const Update_History  =  4 // 000100
 const Update_ALL      = 63 // 111111
 
-//gun.get('state').put(null)
-//gun.get('state').get('core').put(null)
-
 var update_client = function(update_flags) {
   if ((update_flags & Update_Products) != 0) {
-    script.get_products((products) => {
-      gun.get('state').put({'products': JSON.stringify(products)})
-      console.log('>> EMIT state->products');
-    });
   }
   if ((update_flags & Update_History) != 0) {
     var show_history_limit = app_cfg['show_history_limit'];
@@ -62,7 +69,7 @@ gun.get('state').on(()=>{
 })
 
 let aaa = 0;
-gun.get('actions').on((data, key) => {
+gun.get('actions').map().on((data, key) => {
   if (!data) {
     return
   }
