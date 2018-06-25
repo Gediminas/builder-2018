@@ -61,7 +61,7 @@ var update_client = function(update_flags) {
   }
 }
 
-gun.on('hi', peer => console.log('>> Client connected:', peer.id, peer.wire.url))
+gun.on('hi', peer => console.log('>> Client connected:', peer.id))
 gun.on('bye', peer => console.log('>> Client disconnected:', peer.id))
 
 gun.get('state').on(()=>{
@@ -115,10 +115,6 @@ gun.get('actions').map().on((data, key) => {
 }, {
   change: true
 })
-
-setInterval(function () {
-  //update_client(Update_Jobs)
-}, 1000);
 
 // QUEUE =====================================================
 
