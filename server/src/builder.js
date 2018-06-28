@@ -3,10 +3,16 @@
 //console.log('process.cwd():', process.cwd());
 //console.log('__dirname:', __dirname);
 
+const colors  = require('colors');
+
+// var console = {};
+// console.log = function(){
+
+// }
+
 
 const fs      = require('fs');
 const kill    = require('tree-kill');
-
 const sys     = require('./sys_util.js');
 const script  = require('./script_util.js');
 const db      = require('./builder_db_utils.js');
@@ -40,14 +46,11 @@ console.log('=============================================');
 
 
 const Update_None     =  0 // 000000
-const Update_Products =  1 // 000001
 const Update_Jobs     =  2 // 000010
 const Update_History  =  4 // 000100
 const Update_ALL      = 63 // 111111
 
 var update_client = function(update_flags) {
-  if ((update_flags & Update_Products) != 0) {
-  }
   if ((update_flags & Update_History) != 0) {
     var show_history_limit = app_cfg['show_history_limit'];
     var hjobs = db.get_history(show_history_limit);
@@ -61,11 +64,11 @@ var update_client = function(update_flags) {
   }
 }
 
-gun.on('hi', peer => console.log('>> Client connected:', peer.id))
-gun.on('bye', peer => console.log('>> Client disconnected:', peer.id))
+gun.on('hi', peer => console.log('>> Client connected:'.blue, peer.id))
+gun.on('bye', peer => console.log('>> Client disconnected:'.blue, peer.id))
 
 gun.get('state').on(()=>{
-  console.log('* STATE CHANGED')
+  console.log('* STATE CHANGED'.yellow)
 })
 
 let aaa = 0;
@@ -76,12 +79,12 @@ gun.get('actions').map().on((data, key) => {
   console.log('*', ++aaa, key, data.action)
   switch (data.action) {
   case 'job_add':
-    sys.log(`  * adding product_id: [${data.product_id}]`)
+    sys.log(`  * adding product_id: [${data.product_id}]`.yellow)
 		//script.add_job(data.product_id, "user comment");
-    //update_client(Update_Products | Update_Jobs)
+    //update_client(Update_Jobs)
     break
   case 'job_kill':
-    sys.log("  * killing job");
+    sys.log("  * killing job".yellow);
     /*
 		if (data.pid && data.pid > 0) {
 			kill(data.pid, 'SIGTERM', function(){ //SIGKILL
@@ -93,12 +96,12 @@ gun.get('actions').map().on((data, key) => {
 			});
 		} else {
 			queue.remove_job(data.job_uid);
-      update_client(Update_Products | Update_Jobs)
+      update_client(Update_Jobs)
 		}
     */
     break
   case 'server_shutdown':
-    sys.log("  * Stoping cron jobs...");
+    sys.log("  * Stoping cron jobs...".yellow);
     /*
     script.destroy_all();
     setTimeout(function () {
