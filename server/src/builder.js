@@ -20,15 +20,6 @@ const io          = require('socket.io')(socket_port);
 
 console.log("Socket server starting on port: " + socket_port);
 
-
-
-const server = require('http').createServer().listen(8080);;
-const Gun = require('gun');
-let gun = Gun({web: server, file: 'data.json'});
-gun.get('debug').set({'test': 'test'})
-
-
-
 const Update_None     =  0 // 000000
 const Update_Products =  1 // 000001
 const Update_Jobs     =  2 // 000010

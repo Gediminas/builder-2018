@@ -10,7 +10,7 @@ import remoteActionMiddleware from './remote_action_middleware'
 import {BuilderContainer} from './components/Main/Builder'
 import {LogViewerContainer} from './components/LogViewer/LogViewer'
 import {ConnectionStateContainer} from './components/common/ConnectionState'
-import Gun from 'gun'
+
 
 require('./style.css')
 const cfg = require('../../_cfg/config.json')
@@ -21,9 +21,6 @@ console.log(cfg.server_port)
 
 //const socket = io(`${location.protocol}//${location.hostname}:8090`)
 const socket = io(cfg.server_address + ':' + cfg.server_port)
-
-console.log(cfg.server_address)
-let gun = Gun(cfg.server_address + ':8080')
 
 const createStoreWithMiddleware = applyMiddleware(
   remoteActionMiddleware(socket)
@@ -44,7 +41,6 @@ connection_events.forEach(ev =>
 )
 
 socket.on('state', state => {
-  state['debug'] = gun.get('debug')
   const actionSetState = set_state(state)
   store.dispatch(actionSetState)
 })
