@@ -6,6 +6,7 @@
 
 const fs      = require('fs');
 const kill    = require('tree-kill');
+const zmq    = require('zmq');
 
 const sys     = require('./sys_util.js');
 const script  = require('./script_util.js');
