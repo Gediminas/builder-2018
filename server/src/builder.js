@@ -18,6 +18,10 @@ console.log(cfg);
 const socket_port = cfg.server_port;
 const io          = require('socket.io')(socket_port);
 
+sys.ensure_dir(__dirname + '/../../' + cfg.script_dir);
+sys.ensure_dir(__dirname + '/../../' + cfg.working_dir);
+sys.ensure_dir(__dirname + '/../../' + cfg.db_dir);
+
 console.log("Socket server starting on port: " + socket_port);
 
 const Update_None     =  0 // 000000
@@ -128,8 +132,6 @@ function queue_on_execute(resolve, reject, job)
 	const produxt_dir = __dirname + '/../../' + cfg.working_dir + job.product_id + '/';
 	const working_dir = produxt_dir + sys.to_fs_time_string(job.time_start) + '/';
 
-  sys.ensure_dir(produxt_dir);
-  sys.ensure_dir(working_dir);
   let log_combi = [];
   let log_combi_last_sub = 0;
   let buf_stdout = {buffer: ''};
@@ -219,9 +221,7 @@ function queue_on_execute(resolve, reject, job)
 	sys.log(job.product_id, "started");
 }
 
-console.log(cfg.db_dir);
-
-db.init(cfg.db_dir).then(() => {
+db.init(__dirname + '/../../' + cfg.db_dir).then(() => {
     script.init_all();
     queue.start(queue_on_execute, 2);
 });
