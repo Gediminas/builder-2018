@@ -13,7 +13,7 @@ exports.init = function(path) {
 
     db_history = new loki(path_history, {
       verbose: true,
-      autoload: true,
+      //autoload: true,//autoupdate: true //use Object.observe to update objects automatically
       autosave: true,
       autosaveInterval: 2000
     });
