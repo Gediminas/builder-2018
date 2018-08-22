@@ -12,10 +12,10 @@ const script  = require('./script_util.js');
 const db      = require('./builder_db_utils.js');
 const queue   = require('./queue_util.js');
 
-const app_cfg     = script.load_app_cfg();
-console.log(app_cfg);
+const cfg     = script.load_app_cfg();
+console.log(cfg);
 
-const socket_port = app_cfg['server_port'];
+const socket_port = cfg.server_port;
 const io          = require('socket.io')(socket_port);
 
 console.log("Socket server starting on port: " + socket_port);
@@ -26,7 +26,7 @@ const Update_Jobs     =  2 // 000010
 const Update_History  =  4 // 000100
 const Update_ALL      = 63 // 111111
 
-var emit_state = function(state, client_socket) {
+let emit_state = function(state, client_socket) {
     if (!client_socket) {
       io.emit('state', state);
     }
@@ -35,7 +35,7 @@ var emit_state = function(state, client_socket) {
     }
 }
 
-var update_client = function(update_flags, client_socket) {
+let update_client = function(update_flags, client_socket) {
   if ((update_flags & Update_Products) != 0) {
     script.get_products((products) => {
       var state = {}
@@ -46,7 +46,7 @@ var update_client = function(update_flags, client_socket) {
   }
   var state = {}
   if ((update_flags & Update_History) != 0) {
-    var show_history_limit = app_cfg['show_history_limit'];
+    var show_history_limit = cfg.show_history_limit;
     var hjobs = db.get_history(show_history_limit);
     state['hjobs'] = hjobs;
   }
@@ -124,8 +124,8 @@ function generate_log_name(log_combi) {
 
 function queue_on_execute(resolve, reject, job)
 {
-	const script_js   = __dirname + '/../../' + app_cfg['script_dir'] + job.product_id + '/index.js';
-	const produxt_dir = __dirname + '/../../' + app_cfg['working_dir'] + job.product_id + '/';
+	const script_js   = __dirname + '/../../' + cfg.script_dir + job.product_id + '/index.js';
+	const produxt_dir = __dirname + '/../../' + cfg.working_dir + job.product_id + '/';
 	const working_dir = produxt_dir + sys.to_fs_time_string(job.time_start) + '/';
 
   sys.ensure_dir(produxt_dir);
@@ -219,10 +219,9 @@ function queue_on_execute(resolve, reject, job)
 	sys.log(job.product_id, "started");
 }
 
-console.log(app_cfg['db_dir']);
+console.log(cfg.db_dir);
 
-db.init(app_cfg['db_dir'])
-  .then(() => {
+db.init(cfg.db_dir).then(() => {
     script.init_all();
     queue.start(queue_on_execute, 2);
-  });
+});
