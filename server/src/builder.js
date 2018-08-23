@@ -103,9 +103,9 @@ io.on('connection', function(socket){
         }, 1000)
 	});
 
-	setInterval(function () {
-    update_client(Update_Jobs, socket)
-	}, 1000);
+	//setInterval(function () {
+  //  update_client(Update_Jobs, socket)
+	//}, 1000);
 });
 
 // QUEUE =====================================================
@@ -189,6 +189,7 @@ function queue_on_execute(resolve, reject, job)
             title_renamed = '';
             let log_file = working_dir + generate_log_name(log_combi);
             sys.log_file(log_file, `${line}\n`);
+            update_client(Update_Jobs, socket)
         }
     });
   });
@@ -198,6 +199,7 @@ function queue_on_execute(resolve, reject, job)
     sys.buf_to_full_lines(buf_stderr, (line) => {
         let log_file = working_dir + generate_log_name(log_combi);
         sys.log_file(log_file, '!! '+line+'\n');
+        update_client(Update_Jobs, socket)
     });
   });
 	
