@@ -4,30 +4,29 @@
 //console.log('__dirname:', __dirname);
 
 
-const fs      = require('fs');
-const kill    = require('tree-kill');
+const fs       = require('fs');
+const kill     = require('tree-kill');
+const path     = require('path');
 
-const sys     = require('./sys_util.js');
-const script  = require('./script_util.js');
-const db      = require('./builder_db_utils.js');
-const queue   = require('./queue_util.js');
+const sys      = require('./sys_util.js');
+const script   = require('./script_util.js');
+const db       = require('./builder_db_utils.js');
+const queue    = require('./queue_util.js');
+const socketio = require('socket.io');
 
-const cfg     = script.load_app_cfg();
-console.log(cfg);
+const cfg = script.load_app_cfg();
+const io  = socketio(cfg.server_port);
 
-const socket_port = cfg.server_port;
-const io          = require('socket.io')(socket_port);
-
-//normalize paths
-cfg.script_dir  = __dirname + '/../../' + cfg.script_dir;
-cfg.working_dir = __dirname + '/../../' + cfg.working_dir;
-cfg.db_dir      = __dirname + '/../../' + cfg.db_dir;
+cfg.script_dir  = path.normalize(__dirname + '/../../' + cfg.script_dir);
+cfg.working_dir = path.normalize(__dirname + '/../../' + cfg.working_dir);
+cfg.db_dir      = path.normalize(__dirname + '/../../' + cfg.db_dir);
 
 sys.ensure_dir(cfg.script_dir);
 sys.ensure_dir(cfg.working_dir);
 sys.ensure_dir(cfg.db_dir);
 
-console.log("Socket server starting on port: " + socket_port);
+console.log("config:", JSON.stringify(cfg, null, 2));
+console.log(`Socket server starting on port: ${cfg.server_port}\n`);
 
 const Update_None     =  0 // 000000
 const Update_Products =  1 // 000001
