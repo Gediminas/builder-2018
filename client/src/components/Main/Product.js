@@ -21,10 +21,15 @@ export default class extends PureComponent {
     //let comment    = this.props.product.getIn(['cfg', 'product_comment'])
     let debug        = this.props.product.getIn(['cfg', 'debug'])
 
-    let time_start_d   = toDate(time_start)
-    let time_start_t   = toTime(time_start)
-    let time_diff_t   = toHHMMSS(time_diff)
-
+    let time_start_d  = ''
+    let time_start_t  = ''
+    let time_diff_t   = ''
+    if (time_start) {
+        console.log(time_start);
+        time_start_d  = toDate(time_start)
+        time_start_t  = toTime(time_start)
+        time_diff_t   = toHHMMSS(time_diff)
+    }
     let log_link = `log/${product_id}/${time_start_d}`
 
     return (
