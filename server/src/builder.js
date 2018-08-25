@@ -136,6 +136,9 @@ function queue_on_execute(resolve, reject, job)
 	const produxt_dir = cfg.working_dir + job.product_id + '/';
 	const working_dir = produxt_dir + sys.to_fs_time_string(job.time_start) + '/';
 
+  sys.ensure_dir(produxt_dir);
+  sys.ensure_dir(working_dir);
+
   let log_combi = [];
   let log_combi_last_sub = 0;
   let buf_stdout = {buffer: ''};
@@ -189,7 +192,7 @@ function queue_on_execute(resolve, reject, job)
             title_renamed = '';
             let log_file = working_dir + generate_log_name(log_combi);
             sys.log_file(log_file, `${line}\n`);
-            update_client(Update_Jobs, socket)
+            update_client(Update_Jobs)
         }
     });
   });
@@ -199,7 +202,7 @@ function queue_on_execute(resolve, reject, job)
     sys.buf_to_full_lines(buf_stderr, (line) => {
         let log_file = working_dir + generate_log_name(log_combi);
         sys.log_file(log_file, '!! '+line+'\n');
-        update_client(Update_Jobs, socket)
+        update_client(Update_Jobs)
     });
   });
 	
