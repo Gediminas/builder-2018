@@ -216,9 +216,13 @@ function queue_on_execute(resolve, reject, job)
 		default: job.data.status = "N/A";     break;
 		}
 		db.add_history(job);
-		//io.emit('refresh_page');
-    update_client(Update_ALL)
 		sys.log(job.product_id, "finished");
+
+    //update_client(Update_ALL)
+    setTimeout(function () {
+      update_client(Update_ALL)
+    }, 100);
+
 		resolve(job);
 	});	
 	
