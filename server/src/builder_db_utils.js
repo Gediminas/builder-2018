@@ -55,9 +55,13 @@ exports.get_history = function(limit) {
 	return tb_history.chain().simplesort("$loki", true).data();
 }
 
-exports.findLast_history = function(data) {
-	//return tb_history.chain().find(data).limit(1).data();
-	//return tb_history.chain().find(data).limit(1).data()[0];
-	return tb_history.findOne(data);
+exports.findLast_history = function(query) {
+	//return tb_history.chain().find(query).limit(1).data();
+	//let res = tb_history.chain().find(query).limit(1).data()[0];
+	//let res = tb_history.findOne(query);
+  //let res = tb_history.chain().simplesort('id', false).find(query, true).data()[0];
+	let res = tb_history.chain().find(query).simplesort("$loki",  {desc: true}).limit(1).data()[0];
+  //console.log(res)
+  return res
 }
 

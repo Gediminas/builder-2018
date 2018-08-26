@@ -18,14 +18,14 @@ export function toHHMMSS(text) {
   }
 }
 
-export function toDate(time_start) {
-  //return new Date(time_start).toLocaleDateString()
-  return moment(time_start).format('YYYY-MM-DD')
+export function toDate(time) {
+  //return new Date(time).toLocaleDateString()
+  return moment(time).format('YYYY-MM-DD')
 }
 
-export function toTime(time_start) {
-  //return new Date(time_start).toLocaleTimeString()
-  return moment(time_start).format('hh:ss')
+export function toTime(time) {
+  //return new Date(time).toLocaleTimeString()
+  return moment(time).format('hh:mm')
 }
 
 export function time_to_now(time_start) {
