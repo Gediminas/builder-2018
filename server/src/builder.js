@@ -132,6 +132,8 @@ function generate_log_name(log_combi) {
 
 function queue_on_execute(resolve, reject, job)
 {
+  update_client(Update_Products | Update_Jobs); //because job was added
+
 	const script_js   = cfg.script_dir + job.product_id + '/index.js';
 	const produxt_dir = cfg.working_dir + job.product_id + '/';
 	const working_dir = produxt_dir + sys.to_fs_time_string(job.time_start) + '/';
@@ -182,8 +184,6 @@ function queue_on_execute(resolve, reject, job)
             sys.log_file(log_file_sub,  '----------\n');
         }
         else if (0 === line.indexOf('@end')) {
-            let log_file = working_dir + generate_log_name(log_combi);
-            sys.log_file(log_file, '----------\n');
             if (log_combi.length) {
                 log_combi_last_sub = log_combi.pop();
             }
@@ -219,7 +219,9 @@ function queue_on_execute(resolve, reject, job)
 		sys.log(job.product_id, "finished");
 
     //update_client(Update_ALL)
+    sys.log('child closing');
     setTimeout(function () {
+      sys.log('child update after delay');
       update_client(Update_ALL)
     }, 100);
 
