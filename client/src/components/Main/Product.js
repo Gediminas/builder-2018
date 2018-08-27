@@ -25,7 +25,6 @@ export default class extends PureComponent {
     let time_start_t  = ''
     let time_diff_t   = ''
     if (time_start) {
-        console.log(time_start);
         time_start_d  = toDate(time_start)
         time_start_t  = toTime(time_start)
         time_diff_t   = toHHMMSS(time_diff)
