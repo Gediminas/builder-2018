@@ -1,6 +1,5 @@
 "use strict";
 
-var job_counter = 0;
 var queue    = [];
 var workers  = []; 
 var g_max_workers       = undefined;
