@@ -7,11 +7,13 @@ const assert = require('assert');
 //console.log('sys::__dirname:', __dirname);
 
 exports.get_time_string = function() {
-	return new Date().toLocaleString();
+	// return new Date().toLocaleString();
+  return moment().format('YYYY-MM-DD hh:mm')
 }
 
 exports.to_time_string = function(timestamp) {
-	return new Date(timestamp).toLocaleString();
+	// return new Date(timestamp).toLocaleString();
+  return moment(timestamp).format('YYYY-MM-DD hh:mm')
 }
 
 exports.to_fs_time_string = function(timestamp) {
