@@ -7,12 +7,13 @@
 const fs       = require('fs');
 const kill     = require('tree-kill');
 const path     = require('path');
+const colors   = require('colors');
+const socketio = require('socket.io');
 
 const sys      = require('./sys_util.js');
 const script   = require('./script_util.js');
 const db       = require('./builder_db_utils.js');
 const queue    = require('./queue_util.js');
-const socketio = require('socket.io');
 
 const cfg = script.load_app_cfg();
 const io  = socketio(cfg.server_port);
@@ -69,7 +70,7 @@ let update_client = function(update_flags, client_socket) {
 }
 
 io.on('connection', function(socket){
-	sys.log("Client connected ****", socket.conn.remoteAddress);
+  sys.log(`Client connected: ${socket.conn.remoteAddress}`.bgBlue);
 
   update_client(Update_ALL, socket);
 
@@ -102,10 +103,6 @@ io.on('connection', function(socket){
 			process.exit(0);
         }, 1000)
 	});
-
-	//setInterval(function () {
-  //  update_client(Update_Jobs, socket)
-	//}, 1000);
 });
 
 // QUEUE =====================================================
@@ -207,7 +204,7 @@ function queue_on_execute(resolve, reject, job)
   });
 	
 	child.on('close', function(exitCode) {
-		console.log('closing code: ' + exitCode);
+		sys.log(`worker exit code: ${exitCode}`);
 		switch (exitCode) {
 		case 0:	 job.data.status = "OK";      break;
 		case 1:	 job.data.status = "WARNING"; break;
@@ -216,22 +213,15 @@ function queue_on_execute(resolve, reject, job)
 		default: job.data.status = "N/A";     break;
 		}
 		db.add_history(job);
+    setImmediate(() => update_client(Update_ALL));
+
 		sys.log(job.product_id, "finished");
-
-    //update_client(Update_ALL)
-    sys.log('child closing');
-    setTimeout(function () {
-      sys.log('child update after delay');
-      update_client(Update_ALL)
-    }, 100);
-
 		resolve(job);
 	});	
 	
 
 	job.data.status = "working";
 	job.data.pid    = child.pid;
-	//io.emit('refresh_page');
   update_client(Update_ALL)
 	sys.log(job.product_id, "started");
 }

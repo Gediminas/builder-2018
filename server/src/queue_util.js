@@ -25,10 +25,9 @@ function on_worker_finished(job) {
 }
 
 function process_queue() {
-	if (queue.length == 0 || workers.length >= g_max_workers) {
+	if (workers.length >= g_max_workers) {
 		return;
 	}
-	let job = undefined;
 	for (let i1 in queue) {
 		let job_tmp = queue[i1];
 		let i2;
@@ -40,17 +39,13 @@ function process_queue() {
 			}
 		}
 		if (!skip) {
-			job = queue.splice(i1, 1)[0];
-			break;
+			let job = queue.splice(i1, 1)[0];
+      job.time_start = get_time_stamp();
+      workers.push(job);
+      g_fn_worker_execute(on_worker_finished, on_worker_finished, job);
+			return;
 		}
 	}
-	if (!job) {
-		return;
-	}
-	//queue.shift();
-	job.time_start = get_time_stamp();
-	workers.push(job);
-	g_fn_worker_execute(on_worker_finished, on_worker_finished, job);
 }
 
 /////////////////////////////////////////
