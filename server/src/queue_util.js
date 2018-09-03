@@ -50,10 +50,9 @@ function process_queue() {
 
 /////////////////////////////////////////
 
-exports.start = function(fn_execute, max_workers) {
+exports.init = function(fn_execute, max_workers) {
 	g_fn_worker_execute = fn_execute;
 	g_max_workers       = max_workers ? max_workers : 1;
-	//process_queue();
 }
 
 exports.add_job = function(product_id, data) {

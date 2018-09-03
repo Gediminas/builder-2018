@@ -228,5 +228,5 @@ function queue_on_execute(resolve, reject, job)
 
 db.init(cfg.db_dir).then(() => {
     script.init_all();
-    queue.start(queue_on_execute, 2);
+    queue.init(queue_on_execute, 2);
 });
