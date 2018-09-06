@@ -131,6 +131,7 @@ function queue_on_execute(resolve, reject, job)
 {
   update_client(Update_Products | Update_Jobs); //because job was added
 
+  /*
 	const script_js   = cfg.script_dir + job.product_id + '/index.js';
 	const produxt_dir = cfg.working_dir + job.product_id + '/';
 	const working_dir = produxt_dir + sys.to_fs_time_string(job.time_start) + '/';
@@ -142,7 +143,7 @@ function queue_on_execute(resolve, reject, job)
   let log_combi_last_sub = 0;
   let buf_stdout = {buffer: ''};
   let buf_stderr = {buffer: ''};
-  
+
 	//console.log("script:",      script_js);
 	//console.log("uid:",         job.uid);
 	//console.log("working_dir:", working_dir);
@@ -150,7 +151,7 @@ function queue_on_execute(resolve, reject, job)
 	//spawn
 	const child = execFile('node', [script_js], { cwd: working_dir });
   var title_renamed = '';
-	
+
   child.stdout.on('data', function(data) {
     buf_stdout.buffer += data;
     sys.buf_to_full_lines(buf_stdout, (line) => {
@@ -193,7 +194,7 @@ function queue_on_execute(resolve, reject, job)
         }
     });
   });
-	
+
   child.stderr.on('data', function(data) {
     buf_stderr.buffer += data;
     sys.buf_to_full_lines(buf_stderr, (line) => {
@@ -202,7 +203,7 @@ function queue_on_execute(resolve, reject, job)
         update_client(Update_Jobs)
     });
   });
-	
+
 	child.on('close', function(exitCode) {
 		sys.log(`worker exit code: ${exitCode}`);
 		switch (exitCode) {
@@ -217,13 +218,15 @@ function queue_on_execute(resolve, reject, job)
 
 		sys.log(job.product_id, "finished");
 		resolve(job);
-	});	
-	
+	});
+
 
 	job.data.status = "working";
 	job.data.pid    = child.pid;
   update_client(Update_ALL)
 	sys.log(job.product_id, "started");
+  */
+  resolve(job);
 }
 
 db.init(cfg.db_dir).then(() => {
