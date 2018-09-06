@@ -226,7 +226,9 @@ function queue_on_execute(resolve, reject, job)
   update_client(Update_ALL)
 	sys.log(job.product_id, "started");
   */
-  update_client(Update_ALL)
+  job.data.status = "OK";
+  db.add_history(job);
+  setImmediate(() => update_client(Update_ALL));
   resolve(job);
 }
 
