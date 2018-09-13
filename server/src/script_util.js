@@ -44,7 +44,6 @@ exports.add_job = function(product_id, comment) {
 	let data = {
 		product_name:   cfg.product_name,
 		comment:        comment,
-		status:         "queued",
 		pid:            0,
 		prev_time_diff: last_job ? last_job.time_diff : undefined
 	};

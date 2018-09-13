@@ -101,7 +101,7 @@ io.on('connection', function(socket){
 		setTimeout(function () {
 			sys.log("Exit.");
 			process.exit(0);
-        }, 1000)
+        }, 100)
 	});
 });
 

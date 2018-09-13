@@ -2,7 +2,7 @@
 
 var queue    = [];
 var workers  = []; 
-var g_max_workers       = 2;//undefined;
+var g_max_workers       = undefined;
 var g_fn_worker_execute = undefined;
 
 function get_time_stamp() {
@@ -10,6 +10,7 @@ function get_time_stamp() {
 }
 
 exports.init = function(fn_execute, max_workers) {
+    g_max_workers = 2;
 }
 
 exports.add_job = function(product_id, job_data) {
@@ -18,6 +19,7 @@ exports.add_job = function(product_id, job_data) {
 		    uid:        timestamp,
 		    product_id: product_id,
 		    time_add:   timestamp,
+		    status:     "queued",
 		    data:       job_data
 	  };
     queue.push(new_job);
@@ -58,7 +60,7 @@ function process_queue() {
 		    if (!skip) {
 			      let job = queue.splice(i1, 1)[0];
             job.time_start = get_time_stamp();
-	          job.data.status = "working";
+	          job.status = "working";
             workers.push(job);
     //         g_fn_worker_execute(on_worker_finished, on_worker_finished, job);
 			      return;
