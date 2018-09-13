@@ -80,18 +80,18 @@ io.on('connection', function(socket){
 	});
 
 	socket.on('job_kill', function(data){
-		if (data.pid && data.pid > 0) {
-			kill(data.pid, 'SIGTERM', function(){ //SIGKILL
-				let pid = parseInt(data.pid);
-				let job = db.findLast_history({"data.pid": pid})
-				job.data.status = "HALT";
-				sys.log("KILLED", data, pid);
-        update_client(Update_ALL, socket)
-			});
-		} else {
-			queue.remove_job(data.job_uid);
-      update_client(Update_Products | Update_Jobs, socket)
-		}
+		// if (data.pid && data.pid > 0) {
+		// 	kill(data.pid, 'SIGTERM', function(){ //SIGKILL
+		// 		let pid = parseInt(data.pid);
+		// 		let job = db.findLast_history({"data.pid": pid})
+		// 		job.data.status = "HALT";
+		// 		sys.log("KILLED", data, pid);
+    //     update_client(Update_ALL, socket)
+		// 	});
+		// } else {
+		queue.remove_job(data.job_uid);
+    update_client(Update_Products | Update_Jobs, socket)
+		// }
 	});
 
 	socket.on('sys_shutdown', function(data){
