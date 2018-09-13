@@ -1,5 +1,8 @@
 "use strict";
 
+
+const should = require('should');
+
 var queue    = [];
 var workers  = []; 
 var g_max_workers       = undefined;
@@ -22,6 +25,7 @@ exports.add_job = function(product_id, job_data) {
 		    status:     "queued",
 		    data:       job_data
 	  };
+    new_job.data.status = new_job.status;
     queue.push(new_job);
 	  setImmediate(() => process_queue());
 }
@@ -59,6 +63,7 @@ function process_queue() {
 		    }
 		    if (!skip) {
 			      let job = queue.splice(i1, 1)[0];
+            job.should.equal(job_tmp);
             job.time_start = get_time_stamp();
 	          job.status = "working";
             workers.push(job);
