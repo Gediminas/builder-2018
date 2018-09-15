@@ -14,15 +14,19 @@ const path     = require('path');
 var cron_jobs = [];
 
 exports.load_app_cfg = function(product_id) {
-	return JSON.parse(fs.readFileSync(__dirname + "/../../_cfg/config.json", 'utf8'));
+	let app_cfg = JSON.parse(fs.readFileSync(__dirname + "/../../_cfg/config.json", 'utf8'));
+  app_cfg.script_dir  = path.normalize(__dirname + '/../../' + app_cfg.script_dir);
+  app_cfg.working_dir = path.normalize(__dirname + '/../../' + app_cfg.working_dir);
+  app_cfg.db_dir      = path.normalize(__dirname + '/../../' + app_cfg.db_dir);
+  return app_cfg;
 }
 
 exports.load_cfg = function(product_id) {
 	//sys.log(product_id);
 	let config = exports.load_app_cfg();
 	let def = JSON.parse(fs.readFileSync(__dirname + "/../../_cfg/script_defaults.json", 'utf8'));
-	let cfg = JSON.parse(fs.readFileSync(__dirname + "/../../" + config['script_dir'] + product_id + '/script.cfg', 'utf8'));
-	let srv = JSON.parse(fs.readFileSync(__dirname + "/../../" + config['script_dir'] + product_id + '/server.cfg', 'utf8'));
+	let cfg = JSON.parse(fs.readFileSync(config['script_dir'] + product_id + '/script.cfg', 'utf8'));
+	let srv = JSON.parse(fs.readFileSync(config['script_dir'] + product_id + '/server.cfg', 'utf8'));
 	//for(var key in json_svr) json_cfg[key]=json_svr[key]; //json merge
 	let mrg = merge.recursive(def, cfg, srv);
 	if (!mrg.product_name) {
@@ -47,7 +51,29 @@ exports.add_job = function(product_id, comment) {
 		pid:            0,
 		prev_time_diff: last_job ? last_job.time_diff : undefined
 	};
-	queue.add_job(product_id, data);
+
+
+
+	  let job = queue.add_job(product_id, data);
+
+    //FIXME: Should be moved to OnJobStarting() or similar
+    let app_cfg     = exports.load_app_cfg();
+    let script_js   = app_cfg.script_dir + product_id + '/index.js';
+    let product_dir = app_cfg.working_dir + product_id + '/';
+    console.log(product_dir);
+    let working_dir = product_dir + sys.to_fs_time_string(job.time_add) + '/'; //FIXME: job.time_start
+
+    sys.ensure_dir(product_dir);
+    sys.ensure_dir(working_dir);
+
+    let job_exec = {
+        file     : 'node',
+        args     : [script_js],
+        options  : { cwd: working_dir },
+        callback : false,
+    };
+    job.exec = job_exec;
+    //END FIXME
 }
 
 exports.get_job_by_product = function(product_id) {
@@ -83,7 +109,7 @@ function get_scripts() {
 	let config = exports.load_app_cfg();
 	return new Promise(function(resolve, reject) {
     //console.log("reading from: " + __dirname + '/../../' + config['script_dir']);
-    glob("*/index.*", {'cwd': __dirname + '/../../' + config['script_dir'], 'matchBase': 1 }, (err, files) => {
+    glob("*/index.*", {'cwd': config['script_dir'], 'matchBase': 1 }, (err, files) => {
       if (err) {
         reject(err);
       }

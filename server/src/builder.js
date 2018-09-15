@@ -15,19 +15,16 @@ const script   = require('./script_util.js');
 const db       = require('./builder_db_utils.js');
 const queue    = require('./queue_util.js');
 
-const cfg = script.load_app_cfg();
-const io  = socketio(cfg.server_port);
+const app_cfg = script.load_app_cfg();
+const io  = socketio(app_cfg.server_port);
 
-cfg.script_dir  = path.normalize(__dirname + '/../../' + cfg.script_dir);
-cfg.working_dir = path.normalize(__dirname + '/../../' + cfg.working_dir);
-cfg.db_dir      = path.normalize(__dirname + '/../../' + cfg.db_dir);
 
-sys.ensure_dir(cfg.script_dir);
-sys.ensure_dir(cfg.working_dir);
-sys.ensure_dir(cfg.db_dir);
+sys.ensure_dir(app_cfg.script_dir);
+sys.ensure_dir(app_cfg.working_dir);
+sys.ensure_dir(app_cfg.db_dir);
 
-console.log("config:", JSON.stringify(cfg, null, 2));
-console.log(`Socket server starting on port: ${cfg.server_port}\n`);
+console.log("config:", JSON.stringify(app_cfg, null, 2));
+console.log(`Socket server starting on port: ${app_cfg.server_port}\n`);
 
 const Update_None     =  0 // 000000
 const Update_Products =  1 // 000001
@@ -55,7 +52,7 @@ let update_client = function(update_flags, client_socket) {
   }
   var state = {}
   if ((update_flags & Update_History) != 0) {
-    var show_history_limit = cfg.show_history_limit;
+    var show_history_limit = app_cfg.show_history_limit;
     var hjobs = db.get_history(show_history_limit);
     state['hjobs'] = hjobs;
   }
@@ -132,8 +129,8 @@ function queue_on_execute(resolve, reject, job)
   update_client(Update_Products | Update_Jobs); //because job was added
 
   /*
-	const script_js   = cfg.script_dir + job.product_id + '/index.js';
-	const produxt_dir = cfg.working_dir + job.product_id + '/';
+	const script_js   = app_cfg.script_dir + job.product_id + '/index.js';
+	const produxt_dir = app_cfg.working_dir + job.product_id + '/';
 	const working_dir = produxt_dir + sys.to_fs_time_string(job.time_start) + '/';
 
   sys.ensure_dir(produxt_dir);
@@ -232,7 +229,7 @@ function queue_on_execute(resolve, reject, job)
   resolve(job);
 }
 
-db.init(cfg.db_dir).then(() => {
+db.init(app_cfg.db_dir).then(() => {
     script.init_all();
     queue.init(queue_on_execute, 2);
 });
