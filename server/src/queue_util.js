@@ -91,7 +91,7 @@ function _execute_job(job) {
     switch (job.exec.method) {
     case 'execFile':
         console.log('started execFile...'.yellow);
-        const child = execFile(job.exec.file, job.exec.args, job.exec.options);//, job.exec.callback
+        const child = execFile(job.exec.file, job.exec.args, job.exec.options, job.exec.callback);
         child.stdout.on('data', function(data) {
             console.log('> ', data.green);
         })

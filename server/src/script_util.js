@@ -71,7 +71,7 @@ exports.add_job = function(product_id, comment) {
         file     : 'node',
         args     : [script_js],
         options  : { cwd: working_dir },
-        callback : false,
+        callback : null,
     };
     job.exec = job_exec;
     //END FIXME
