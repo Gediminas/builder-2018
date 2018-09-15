@@ -67,6 +67,7 @@ exports.add_job = function(product_id, comment) {
     sys.ensure_dir(working_dir);
 
     let job_exec = {
+        method   : 'execFile',
         file     : 'node',
         args     : [script_js],
         options  : { cwd: working_dir },

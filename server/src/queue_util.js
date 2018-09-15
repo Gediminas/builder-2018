@@ -1,6 +1,7 @@
 "use strict";
 
 const should = require('should');
+const execFile = require('child_process').execFile;
 
 var waiting = [];
 var active  = [];
@@ -46,7 +47,10 @@ exports.remove_job = function(job_uid) {
 	  for (let i in active) {
 		    if (active[i].uid == job_uid) {
             console.log('Kill, E=1, TODO');
+            //FIXME: Remove after Kill implementation
 			      active.splice(i, 1);//FIXME: remove after kill implemented
+	          setImmediate(() => process_queue());
+            //END FIXME
 			      return;
 		    }
 	  }
@@ -84,7 +88,39 @@ function process_queue() {
 
 function _execute_job(job) {
   console.log('job', job);
-  // const child = execFile(job.exec);
+    switch (job.exec.method) {
+    case 'execFile':
+        console.log('started execFile...'.yellow);
+        const child = execFile(job.exec.file, job.exec.args, job.exec.options);//, job.exec.callback
+        child.stdout.on('data', function(data) {
+            console.log('> ', data.green);
+        })
+        child.stderr.on('data', function(data) {
+            console.log('> ', data.red);
+        })
+        child.on('close', function(exitCode) {
+            console.log(`worker exit code: ${exitCode}`.yellow);
+            /*
+            switch (exitCode) {
+            case 0:	 job.data.status = "OK";      break;
+            case 1:	 job.data.status = "WARNING"; break;
+            case 2:	 job.data.status = "ERROR";   break;
+            case 3:	 job.data.status = "HALT";    break;
+            default: job.data.status = "N/A";     break;
+            }
+            db.add_history(job);
+            setImmediate(() => update_client(Update_ALL));
+
+            sys.log(job.product_id, "finished");
+            */
+            //resolve(job);
+        });
+        break;
+    default:
+        console.error(`unknown method ${job.method}`.red);
+        //reject(job);
+        break;
+    }
 }
 
 /*
