@@ -5,6 +5,6 @@
   "show_history_limit": "5",
   "script_dir":         "_scripts/",
   "working_dir":        "_working/",
-  "db_dir":             "_working/db/"
+  "db_dir":             "_working/"
 }
 
