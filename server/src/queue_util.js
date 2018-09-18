@@ -15,6 +15,7 @@ function get_time_stamp() {
 exports.init = function(fn_execute, max_active) {
     g_max_active = 2;
     //OnInit
+    console.log('event.OnQueueInit');
 }
 
 exports.add_job = function(product_id, job_data) {
@@ -31,7 +32,7 @@ exports.add_job = function(product_id, job_data) {
 		    data:       job_data,
 	  };
     waiting.push(new_job);
-    console.log('event.OnJobAdded');
+    console.log('event.OnQueueJobAdded');
 	  setImmediate(() => process_queue());
     return new_job;
 }
@@ -40,7 +41,7 @@ exports.remove_job = function(job_uid) {
 	  for (let i in waiting) {
 		    if (waiting[i].uid == job_uid) {
 			      waiting.splice(i, 1);
-            console.log('event.OnJobRemoved');
+            console.log('event.OnQueueJobRemoved');
 			      return;
 		    }
 	  }
@@ -79,7 +80,7 @@ function process_queue() {
         job.time_start = get_time_stamp();
         job.status = "starting";
         active.push(job);
-        console.log('event.OnJobStarting');
+        console.log('event.OnQueueJobStarting');
         //g_fn_worker_execute(on_worker_finished, on_worker_finished, job);
 	      setImmediate(() => _execute_job(job));
         return;
@@ -114,6 +115,18 @@ function _execute_job(job) {
             sys.log(job.product_id, "finished");
             */
             //resolve(job);
+
+            //FIXME: Remove later
+            let job_uid = job.uid;
+	          for (let i in active) {
+		            if (active[i].uid == job_uid) {
+			              active.splice(i, 1);//FIXME: remove after kill implemented
+                    console.log('event.OnQueueJobFinished');
+	                  setImmediate(() => process_queue());
+			              return;
+		            }
+	          }
+            //END FIXME
         });
         break;
     default:
