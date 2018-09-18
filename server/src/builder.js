@@ -243,11 +243,13 @@ db.init(app_cfg.db_dir).then(() => {
     // })
 
 
+    console.log('yellow test'.yellow);
     queue.on('init', (data) => {
-        console.log(`init: "${data}"`);
+        console.log(`>>>>>>init: "${data.test}"`.yellow);
     });
 
-    // queue.init(queue_on_execute, 2);
+    // queue.subscribe1(this);
+    queue.init(queue_on_execute, 2);
 });
 
 // emitter.listeners(eventName)

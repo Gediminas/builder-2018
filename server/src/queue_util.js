@@ -101,9 +101,10 @@ class Queue extends EventEmitter {
     constructor() {
         super();
     }
-    // subscribe: function(observer) {
-    //     observers.push(observer);
-    // }
+
+    subscribe1(observer) {
+        // this.subscribe(observer);
+    }
 
     // unsubscribe: function(observer) {
     //     observers = observers.filter((obs) => { return obs != observer});
