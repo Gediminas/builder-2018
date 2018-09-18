@@ -3,7 +3,6 @@
 const should = require('should');
 const execFile = require('child_process').execFile;
 
-let observers = [];
 let waiting = [];
 let active  = [];
 let g_max_active       = undefined;
@@ -102,12 +101,70 @@ class Queue extends EventEmitter {
     constructor() {
         super();
     }
-    test() {
-        this.emit('test', {test: 'test'});
+    // subscribe: function(observer) {
+    //     observers.push(observer);
+    // }
+
+    // unsubscribe: function(observer) {
+    //     observers = observers.filter((obs) => { return obs != observer});
+    // }
+
+    init(fn_execute, max_active) {
+        g_max_active = 2;
+        console.log('event.OnQueueInit');
+        this.emit('init', { time: new Date() })
     }
+
+    add_job(product_id, job_data) {
+        let timestamp = get_time_stamp();
+        let new_job = {
+            uid:        timestamp,
+            product_id: product_id,
+            status:     "queued",
+            time_add:   timestamp,
+            time_start: 0,
+            time_end:   0,
+            time_diff:  0,
+            exec:       {},
+            data:       job_data,
+        };
+        waiting.push(new_job);
+        console.log('event.OnQueueJobAdded');
+        setImmediate(() => process_queue());
+        return new_job;
+    }
+
+    remove_job(job_uid) {
+        for (let i in waiting) {
+            if (waiting[i].uid == job_uid) {
+                waiting.splice(i, 1);
+                console.log('event.OnQueueJobRemoved');
+                return;
+            }
+        }
+        for (let i in active) {
+            if (active[i].uid == job_uid) {
+                console.log('Kill, E=1, TODO');
+                //FIXME: Remove after Kill implementation
+                active.splice(i, 1);//FIXME: remove after kill implemented
+                setImmediate(() => process_queue());
+                //END FIXME
+                return;
+            }
+        }
+
+        throw "INTERNAL ERROR: 1750";
+    }
+
+
+    get_active() {
+        return active;
+    }
+
     get_jobs() {
         return active.concat(waiting);
     }
+
     get_active() {
         return active;
     }

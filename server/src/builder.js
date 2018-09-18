@@ -243,13 +243,9 @@ db.init(app_cfg.db_dir).then(() => {
     // })
 
 
-    queue.on('test', (data) => {
-        console.log(`Received data: "${data}"`);
+    queue.on('init', (data) => {
+        console.log(`init: "${data}"`);
     });
-
-    queue.test();
-    queue.test();
-    queue.test();
 
     // queue.init(queue_on_execute, 2);
 });
