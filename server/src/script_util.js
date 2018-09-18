@@ -2,7 +2,6 @@
 
 const CronJob  = require('cron').CronJob;
 const fs       = require('fs');
-const queue    = require('./queue_util.js')();
 //const execFile = require('child_process').execFile;
 const glob     = require("glob")
 const sys      = require('./sys_util.js');
@@ -10,6 +9,8 @@ const db       = require('./builder_db_utils.js');
 const merge    = require('merge');
 const path     = require('path');
 
+const Queue    = require('./queue_util.js');
+const queue    = new Queue();
 
 var cron_jobs = [];
 

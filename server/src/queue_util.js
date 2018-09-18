@@ -90,6 +90,36 @@ console.log('job', job);
     }
 }
 
+
+
+
+
+
+
+const EventEmitter = require('events');
+
+class Queue extends EventEmitter {
+    constructor() {
+        super();
+    }
+    test() {
+        this.emit('test', {test: 'test'});
+    }
+    get_jobs() {
+        return active.concat(waiting);
+    }
+    get_active() {
+        return active;
+    }
+}
+
+// let queue = new Queue();
+module.exports = Queue
+
+
+
+/*
+
 var queue = function Queue() {
     // subscribe: function(observer) {
     //     observers.push(observer);
@@ -98,7 +128,6 @@ var queue = function Queue() {
     // unsubscribe: function(observer) {
     //     observers = observers.filter((obs) => { return obs != observer});
     // }
-/*
 
     init: (fn_execute, max_active) => {
         g_max_active = 2;
@@ -151,7 +180,6 @@ var queue = function Queue() {
     get_active: () => {
     return active;
     }
-    */
 
     this.get_jobs = function() {
         return active.concat(waiting);
@@ -160,7 +188,9 @@ var queue = function Queue() {
 
 var util = require('util')
 util.inherits(queue, require('events').EventEmitter)
-
 module.exports = queue
+
+
+*/
 
 

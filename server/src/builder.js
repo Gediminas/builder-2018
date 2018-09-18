@@ -13,7 +13,8 @@ const socketio = require('socket.io');
 const sys      = require('./sys_util.js');
 const script   = require('./script_util.js');
 const db       = require('./builder_db_utils.js');
-const queue    = new require('./queue_util.js')();
+const Queue    = require('./queue_util.js');
+const queue    = new Queue();
 
 const app_cfg = script.load_app_cfg();
 const io  = socketio(app_cfg.server_port);
@@ -230,7 +231,7 @@ function queue_on_execute(resolve, reject, job)
 }
 
 db.init(app_cfg.db_dir).then(() => {
-    script.init_all();
+    // script.init_all();
 
     // queue.subscribe(script);
     // queue.subscribe(this);
@@ -241,7 +242,16 @@ db.init(app_cfg.db_dir).then(() => {
     //     queue.removeAllListeners()
     // })
 
-    queue.init(queue_on_execute, 2);
+
+    queue.on('test', (data) => {
+        console.log(`Received data: "${data}"`);
+    });
+
+    queue.test();
+    queue.test();
+    queue.test();
+
+    // queue.init(queue_on_execute, 2);
 });
 
 // emitter.listeners(eventName)
