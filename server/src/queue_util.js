@@ -3,76 +3,29 @@
 const should = require('should');
 const execFile = require('child_process').execFile;
 
-var waiting = [];
-var active  = [];
-var g_max_active       = undefined;
-var g_fn_worker_execute = undefined;
+let observers = [];
+let waiting = [];
+let active  = [];
+let g_max_active       = undefined;
+let g_fn_worker_execute = undefined;
 
 function get_time_stamp() {
 	return new Date().getTime();//toLocaleString();
 }
-
-exports.init = function(fn_execute, max_active) {
-    g_max_active = 2;
-    //OnInit
-    console.log('event.OnQueueInit');
-}
-
-exports.add_job = function(product_id, job_data) {
-	  let timestamp = get_time_stamp();
-	  let new_job = {
-		    uid:        timestamp,
-		    product_id: product_id,
-		    status:     "queued",
-		    time_add:   timestamp,
-		    time_start: 0,
-		    time_end:   0,
-        time_diff:  0,
-        exec:       {},
-		    data:       job_data,
-	  };
-    waiting.push(new_job);
-    console.log('event.OnQueueJobAdded');
-	  setImmediate(() => process_queue());
-    return new_job;
-}
-
-exports.remove_job = function(job_uid) {
-	  for (let i in waiting) {
-		    if (waiting[i].uid == job_uid) {
-			      waiting.splice(i, 1);
-            console.log('event.OnQueueJobRemoved');
-			      return;
-		    }
-	  }
-	  for (let i in active) {
-		    if (active[i].uid == job_uid) {
-            console.log('Kill, E=1, TODO');
-            //FIXME: Remove after Kill implementation
-			      active.splice(i, 1);//FIXME: remove after kill implemented
-	          setImmediate(() => process_queue());
-            //END FIXME
-			      return;
-		    }
-	  }
-
-	  throw "INTERNAL ERROR: 1750";
-}
-
 function process_queue() {
-	  if (active.length >= g_max_active) {
-		    return;
-	  }
-	  for (let i1 in waiting) {
-		    let job_tmp = waiting[i1];
-		    let skip = false;
-		    for (let active_job_tmp of active) {
-			      if (active_job_tmp.product_id == job_tmp.product_id) {
-				        skip = true;
-				        break; //do not alow 2 instances of the same product
-			      }
-		    }
-		    if (skip) {
+    if (active.length >= g_max_active) {
+        return;
+    }
+    for (let i1 in waiting) {
+        let job_tmp = waiting[i1];
+        let skip = false;
+        for (let active_job_tmp of active) {
+            if (active_job_tmp.product_id == job_tmp.product_id) {
+                skip = true;
+                break; //do not alow 2 instances of the same product
+            }
+        }
+        if (skip) {
             continue;
         }
         let job = waiting.splice(i1, 1)[0];
@@ -82,13 +35,13 @@ function process_queue() {
         active.push(job);
         console.log('event.OnQueueJobStarting');
         //g_fn_worker_execute(on_worker_finished, on_worker_finished, job);
-	      setImmediate(() => _execute_job(job));
+        setImmediate(() => _execute_job(job));
         return;
-	  }
+    }
 }
 
 function _execute_job(job) {
-  console.log('job', job);
+console.log('job', job);
     switch (job.exec.method) {
     case 'execFile':
         console.log('started execFile...'.yellow);
@@ -101,32 +54,33 @@ function _execute_job(job) {
         })
         child.on('close', function(exitCode) {
             console.log(`worker exit code: ${exitCode}`.yellow);
-            /*
-            switch (exitCode) {
-            case 0:	 job.data.status = "OK";      break;
-            case 1:	 job.data.status = "WARNING"; break;
-            case 2:	 job.data.status = "ERROR";   break;
-            case 3:	 job.data.status = "HALT";    break;
-            default: job.data.status = "N/A";     break;
-            }
-            db.add_history(job);
-            setImmediate(() => update_client(Update_ALL));
-
-            sys.log(job.product_id, "finished");
-            */
-            //resolve(job);
 
             //FIXME: Remove later
             let job_uid = job.uid;
-	          for (let i in active) {
-		            if (active[i].uid == job_uid) {
-			              active.splice(i, 1);//FIXME: remove after kill implemented
-                    console.log('event.OnQueueJobFinished');
-	                  setImmediate(() => process_queue());
-			              return;
-		            }
-	          }
+            for (let i in active) {
+                if (active[i].uid == job_uid) {
+                    active.splice(i, 1);//FIXME: remove after kill implemented
+
+                    switch (exitCode) {
+                    case 0:	 job.data.status = "OK";      break;
+                    case 1:	 job.data.status = "WARNING"; break;
+                    case 2:	 job.data.status = "ERROR";   break;
+                    case 3:	 job.data.status = "HALT";    break;
+                    default: job.data.status = "N/A";     break;
+                    }
+
+                    console.log('event.OnQueueJobFinished', job);
+                        // db.add_history(job);
+                        // setImmediate(() => update_client(Update_ALL));
+                        // sys.log(job.product_id, "finished");
+
+                    setImmediate(() => process_queue());
+                    return;
+                }
+            }
             //END FIXME
+            //resolve(job);
+
         });
         break;
     default:
@@ -136,57 +90,77 @@ function _execute_job(job) {
     }
 }
 
+var queue = function Queue() {
+    // subscribe: function(observer) {
+    //     observers.push(observer);
+    // }
+
+    // unsubscribe: function(observer) {
+    //     observers = observers.filter((obs) => { return obs != observer});
+    // }
 /*
-function on_worker_finished(job) {
-	job.time_end  = get_time_stamp();
-	job.time_diff = job.time_end - job.time_start;
-	for (let i in active) {
-		if (active[i].uid == job.uid) {
-			active.splice(i, 1);
-			setTimeout(function () {
-				process_queue();
-			}, 0);
-			return;
-		}
-	}
-	throw "INTERNAL ERROR: 1749";
+
+    init: (fn_execute, max_active) => {
+        g_max_active = 2;
+        console.log('event.OnQueueInit');
+        this.emit('init', { time: new Date() })
+    }
+
+    add_job: (product_id, job_data) => {
+        let timestamp = get_time_stamp();
+        let new_job = {
+            uid:        timestamp,
+            product_id: product_id,
+            status:     "queued",
+            time_add:   timestamp,
+            time_start: 0,
+            time_end:   0,
+            time_diff:  0,
+            exec:       {},
+            data:       job_data,
+        };
+        waiting.push(new_job);
+        console.log('event.OnQueueJobAdded');
+        setImmediate(() => process_queue());
+        return new_job;
+    }
+
+    remove_job: (job_uid) => {
+        for (let i in waiting) {
+            if (waiting[i].uid == job_uid) {
+                waiting.splice(i, 1);
+                console.log('event.OnQueueJobRemoved');
+                return;
+            }
+        }
+        for (let i in active) {
+            if (active[i].uid == job_uid) {
+                console.log('Kill, E=1, TODO');
+                //FIXME: Remove after Kill implementation
+                active.splice(i, 1);//FIXME: remove after kill implemented
+                setImmediate(() => process_queue());
+                //END FIXME
+                return;
+            }
+        }
+
+        throw "INTERNAL ERROR: 1750";
+    }
+
+
+    get_active: () => {
+    return active;
+    }
+    */
+
+    this.get_jobs = function() {
+        return active.concat(waiting);
+    }
 }
 
-/////////////////////////////////////////
+var util = require('util')
+util.inherits(queue, require('events').EventEmitter)
 
-exports.init = function(fn_execute, max_active) {
-	g_fn_worker_execute = fn_execute;
-	g_max_active       = max_active ? max_active : 1;
-}
+module.exports = queue
 
-exports.add_job = function(product_id, data) {
-	let timestamp = get_time_stamp();
-	var job = waiting.push({
-		uid:        timestamp,
-		product_id: product_id,
-		time_add:   timestamp,
-		data:       data
-	});
-	setTimeout(function () {
-		process_queue();
-	}, 0);
-}
 
-exports.remove_job = function(job_uid) {
-	for (let i in waiting) {
-		if (waiting[i].uid == job_uid) {
-			waiting.splice(i, 1);
-			return;
-		}
-	}
-	throw "INTERNAL ERROR: 1750";
-}
-*/
-
-exports.get_active = function() {
-	return active;
-}
-
-exports.get_jobs = function() {
-	return active.concat(waiting);
-}

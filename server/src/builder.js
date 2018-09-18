@@ -13,7 +13,7 @@ const socketio = require('socket.io');
 const sys      = require('./sys_util.js');
 const script   = require('./script_util.js');
 const db       = require('./builder_db_utils.js');
-const queue    = require('./queue_util.js');
+const queue    = new require('./queue_util.js')();
 
 const app_cfg = script.load_app_cfg();
 const io  = socketio(app_cfg.server_port);
@@ -231,5 +231,21 @@ function queue_on_execute(resolve, reject, job)
 
 db.init(app_cfg.db_dir).then(() => {
     script.init_all();
+
+    // queue.subscribe(script);
+    // queue.subscribe(this);
+
+
+    // queue.on('done', function(details){
+    //     console.log('Queue init at ', details.time)
+    //     queue.removeAllListeners()
+    // })
+
     queue.init(queue_on_execute, 2);
 });
+
+// emitter.listeners(eventName)
+// emitter.on(eventName, listener)
+// emitter.once(eventName, listener)
+// emitter.removeListener(eventName, listener)
+
