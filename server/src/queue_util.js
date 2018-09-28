@@ -11,6 +11,7 @@ let g_fn_worker_execute = undefined;
 function get_time_stamp() {
 	return new Date().getTime();//toLocaleString();
 }
+
 function process_queue() {
     if (active.length >= g_max_active) {
         return;
@@ -40,7 +41,7 @@ function process_queue() {
 }
 
 function _execute_job(job) {
-console.log('job', job);
+    console.log('job', job);
     switch (job.exec.method) {
     case 'execFile':
         console.log('started execFile...'.yellow);
