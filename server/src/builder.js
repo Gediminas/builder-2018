@@ -80,18 +80,19 @@ io.on('connection', function(socket){
 	});
 
 	socket.on('job_kill', function(data){
-		// if (data.pid && data.pid > 0) {
-		// 	kill(data.pid, 'SIGTERM', function(){ //SIGKILL
-		// 		let pid = parseInt(data.pid);
-		// 		let job = db.findLast_history({"data.pid": pid})
-		// 		job.data.status = "HALT";
-		// 		sys.log("KILLED", data, pid);
-    //     update_client(Update_ALL, socket)
-		// 	});
-		// } else {
-		queue.remove_job(data.job_uid);
-    update_client(Update_Products | Update_Jobs, socket)
-		// }
+      console.log(`kill pid ${data.pid}`);
+		if (data.pid && data.pid > 0) {
+			kill(data.pid, 'SIGTERM', function(){ //SIGKILL
+				let pid = parseInt(data.pid);
+				let job = db.findLast_history({"data.pid": pid})
+				//job.data.status = "HALT";
+				sys.log("KILLED", data, pid);
+        update_client(Update_ALL, socket)
+			});
+		} else {
+        queue.remove_job(data.job_uid);
+        update_client(Update_Products | Update_Jobs, socket)
+		}
 	});
 
 	socket.on('sys_shutdown', function(data){
@@ -199,6 +200,7 @@ db.init(app_cfg.db_dir).then(() => {
     queue.on('OnQueueJobStarted', (data) => {
 	      // sys.log(job.product_id, "started");
         console.log(`Started: "${data.job.product_id}, pid=${data.job.exec.pid}"`.bgGreen);
+        data.job.data.pid = data.job.exec.pid;
     });
 
     queue.on('OnQueueJobLog', (data) => {
