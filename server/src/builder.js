@@ -243,23 +243,39 @@ db.init(app_cfg.db_dir).then(() => {
 
 
     queue.on('OnQueueInit', (data) => {
-        console.log(`builder.on.OnQueueJobInit: "${data.time}"`.bgMagenta);
+        console.log(`Init: "${data.time}"`.bgMagenta);
     });
 
     queue.on('OnQueueJobStarting', (data) => {
-        console.log(`builder.on.OnQueueJobStarting: "${data.job}"`.bgMagenta);
+        console.log(`Starting: "${data.job.product_id}"`.bgMagenta);
     });
 
     queue.on('OnQueueJobAdded', (data) => {
-        console.log(`builder.on.OnQueueJobAdded: "${data.job}"`.bgMagenta);
+        console.log(`Added: "${data.job.product_id}"`.bgMagenta);
     });
 
     queue.on('OnQueueJobRemoved', (data) => {
-        console.log(`builder.on.OnQueueJobRemoved: "${data.job}"`.bgMagenta);
+        console.log(`Removed: "${data.job.product_id}"`.bgMagenta);
+    });
+
+    queue.on('OnQueueJobKilling', (data) => {
+        console.log(`Killing: "${data.job.product_id}"`.bgMagenta);
+    });
+
+    queue.on('OnQueueJobStarted', (data) => {
+        console.log(`Started: "${data.job.product_id}"`.bgMagenta);
+    });
+
+    queue.on('OnQueueJobLog', (data) => {
+        console.log('> ', data.text.green);
+    });
+
+    queue.on('OnQueueJobError', (data) => {
+        console.log('> ', data.text.red);
     });
 
     queue.on('OnQueueJobFinished', (data) => {
-        console.log(`builder.on.OnQueueJobFinished: "${data.job}"`.bgMagenta);
+        console.log(`Finished: "${data.job.product_id}"`.bgMagenta);
     });
 
 

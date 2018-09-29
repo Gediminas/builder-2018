@@ -15,7 +15,7 @@ function get_time_stamp() {
 }
 
 function _emit(emiter, evt, data) {
-    console.log(`queue.emit.${evt}`.bgCyan);
+    // console.log(`queue.emit.${evt}`.bgCyan);
     emiter.emit(evt, data)
 }
 
@@ -40,7 +40,7 @@ function process_queue(emiter) {
         job.time_start = get_time_stamp();
         job.status = "starting";
         active.push(job);
-        _emit(emiter, 'OnQueueJobStarting', job);
+        _emit(emiter, 'OnQueueJobStarting', { job: job });
         setImmediate(() => _execute_job(emiter, job));
         return;
     }
@@ -51,11 +51,12 @@ function _execute_job(emiter, job) {
     case 'execFile':
         console.log('started execFile...'.bgGreen);
         const child = execFile(job.exec.file, job.exec.args, job.exec.options, job.exec.callback);
+        _emit(emiter, 'OnQueueJobStarted', { job: job })
         child.stdout.on('data', function(data) {
-            console.log('> ', data.green);
+            _emit(emiter, 'OnQueueJobLog', { text: data })
         })
         child.stderr.on('data', function(data) {
-            console.log('> ', data.red);
+            _emit(emiter, 'OnQueueJobError', { text: data })
         })
         child.on('close', function(exitCode) {
             console.log(`worker exit code: ${exitCode}`.bgGreen);
@@ -74,13 +75,11 @@ function _execute_job(emiter, job) {
                     default: job.data.status = "N/A";     break;
                     }
 
-                    setImmediate(() => {
-                        _emit(emiter, 'OnQueueJobFinished', { job: job })
-                        setImmediate(() => process_queue(emiter));
-                    });
-                        // db.add_history(job);
-                        // setImmediate(() => update_client(Update_ALL));
-                        // sys.log(job.product_id, "finished");
+                    _emit(emiter, 'OnQueueJobFinished', { job: job })
+                    setImmediate(() => process_queue(emiter));
+                    // db.add_history(job);
+                    // setImmediate(() => update_client(Update_ALL));
+                    // sys.log(job.product_id, "finished");
 
                     return;
                 }
@@ -145,7 +144,8 @@ class Queue extends EventEmitter {
             if (active[i].uid == job_uid) {
                 console.log('Kill, E=1, TODO');
                 //FIXME: Remove after Kill implementation
-                active.splice(i, 1);//FIXME: remove after kill implemented
+                let killing_job = active.splice(i, 1);//FIXME: remove after kill implemented
+                _emit(this, 'OnQueueJobKilling', { job: killing_job })
                 setImmediate(() => process_queue(this));
                 //END FIXME
                 return;
