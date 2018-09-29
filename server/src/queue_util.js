@@ -1,14 +1,12 @@
 "use strict";
 
-const should = require('should');
+const should   = require('should');
 const colors   = require('colors');
-const execFile = require('child_process').execFile;
 const EventEmitter = require('events');
 
 let waiting = [];
 let active  = [];
 let g_max_active       = undefined;
-let g_fn_worker_execute = undefined;
 
 function _get_time_stamp() {
 	return new Date().getTime();//toLocaleString();
@@ -23,25 +21,20 @@ function _process_queue(emiter) {
     if (active.length >= g_max_active) {
         return;
     }
-    for (let i1 in waiting) {
-        let job_tmp = waiting[i1];
-        let skip = false;
-        for (let active_job_tmp of active) {
-            if (active_job_tmp.product_id == job_tmp.product_id) {
-                skip = true;
-                break; //do not alow 2 instances of the same product
+    loop1: for (let i1 in waiting) {
+        let job = waiting[i1];
+        loop2: for (let active_job of active) {
+            if (active_job.product_id === job.product_id) {
+                continue loop1; //do not alow 2 instances of the same product
             }
         }
-        if (skip) {
-            continue;
-        }
-        let job = waiting.splice(i1, 1)[0];
-        job.should.equal(job_tmp);
-        job.time_start = _get_time_stamp();
-        job.status = "starting";
-        active.push(job);
-        _emit(emiter, 'OnQueueJobStarting', { job: job });
-        setImmediate(() => _execute_job(emiter, job));
+        let starting_job = waiting.splice(i1, 1)[0];
+        starting_job.should.be.equal(job);
+        starting_job.time_start = _get_time_stamp();
+        starting_job.status = "starting";
+        active.push(starting_job);
+        _emit(emiter, 'OnQueueJobStarting', { job: starting_job });
+        setImmediate(() => _execute_job(emiter, starting_job));
         return;
     }
 }
@@ -49,44 +42,29 @@ function _process_queue(emiter) {
 function _execute_job(emiter, job) {
     switch (job.exec.method) {
     case 'execFile':
-        console.log('started execFile...'.bgGreen);
+        // console.log('started execFile...'.bgGreen);
+        const execFile = require('child_process').execFile;
         const child = execFile(job.exec.file, job.exec.args, job.exec.options, job.exec.callback);
+        job.exec.pid = child.pid;
         _emit(emiter, 'OnQueueJobStarted', { job: job })
+
         child.stdout.on('data', function(data) {
             _emit(emiter, 'OnQueueJobLog', { text: data })
         })
+
         child.stderr.on('data', function(data) {
             _emit(emiter, 'OnQueueJobError', { text: data })
         })
+
         child.on('close', function(exitCode) {
-            console.log(`worker exit code: ${exitCode}`.bgGreen);
-
-            //FIXME: Remove later
-            let job_uid = job.uid;
             for (let i in active) {
-                if (active[i].uid == job_uid) {
+                if (active[i].uid == job.uid) {
                     active.splice(i, 1);//FIXME: remove after kill implemented
-
-                    switch (exitCode) {
-                    case 0:	 job.data.status = "OK";      break;
-                    case 1:	 job.data.status = "WARNING"; break;
-                    case 2:	 job.data.status = "ERROR";   break;
-                    case 3:	 job.data.status = "HALT";    break;
-                    default: job.data.status = "N/A";     break;
-                    }
-
-                    _emit(emiter, 'OnQueueJobFinished', { job: job })
+                    _emit(emiter, 'OnQueueJobFinished', { job: job, exitCode: exitCode })
                     setImmediate(() => _process_queue(emiter));
-                    // db.add_history(job);
-                    // setImmediate(() => update_client(Update_ALL));
-                    // sys.log(job.product_id, "finished");
-
                     return;
                 }
             }
-            //END FIXME
-            //resolve(job);
-
         });
         break;
     default:
@@ -101,7 +79,7 @@ class Queue extends EventEmitter {
         super();
     }
 
-    init(fn_execute, max_active) {
+    init(max_active) {
         g_max_active = 2;
         _emit(this, 'OnQueueInit', { time: new Date() })
     }

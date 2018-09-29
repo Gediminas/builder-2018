@@ -125,111 +125,6 @@ function generate_log_name(log_combi) {
   return name;
 }
 
-function queue_on_execute(resolve, reject, job)
-{
-  update_client(Update_Products | Update_Jobs); //because job was added
-
-  /*
-	const script_js   = app_cfg.script_dir + job.product_id + '/index.js';
-	const produxt_dir = app_cfg.working_dir + job.product_id + '/';
-	const working_dir = produxt_dir + sys.to_fs_time_string(job.time_start) + '/';
-
-  sys.ensure_dir(produxt_dir);
-  sys.ensure_dir(working_dir);
-
-  let log_combi = [];
-  let log_combi_last_sub = 0;
-  let buf_stdout = {buffer: ''};
-  let buf_stderr = {buffer: ''};
-
-	//console.log("script:",      script_js);
-	//console.log("uid:",         job.uid);
-	//console.log("working_dir:", working_dir);
-
-	//spawn
-	const child = execFile('node', [script_js], { cwd: working_dir });
-  var title_renamed = '';
-
-  child.stdout.on('data', function(data) {
-    buf_stdout.buffer += data;
-    sys.buf_to_full_lines(buf_stdout, (line) => {
-        if (0 === line.indexOf('@title')) {
-            title_renamed = line.substr(7);
-        }
-        else if (0 === line.indexOf('@sub')) {
-            let title_orig = line.substr(5);
-            if (!title_orig) {
-                title_orig = '<no-name>';
-            }
-            let title = title_renamed !== '' ? title_renamed : title_orig;
-
-            let log_name_main = generate_log_name(log_combi);
-            let log_file_main = working_dir + log_name_main;
-            log_combi.push(log_combi_last_sub+1);
-            log_combi_last_sub = 0;
-            let log_name_sub = generate_log_name(log_combi);
-            let log_file_sub = working_dir + log_name_sub;
-
-            sys.log_file(log_file_main, `* [${title}] (${log_name_sub})\n`);
-
-            if (title_renamed) {
-                sys.log_file(log_file_sub,  `${title_renamed}`);
-            }
-            sys.log_file(log_file_sub,  `${title_orig}\n`);
-            sys.log_file(log_file_sub,  `[back] (${log_name_main})\n`);
-            sys.log_file(log_file_sub,  '----------\n');
-        }
-        else if (0 === line.indexOf('@end')) {
-            if (log_combi.length) {
-                log_combi_last_sub = log_combi.pop();
-            }
-        }
-        else {
-            title_renamed = '';
-            let log_file = working_dir + generate_log_name(log_combi);
-            sys.log_file(log_file, `${line}\n`);
-            update_client(Update_Jobs)
-        }
-    });
-  });
-
-  child.stderr.on('data', function(data) {
-    buf_stderr.buffer += data;
-    sys.buf_to_full_lines(buf_stderr, (line) => {
-        let log_file = working_dir + generate_log_name(log_combi);
-        sys.log_file(log_file, '!! '+line+'\n');
-        update_client(Update_Jobs)
-    });
-  });
-
-	child.on('close', function(exitCode) {
-		sys.log(`worker exit code: ${exitCode}`);
-		switch (exitCode) {
-		case 0:	 job.data.status = "OK";      break;
-		case 1:	 job.data.status = "WARNING"; break;
-		case 2:	 job.data.status = "ERROR";   break;
-		case 3:	 job.data.status = "HALT";    break;
-		default: job.data.status = "N/A";     break;
-		}
-		db.add_history(job);
-    setImmediate(() => update_client(Update_ALL));
-
-		sys.log(job.product_id, "finished");
-		resolve(job);
-	});
-
-
-	job.data.status = "working";
-	job.data.pid    = child.pid;
-  update_client(Update_ALL)
-	sys.log(job.product_id, "started");
-  */
-  job.status = "OK";
-  db.add_history(job);
-  setImmediate(() => update_client(Update_ALL));
-  resolve(job);
-}
-
 db.init(app_cfg.db_dir).then(() => {
     // script.init_all();
 
@@ -245,6 +140,7 @@ db.init(app_cfg.db_dir).then(() => {
 
     queue.on('OnQueueInit', (data) => {
         console.log(`Init: "${data.time}"`.bgMagenta);
+        update_client(Update_Products | Update_Jobs); //because job was added
     });
 
     queue.on('OnQueueJobStarting', (data) => {
@@ -302,28 +198,95 @@ db.init(app_cfg.db_dir).then(() => {
     });
 
     queue.on('OnQueueJobStarted', (data) => {
-        console.log(`Started: "${data.job.product_id}"`.bgMagenta);
+	      // sys.log(job.product_id, "started");
+        console.log(`Started: "${data.job.product_id}, pid=${data.job.exec.pid}"`.bgGreen);
     });
+
+    var title_renamed = '';
+    let log_combi = [];
+    let log_combi_last_sub = 0;
+    let buf_stdout = {buffer: ''};
+    let buf_stderr = {buffer: ''};
 
     queue.on('OnQueueJobLog', (data) => {
         console.log('> ', data.text.green);
+        update_client(Update_Jobs)
+        /*
+            buf_stdout.buffer += data;
+            sys.buf_to_full_lines(buf_stdout, (line) => {
+                if (0 === line.indexOf('@title')) {
+                    title_renamed = line.substr(7);
+                }
+                else if (0 === line.indexOf('@sub')) {
+                    let title_orig = line.substr(5);
+                    if (!title_orig) {
+                        title_orig = '<no-name>';
+                    }
+                    let title = title_renamed !== '' ? title_renamed : title_orig;
+
+                    let log_name_main = generate_log_name(log_combi);
+                    let log_file_main = working_dir + log_name_main;
+                    log_combi.push(log_combi_last_sub+1);
+                    log_combi_last_sub = 0;
+                    let log_name_sub = generate_log_name(log_combi);
+                    let log_file_sub = working_dir + log_name_sub;
+
+                    sys.log_file(log_file_main, `* [${title}] (${log_name_sub})\n`);
+
+                    if (title_renamed) {
+                        sys.log_file(log_file_sub,  `${title_renamed}`);
+                    }
+                    sys.log_file(log_file_sub,  `${title_orig}\n`);
+                    sys.log_file(log_file_sub,  `[back] (${log_name_main})\n`);
+                    sys.log_file(log_file_sub,  '----------\n');
+                }
+                else if (0 === line.indexOf('@end')) {
+                    if (log_combi.length) {
+                        log_combi_last_sub = log_combi.pop();
+                    }
+                }
+                else {
+                    title_renamed = '';
+                    let log_file = working_dir + generate_log_name(log_combi);
+                    sys.log_file(log_file, `${line}\n`);
+                    update_client(Update_Jobs)
+                }
+            });
+            */
     });
 
     queue.on('OnQueueJobError', (data) => {
         console.log('> ', data.text.red);
+        update_client(Update_Jobs)
+        /*
+        buf_stderr.buffer += data;
+        sys.buf_to_full_lines(buf_stderr, (line) => {
+            let log_file = working_dir + generate_log_name(log_combi);
+            sys.log_file(log_file, '!! '+line+'\n');
+            update_client(Update_Jobs)
+        });
+        */
     });
 
     queue.on('OnQueueJobFinished', (data) => {
-        console.log(`Finished: "${data.job.product_id}"`.bgMagenta);
+        // sys.log(job.product_id, "finished");
+        console.log(`Finished: "${data.job.product_id}, pid=${data.job.exec.pid}, code=${data.exitCode}"`.bgGreen);
+
+        // job.status = "OK";
+        switch (data.exitCode) {
+        case 0:	 data.job.data.status = "OK";      break;
+        case 1:	 data.job.data.status = "WARNING"; break;
+        case 2:	 data.job.data.status = "ERROR";   break;
+        case 3:	 data.job.data.status = "HALT";    break;
+        default: data.job.data.status = "N/A";     break;
+        }
+        db.add_history(data.job);
+        setImmediate(() => update_client(Update_ALL));
+
     });
 
 
-    // queue.subscribe1(this);
-    queue.init(queue_on_execute, 2);
+    queue.init(2);
 });
 
-// emitter.listeners(eventName)
-// emitter.on(eventName, listener)
-// emitter.once(eventName, listener)
-// emitter.removeListener(eventName, listener)
 
