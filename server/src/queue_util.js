@@ -3,6 +3,7 @@
 const should   = require('should');
 const colors   = require('colors');
 const EventEmitter = require('events');
+const sys      = require('./sys_util.js');
 
 let waiting = [];
 let active  = [];
@@ -40,12 +41,67 @@ function _execute_job(emiter, job) {
         job.exec.pid = child.pid;
         emiter.emit('OnQueueJobStarted', { job: job })
 
+        var title_renamed = '';
+        let log_combi = [];
+        let log_combi_last_sub = 0;
+        let buf_stdout = {buffer: ''};
+        let buf_stderr = {buffer: ''};
+
+
         child.stdout.on('data', function(data) {
-            emiter.emit('OnQueueJobLog', { text: data })
+            // emiter.emit('OnQueueJobLog', { text: data })
+            buf_stdout.buffer += data;
+            sys.buf_to_full_lines(buf_stdout, (line) => {
+                if (0 === line.indexOf('@title')) {
+                    // title_renamed = line.substr(7);
+                }
+                else if (0 === line.indexOf('@sub')) {
+                    // let title_orig = line.substr(5);
+                    // if (!title_orig) {
+                    //     title_orig = '<no-name>';
+                    // }
+                    // let title = title_renamed !== '' ? title_renamed : title_orig;
+
+                    // let log_name_main = generate_log_name(log_combi);
+                    // let log_file_main = working_dir + log_name_main;
+                    // log_combi.push(log_combi_last_sub+1);
+                    // log_combi_last_sub = 0;
+                    // let log_name_sub = generate_log_name(log_combi);
+                    // let log_file_sub = working_dir + log_name_sub;
+
+                    // sys.log_file(log_file_main, `* [${title}] (${log_name_sub})\n`);
+
+                    // if (title_renamed) {
+                    //     sys.log_file(log_file_sub,  `${title_renamed}`);
+                    // }
+                    // sys.log_file(log_file_sub,  `${title_orig}\n`);
+                    // sys.log_file(log_file_sub,  `[back] (${log_name_main})\n`);
+                    // sys.log_file(log_file_sub,  '----------\n');
+                }
+                else if (0 === line.indexOf('@end')) {
+                    // if (log_combi.length) {
+                    //     log_combi_last_sub = log_combi.pop();
+                    // }
+                }
+                else {
+                    title_renamed = '';
+                    // let log_file = working_dir + generate_log_name(log_combi);
+                    // sys.log_file(log_file, `${line}\n`);
+                    emiter.emit('OnQueueJobLog', { text: line })
+                    // update_client(Update_Jobs)
+                }
+            });
         })
 
         child.stderr.on('data', function(data) {
-            emiter.emit('OnQueueJobError', { text: data })
+            // emiter.emit('OnQueueJobError', { text: data })
+            buf_stderr.buffer += data;
+            sys.buf_to_full_lines(buf_stderr, (line) => {
+                // let log_file = working_dir + generate_log_name(log_combi);
+                // sys.log_file(log_file, '!! '+line+'\n');
+                emiter.emit('OnQueueJobError', { text: line })
+                // update_client(Update_Jobs)
+            });
         })
 
         child.on('close', function(exitCode) {
