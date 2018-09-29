@@ -72,8 +72,9 @@ io.on('connection', function(socket){
   update_client(Update_ALL, socket);
 
 	socket.on('job_add', function(data){
-		script.add_job(data.product_id, "user comment");
-    update_client(Update_Products | Update_Jobs, socket)
+		//script.add_job(data.product_id, "user comment");
+    //update_client(Update_Products | Update_Jobs, socket)
+    queue.add_job(data.product_id, "user comment");
 	});
 
 	socket.on('job_kill', function(data){
@@ -252,6 +253,44 @@ db.init(app_cfg.db_dir).then(() => {
 
     queue.on('OnQueueJobAdded', (data) => {
         console.log(`Added: "${data.job.product_id}"`.bgMagenta);
+        let product_id = data.job.product_id;
+	      let cfg      = script.load_cfg(product_id);
+	      let last_job = db.findLast_history({"$and": [{ "product_id" : product_id},{"data.status": "OK"}]});
+	      if (!last_job) {
+		        last_job = db.findLast_history({"$and": [{ "product_id" : product_id},{"data.status": "WARNING"}]});
+	      }
+	      if (!last_job) {
+		        last_job = db.findLast_history({ "product_id" : product_id});
+	      }
+	      //console.log(last_job);
+	      let data1 = {
+		        product_name:   cfg.product_name,
+		        comment:        'comment',
+		        pid:            0,
+		        prev_time_diff: last_job ? last_job.time_diff : undefined
+	      };
+        data.job.data = data1;
+
+        //FIXME: Should be moved to OnJobStarting() or similar
+        let app_cfg     = script.load_app_cfg();
+        let script_js   = app_cfg.script_dir + product_id + '/index.js';
+        let product_dir = app_cfg.working_dir + product_id + '/';
+        console.log(product_dir);
+        let working_dir = product_dir + sys.to_fs_time_string(data.job.time_add) + '/'; //FIXME: job.time_start
+
+        sys.ensure_dir(product_dir);
+        sys.ensure_dir(working_dir);
+
+        let job_exec = {
+            method   : 'execFile',
+            file     : 'node',
+            args     : [script_js],
+            options  : { cwd: working_dir },
+            callback : null,
+        };
+        data.job.exec = job_exec;
+        //END FIXME
+        update_client(Update_Products | Update_Jobs)
     });
 
     queue.on('OnQueueJobRemoved', (data) => {

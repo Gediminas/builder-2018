@@ -34,48 +34,6 @@ exports.load_cfg = function(product_id) {
 	return mrg;
 }
 
-exports.add_job = function(product_id, comment) {
-	let cfg      = exports.load_cfg(product_id);
-	let last_job = db.findLast_history({"$and": [{ "product_id" : product_id},{"data.status": "OK"}]});
-	if (!last_job) {
-		last_job = db.findLast_history({"$and": [{ "product_id" : product_id},{"data.status": "WARNING"}]});
-	}
-	if (!last_job) {
-		last_job = db.findLast_history({ "product_id" : product_id});
-	}
-	//console.log(last_job);
-	let data = {
-		product_name:   cfg.product_name,
-		comment:        comment,
-		pid:            0,
-		prev_time_diff: last_job ? last_job.time_diff : undefined
-	};
-
-
-
-	  let job = queue.add_job(product_id, data);
-
-    //FIXME: Should be moved to OnJobStarting() or similar
-    let app_cfg     = exports.load_app_cfg();
-    let script_js   = app_cfg.script_dir + product_id + '/index.js';
-    let product_dir = app_cfg.working_dir + product_id + '/';
-    console.log(product_dir);
-    let working_dir = product_dir + sys.to_fs_time_string(job.time_add) + '/'; //FIXME: job.time_start
-
-    sys.ensure_dir(product_dir);
-    sys.ensure_dir(working_dir);
-
-    let job_exec = {
-        method   : 'execFile',
-        file     : 'node',
-        args     : [script_js],
-        options  : { cwd: working_dir },
-        callback : null,
-    };
-    job.exec = job_exec;
-    //END FIXME
-}
-
 exports.get_job_by_product = function(product_id) {
 	let jobs = queue.get_jobs();
 	for (let i in jobs) {

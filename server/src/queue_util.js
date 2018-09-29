@@ -10,7 +10,7 @@ let active  = [];
 let g_max_active       = undefined;
 let g_fn_worker_execute = undefined;
 
-function get_time_stamp() {
+function _get_time_stamp() {
 	return new Date().getTime();//toLocaleString();
 }
 
@@ -19,7 +19,7 @@ function _emit(emiter, evt, data) {
     emiter.emit(evt, data)
 }
 
-function process_queue(emiter) {
+function _process_queue(emiter) {
     if (active.length >= g_max_active) {
         return;
     }
@@ -37,7 +37,7 @@ function process_queue(emiter) {
         }
         let job = waiting.splice(i1, 1)[0];
         job.should.equal(job_tmp);
-        job.time_start = get_time_stamp();
+        job.time_start = _get_time_stamp();
         job.status = "starting";
         active.push(job);
         _emit(emiter, 'OnQueueJobStarting', { job: job });
@@ -76,7 +76,7 @@ function _execute_job(emiter, job) {
                     }
 
                     _emit(emiter, 'OnQueueJobFinished', { job: job })
-                    setImmediate(() => process_queue(emiter));
+                    setImmediate(() => _process_queue(emiter));
                     // db.add_history(job);
                     // setImmediate(() => update_client(Update_ALL));
                     // sys.log(job.product_id, "finished");
@@ -96,13 +96,6 @@ function _execute_job(emiter, job) {
     }
 }
 
-
-
-
-
-
-
-
 class Queue extends EventEmitter {
     constructor() {
         super();
@@ -114,7 +107,7 @@ class Queue extends EventEmitter {
     }
 
     add_job(product_id, job_data) {
-        let timestamp = get_time_stamp();
+        let timestamp = _get_time_stamp();
         let new_job = {
             uid:        timestamp,
             product_id: product_id,
@@ -128,7 +121,7 @@ class Queue extends EventEmitter {
         };
         waiting.push(new_job);
         _emit(this, 'OnQueueJobAdded', { job: new_job })
-        setImmediate(() => process_queue(this));
+        setImmediate(() => _process_queue(this));
         return new_job;
     }
 
@@ -146,7 +139,7 @@ class Queue extends EventEmitter {
                 //FIXME: Remove after Kill implementation
                 let killing_job = active.splice(i, 1);//FIXME: remove after kill implemented
                 _emit(this, 'OnQueueJobKilling', { job: killing_job })
-                setImmediate(() => process_queue(this));
+                setImmediate(() => _process_queue(this));
                 //END FIXME
                 return;
             }
@@ -169,86 +162,5 @@ class Queue extends EventEmitter {
     }
 }
 
-// let queue = new Queue();
 module.exports = new Queue();
-
-
-
-/*
-
-var queue = function Queue() {
-    // subscribe: function(observer) {
-    //     observers.push(observer);
-    // }
-
-    // unsubscribe: function(observer) {
-    //     observers = observers.filter((obs) => { return obs != observer});
-    // }
-
-    init: (fn_execute, max_active) => {
-        g_max_active = 2;
-        console.log('event.OnQueueInit');
-        this.emit('init', { time: new Date() })
-    }
-
-    add_job: (product_id, job_data) => {
-        let timestamp = get_time_stamp();
-        let new_job = {
-            uid:        timestamp,
-            product_id: product_id,
-            status:     "queued",
-            time_add:   timestamp,
-            time_start: 0,
-            time_end:   0,
-            time_diff:  0,
-            exec:       {},
-            data:       job_data,
-        };
-        waiting.push(new_job);
-        console.log('event.OnQueueJobAdded');
-        setImmediate(() => process_queue());
-        return new_job;
-    }
-
-    remove_job: (job_uid) => {
-        for (let i in waiting) {
-            if (waiting[i].uid == job_uid) {
-                waiting.splice(i, 1);
-                console.log('event.OnQueueJobRemoved');
-                return;
-            }
-        }
-        for (let i in active) {
-            if (active[i].uid == job_uid) {
-                console.log('Kill, E=1, TODO');
-                //FIXME: Remove after Kill implementation
-                active.splice(i, 1);//FIXME: remove after kill implemented
-                setImmediate(() => process_queue());
-                //END FIXME
-                return;
-            }
-        }
-
-        throw "INTERNAL ERROR: 1750";
-    }
-
-
-    get_active: () => {
-    return active;
-    }
-
-    this.get_jobs = function() {
-        return active.concat(waiting);
-    }
-}
-
-var util = require('util')
-util.inherits(queue, require('events').EventEmitter)
-module.exports = queue
-
-
-*/
-
-
-
 
