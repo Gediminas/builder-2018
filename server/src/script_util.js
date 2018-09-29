@@ -8,9 +8,7 @@ const sys      = require('./sys_util.js');
 const db       = require('./builder_db_utils.js');
 const merge    = require('merge');
 const path     = require('path');
-
-const Queue    = require('./queue_util.js');
-const queue    = new Queue();
+const queue    = require('./queue_util.js');
 
 var cron_jobs = [];
 

@@ -1,7 +1,9 @@
 "use strict";
 
 const should = require('should');
+const colors   = require('colors');
 const execFile = require('child_process').execFile;
+const EventEmitter = require('events');
 
 let waiting = [];
 let active  = [];
@@ -12,7 +14,12 @@ function get_time_stamp() {
 	return new Date().getTime();//toLocaleString();
 }
 
-function process_queue() {
+function _emit(emiter, evt, data) {
+    console.log(`queue.emit.${evt}`.bgCyan);
+    emiter.emit(evt, data)
+}
+
+function process_queue(emiter) {
     if (active.length >= g_max_active) {
         return;
     }
@@ -33,18 +40,16 @@ function process_queue() {
         job.time_start = get_time_stamp();
         job.status = "starting";
         active.push(job);
-        console.log('event.OnQueueJobStarting');
-        //g_fn_worker_execute(on_worker_finished, on_worker_finished, job);
-        setImmediate(() => _execute_job(job));
+        _emit(emiter, 'OnQueueJobStarting', job);
+        setImmediate(() => _execute_job(emiter, job));
         return;
     }
 }
 
-function _execute_job(job) {
-    console.log('job', job);
+function _execute_job(emiter, job) {
     switch (job.exec.method) {
     case 'execFile':
-        console.log('started execFile...'.yellow);
+        console.log('started execFile...'.bgGreen);
         const child = execFile(job.exec.file, job.exec.args, job.exec.options, job.exec.callback);
         child.stdout.on('data', function(data) {
             console.log('> ', data.green);
@@ -53,7 +58,7 @@ function _execute_job(job) {
             console.log('> ', data.red);
         })
         child.on('close', function(exitCode) {
-            console.log(`worker exit code: ${exitCode}`.yellow);
+            console.log(`worker exit code: ${exitCode}`.bgGreen);
 
             //FIXME: Remove later
             let job_uid = job.uid;
@@ -69,12 +74,14 @@ function _execute_job(job) {
                     default: job.data.status = "N/A";     break;
                     }
 
-                    console.log('event.OnQueueJobFinished', job);
+                    setImmediate(() => {
+                        _emit(emiter, 'OnQueueJobFinished', { job: job })
+                        setImmediate(() => process_queue(emiter));
+                    });
                         // db.add_history(job);
                         // setImmediate(() => update_client(Update_ALL));
                         // sys.log(job.product_id, "finished");
 
-                    setImmediate(() => process_queue());
                     return;
                 }
             }
@@ -96,25 +103,15 @@ function _execute_job(job) {
 
 
 
-const EventEmitter = require('events');
 
 class Queue extends EventEmitter {
     constructor() {
         super();
     }
 
-    subscribe1(observer) {
-        // this.subscribe(observer);
-    }
-
-    // unsubscribe: function(observer) {
-    //     observers = observers.filter((obs) => { return obs != observer});
-    // }
-
     init(fn_execute, max_active) {
         g_max_active = 2;
-        console.log('event.OnQueueInit');
-        this.emit('init', { time: new Date() })
+        _emit(this, 'OnQueueInit', { time: new Date() })
     }
 
     add_job(product_id, job_data) {
@@ -131,16 +128,16 @@ class Queue extends EventEmitter {
             data:       job_data,
         };
         waiting.push(new_job);
-        console.log('event.OnQueueJobAdded');
-        setImmediate(() => process_queue());
+        _emit(this, 'OnQueueJobAdded', { job: new_job })
+        setImmediate(() => process_queue(this));
         return new_job;
     }
 
     remove_job(job_uid) {
         for (let i in waiting) {
             if (waiting[i].uid == job_uid) {
-                waiting.splice(i, 1);
-                console.log('event.OnQueueJobRemoved');
+                let removed_job = waiting.splice(i, 1);
+                _emit(this, 'OnQueueJobRemoved', { job: removed_job })
                 return;
             }
         }
@@ -149,7 +146,7 @@ class Queue extends EventEmitter {
                 console.log('Kill, E=1, TODO');
                 //FIXME: Remove after Kill implementation
                 active.splice(i, 1);//FIXME: remove after kill implemented
-                setImmediate(() => process_queue());
+                setImmediate(() => process_queue(this));
                 //END FIXME
                 return;
             }
@@ -173,7 +170,7 @@ class Queue extends EventEmitter {
 }
 
 // let queue = new Queue();
-module.exports = Queue
+module.exports = new Queue();
 
 
 
@@ -251,5 +248,7 @@ module.exports = queue
 
 
 */
+
+
 
 

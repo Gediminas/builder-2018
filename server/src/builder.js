@@ -13,8 +13,7 @@ const socketio = require('socket.io');
 const sys      = require('./sys_util.js');
 const script   = require('./script_util.js');
 const db       = require('./builder_db_utils.js');
-const Queue    = require('./queue_util.js');
-const queue    = new Queue();
+const queue    = require('./queue_util.js');
 
 const app_cfg = script.load_app_cfg();
 const io  = socketio(app_cfg.server_port);
@@ -243,10 +242,26 @@ db.init(app_cfg.db_dir).then(() => {
     // })
 
 
-    console.log('yellow test'.yellow);
-    queue.on('init', (data) => {
-        console.log(`>>>>>>init: "${data.test}"`.yellow);
+    queue.on('OnQueueInit', (data) => {
+        console.log(`builder.on.OnQueueJobInit: "${data.time}"`.bgMagenta);
     });
+
+    queue.on('OnQueueJobStarting', (data) => {
+        console.log(`builder.on.OnQueueJobStarting: "${data.job}"`.bgMagenta);
+    });
+
+    queue.on('OnQueueJobAdded', (data) => {
+        console.log(`builder.on.OnQueueJobAdded: "${data.job}"`.bgMagenta);
+    });
+
+    queue.on('OnQueueJobRemoved', (data) => {
+        console.log(`builder.on.OnQueueJobRemoved: "${data.job}"`.bgMagenta);
+    });
+
+    queue.on('OnQueueJobFinished', (data) => {
+        console.log(`builder.on.OnQueueJobFinished: "${data.job}"`.bgMagenta);
+    });
+
 
     // queue.subscribe1(this);
     queue.init(queue_on_execute, 2);
