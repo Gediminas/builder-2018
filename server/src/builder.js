@@ -23,8 +23,10 @@ sys.ensure_dir(app_cfg.script_dir);
 sys.ensure_dir(app_cfg.working_dir);
 sys.ensure_dir(app_cfg.db_dir);
 
-console.log("config:", JSON.stringify(app_cfg, null, 2));
-console.log(`Socket server starting on port: ${app_cfg.server_port}\n`);
+console.log("------------------------------------------------------------".bgBlue);
+console.log("config:".bgBlue, JSON.stringify(app_cfg, null, 2).bgBlue);
+console.log(`Socket server starting on port: ${app_cfg.server_port}`.bgBlue);
+console.log("------------------------------------------------------------".bgBlue);
 
 const Update_None     =  0 // 000000
 const Update_Products =  1 // 000001
@@ -105,8 +107,6 @@ io.on('connection', function(socket){
 
 // QUEUE =====================================================
 
-const execFile = require('child_process').execFile;
-
 function generate_log_name(log_combi) {
   let name = log_combi.reduce((cobined_name, sub_nr) => {
     let sub_txt = sub_nr.pad(3);
@@ -177,14 +177,13 @@ db.init(app_cfg.db_dir).then(() => {
         sys.ensure_dir(product_dir);
         sys.ensure_dir(working_dir);
 
-        let job_exec = {
+        data.job.exec = {
             method   : 'execFile',
             file     : 'node',
             args     : [script_js],
             options  : { cwd: working_dir },
             callback : null,
         };
-        data.job.exec = job_exec;
         //END FIXME
         update_client(Update_Products | Update_Jobs)
     });
@@ -270,10 +269,10 @@ db.init(app_cfg.db_dir).then(() => {
 
     queue.on('OnQueueJobFinished', (data) => {
         // sys.log(job.product_id, "finished");
-        console.log(`Finished: "${data.job.product_id}, pid=${data.job.exec.pid}, code=${data.exitCode}"`.bgGreen);
+        console.log(`Finished: "${data.job.product_id}, pid=${data.job.exec.pid}, code=${data.job.exec.exitCode}"`.bgGreen);
 
         // job.status = "OK";
-        switch (data.exitCode) {
+        switch (data.job.exec.exitCode) {
         case 0:	 data.job.data.status = "OK";      break;
         case 1:	 data.job.data.status = "WARNING"; break;
         case 2:	 data.job.data.status = "ERROR";   break;
