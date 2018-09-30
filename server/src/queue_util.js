@@ -4,6 +4,7 @@ const should   = require('should');
 const colors   = require('colors');
 const EventEmitter = require('events');
 const sys      = require('./sys_util.js');
+const kill     = require('tree-kill');
 
 let waiting = [];
 let active  = [];
@@ -36,78 +37,40 @@ function _process_queue(emiter) {
 function _execute_job(emiter, job) {
     switch (job.exec.method) {
     case 'execFile':
-        const execFile = require('child_process').execFile;
-        const child = execFile(job.exec.file, job.exec.args, job.exec.options, job.exec.callback);
-        job.exec.pid = child.pid;
-        emiter.emit('OnQueueJobStarted', { job: job })
-
-        var title_renamed = '';
-        let log_combi = [];
-        let log_combi_last_sub = 0;
         let buf_stdout = {buffer: ''};
         let buf_stderr = {buffer: ''};
 
+        const execFile = require('child_process').execFile;
+        const child = execFile(job.exec.file, job.exec.args, job.exec.options, job.exec.callback);
+
+        job.exec.pid = child.pid;
+        emiter.emit('OnQueueJobStarted', { job: job })
 
         child.stdout.on('data', function(data) {
-            // emiter.emit('OnQueueJobLog', { text: data })
             buf_stdout.buffer += data;
             sys.buf_to_full_lines(buf_stdout, (line) => {
-                if (0 === line.indexOf('@title')) {
-                    // title_renamed = line.substr(7);
-                }
-                else if (0 === line.indexOf('@sub')) {
-                    // let title_orig = line.substr(5);
-                    // if (!title_orig) {
-                    //     title_orig = '<no-name>';
-                    // }
-                    // let title = title_renamed !== '' ? title_renamed : title_orig;
-
-                    // let log_name_main = generate_log_name(log_combi);
-                    // let log_file_main = working_dir + log_name_main;
-                    // log_combi.push(log_combi_last_sub+1);
-                    // log_combi_last_sub = 0;
-                    // let log_name_sub = generate_log_name(log_combi);
-                    // let log_file_sub = working_dir + log_name_sub;
-
-                    // sys.log_file(log_file_main, `* [${title}] (${log_name_sub})\n`);
-
-                    // if (title_renamed) {
-                    //     sys.log_file(log_file_sub,  `${title_renamed}`);
-                    // }
-                    // sys.log_file(log_file_sub,  `${title_orig}\n`);
-                    // sys.log_file(log_file_sub,  `[back] (${log_name_main})\n`);
-                    // sys.log_file(log_file_sub,  '----------\n');
-                }
-                else if (0 === line.indexOf('@end')) {
-                    // if (log_combi.length) {
-                    //     log_combi_last_sub = log_combi.pop();
-                    // }
-                }
-                else {
-                    title_renamed = '';
-                    // let log_file = working_dir + generate_log_name(log_combi);
-                    // sys.log_file(log_file, `${line}\n`);
-                    emiter.emit('OnQueueJobLog', { text: line })
-                    // update_client(Update_Jobs)
-                }
+                emiter.emit('OnQueueJobLog', { text: line })
             });
         })
 
         child.stderr.on('data', function(data) {
-            // emiter.emit('OnQueueJobError', { text: data })
             buf_stderr.buffer += data;
             sys.buf_to_full_lines(buf_stderr, (line) => {
-                // let log_file = working_dir + generate_log_name(log_combi);
-                // sys.log_file(log_file, '!! '+line+'\n');
                 emiter.emit('OnQueueJobError', { text: line })
-                // update_client(Update_Jobs)
             });
         })
 
         child.on('close', function(exitCode) {
+            console.log(`CLOSE ${exitCode}`.bgRed);
+
             for (let i in active) {
                 if (active[i].uid === job.uid) {
-                    let closed_job = active.splice(i, 1)[0];//FIXME: remove after kill implemented
+                    let closed_job = active.splice(i, 1)[0];
+                    if (closed_job.status === 'halting') {
+                        closed_job.status = 'halt';
+                    } else {
+                        closed_job.status = 'finished';
+                    }
                     closed_job.should.be.equal(job)
                     closed_job.exec.exitCode = exitCode;
                     emiter.emit('OnQueueJobFinished', { job: closed_job })
@@ -161,19 +124,28 @@ class Queue extends EventEmitter {
                 return;
             }
         }
-        for (let i in active) {
-            if (active[i].uid == job_uid) {
-                console.log('Kill, E=1, TODO');
-                //FIXME: Remove after Kill implementation
-                //let killing_job = active.splice(i, 1);//FIXME: remove after kill implemented
-                //this.emit('OnQueueJobKilling', { job: killing_job })
-                //setImmediate(() => _process_queue(this));
-                //END FIXME
-                return;
+
+        for (let job of active) {
+            if (job.uid != job_uid) {
+                continue;
             }
+            //assert(job.exec.pid && data.exec.pid > 0);
+
+            job.status = "halting";
+            this.emit('OnQueueJobKilling', { job: job })
+
+            kill(job.exec.pid, 'SIGTERM', function() { //SIGKILL
+                //job.status = "halted";
+                //this.emit('OnQueueJobKilling', { job: job })
+                // let pid = parseInt(data.pid);
+                // let job = db.findLast_history({"data.pid": pid})
+                //job.data.status = "HALT";
+                // sys.log("KILLED", data, pid);
+			       });
+             return;
         }
 
-        throw "INTERNAL ERROR: 1750";
+        // throw "INTERNAL ERROR: 1750";
     }
 
 

@@ -5,7 +5,6 @@
 
 
 const fs       = require('fs');
-const kill     = require('tree-kill');
 const path     = require('path');
 const colors   = require('colors');
 const socketio = require('socket.io');
@@ -80,20 +79,8 @@ io.on('connection', function(socket){
 	});
 
 	socket.on('job_kill', function(data){
-      console.log(`kill pid ${data.pid}`);
-		if (data.pid && data.pid > 0) {
-			kill(data.pid, 'SIGTERM', function(){ //SIGKILL
-				let pid = parseInt(data.pid);
-				let job = db.findLast_history({"data.pid": pid})
-				//job.data.status = "HALT";
-				sys.log("KILLED", data, pid);
-        update_client(Update_ALL, socket)
-			});
-		} else {
-        queue.remove_job(data.job_uid);
-        update_client(Update_Products | Update_Jobs, socket)
-		}
-	});
+      queue.remove_job(data.job_uid);
+});
 
 	socket.on('sys_shutdown', function(data){
 		sys.log("Stoping cron jobs...");
@@ -127,17 +114,6 @@ function generate_log_name(log_combi) {
 }
 
 db.init(app_cfg.db_dir).then(() => {
-    // script.init_all();
-
-    // queue.subscribe(script);
-    // queue.subscribe(this);
-
-
-    // queue.on('done', function(details){
-    //     console.log('Queue init at ', details.time)
-    //     queue.removeAllListeners()
-    // })
-
 
     queue.on('OnQueueInit', (data) => {
         console.log(`Init: "${data.time}"`.bgMagenta);
@@ -203,10 +179,53 @@ db.init(app_cfg.db_dir).then(() => {
         data.job.data.pid = data.job.exec.pid;
     });
 
+    var title_renamed = '';
+    let log_combi = [];
+    let log_combi_last_sub = 0;
+
     queue.on('OnQueueJobLog', (data) => {
         console.log('> ', data.text.green);
         // let log_file = working_dir + generate_log_name(log_combi);
         // sys.log_file(log_file, `${data.line}\n`);
+        let line = data.text;
+                if (0 === line.indexOf('@title')) {
+                    // title_renamed = line.substr(7);
+                }
+                else if (0 === line.indexOf('@sub')) {
+                    // let title_orig = line.substr(5);
+                    // if (!title_orig) {
+                    //     title_orig = '<no-name>';
+                    // }
+                    // let title = title_renamed !== '' ? title_renamed : title_orig;
+
+                    // let log_name_main = generate_log_name(log_combi);
+                    // let log_file_main = working_dir + log_name_main;
+                    // log_combi.push(log_combi_last_sub+1);
+                    // log_combi_last_sub = 0;
+                    // let log_name_sub = generate_log_name(log_combi);
+                    // let log_file_sub = working_dir + log_name_sub;
+
+                    // sys.log_file(log_file_main, `* [${title}] (${log_name_sub})\n`);
+
+                    // if (title_renamed) {
+                    //     sys.log_file(log_file_sub,  `${title_renamed}`);
+                    // }
+                    // sys.log_file(log_file_sub,  `${title_orig}\n`);
+                    // sys.log_file(log_file_sub,  `[back] (${log_name_main})\n`);
+                    // sys.log_file(log_file_sub,  '----------\n');
+                }
+                else if (0 === line.indexOf('@end')) {
+                    // if (log_combi.length) {
+                    //     log_combi_last_sub = log_combi.pop();
+                    // }
+                }
+                else {
+                    title_renamed = '';
+                    // let log_file = working_dir + generate_log_name(log_combi);
+                    // sys.log_file(log_file, `${line}\n`);
+                    //emiter.emit('OnQueueJobLog', { text: line })
+                    // update_client(Update_Jobs)
+                }
         update_client(Update_Jobs)
     });
 
@@ -214,12 +233,14 @@ db.init(app_cfg.db_dir).then(() => {
         console.log('> ', data.text.red);
          // let log_file = working_dir + generate_log_name(log_combi);
          // sys.log_file(log_file, '!! '+data.line+'\n');
+        // let log_file = working_dir + generate_log_name(log_combi);
+        // sys.log_file(log_file, '!! '+line+'\n');
         update_client(Update_Jobs)
     });
 
     queue.on('OnQueueJobFinished', (data) => {
         // sys.log(job.product_id, "finished");
-        console.log(`Finished: "${data.job.product_id}, pid=${data.job.exec.pid}, code=${data.job.exec.exitCode}"`.bgGreen);
+        console.log(`Finished: "${data.job.product_id}, ${data.job.status}, pid=${data.job.exec.pid}, code=${data.job.exec.exitCode}"`.bgGreen);
 
         // job.status = "OK";
         switch (data.job.exec.exitCode) {
