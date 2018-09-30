@@ -233,8 +233,6 @@ db.init(app_cfg.db_dir).then(() => {
         console.log('> ', data.text.red);
          // let log_file = working_dir + generate_log_name(log_combi);
          // sys.log_file(log_file, '!! '+data.line+'\n');
-        // let log_file = working_dir + generate_log_name(log_combi);
-        // sys.log_file(log_file, '!! '+line+'\n');
         update_client(Update_Jobs)
     });
 
