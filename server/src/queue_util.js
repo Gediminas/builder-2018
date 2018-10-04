@@ -42,6 +42,7 @@ function _execute_job(emiter, job) {
 
         const execFile = require('child_process').execFile;
         const child = execFile(job.exec.file, job.exec.args, job.exec.options, job.exec.callback);
+        job.status = 'started';
 
         job.exec.pid = child.pid;
         emiter.emit('OnQueueJobStarted', { job: job })
@@ -61,8 +62,6 @@ function _execute_job(emiter, job) {
         })
 
         child.on('close', function(exitCode) {
-            console.log(`CLOSE ${exitCode}`.bgRed);
-
             for (let i in active) {
                 if (active[i].uid === job.uid) {
                     let closed_job = active.splice(i, 1)[0];
@@ -117,10 +116,11 @@ class Queue extends EventEmitter {
     }
 
     remove_job(job_uid) {
+        let emitter = this
         for (let i in waiting) {
             if (waiting[i].uid == job_uid) {
                 let removed_job = waiting.splice(i, 1);
-                this.emit('OnQueueJobRemoved', { job: removed_job })
+                emitter.emit('OnQueueJobRemoved', { job: removed_job })
                 return;
             }
         }
@@ -135,13 +135,8 @@ class Queue extends EventEmitter {
             this.emit('OnQueueJobKilling', { job: job })
 
             kill(job.exec.pid, 'SIGTERM', function() { //SIGKILL
-                //job.status = "halted";
-                //this.emit('OnQueueJobKilling', { job: job })
-                // let pid = parseInt(data.pid);
-                // let job = db.findLast_history({"data.pid": pid})
-                //job.data.status = "HALT";
-                // sys.log("KILLED", data, pid);
-                console.log('job killed'.bgRed);
+                job.status = "halted";
+                emitter.emit('OnQueueJobKilled', { job: job })
 			       });
              return;
         }

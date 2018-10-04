@@ -173,6 +173,10 @@ db.init(app_cfg.db_dir).then(() => {
         console.log(`Killing: "${data.job.product_id}"`.bgMagenta);
     });
 
+    queue.on('OnQueueJobKilled', (data) => {
+        console.log(`Killed: "${data.job.product_id}"`.bgMagenta);
+    });
+
     queue.on('OnQueueJobStarted', (data) => {
 	      // sys.log(job.product_id, "started");
         console.log(`Started: "${data.job.product_id}, pid=${data.job.exec.pid}"`.bgGreen);
