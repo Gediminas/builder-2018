@@ -116,13 +116,13 @@ progress:before {
 }
 
 
-.status                  { text-align: center; min-width: 70px; }
+.status                  { text-align: center; min-width: 70px; text-decoration: none; color:black !important;}
 .status[name="OK"]       { background-color: lightgreen  !important; }
 .status[name="WARNING"]  { background-color: orange      !important; }
 .status[name="ERROR"]    { background-color: red         !important; }
-.status[name="HALT"]     { background-color: magenta     !important; }
-.status[name="working"]  { background-color: yellow      !important; }
-.status[name="queued"]   { background-color: #ffffaa     !important; }
+.status[name="HALTED"]   { background-color: magenta     !important; }
+.status[name="WORKING"]  { background-color: yellow      !important; }
+.status[name="QUEUED"]   { background-color: #ffffaa     !important; }
 .status[name="N/A"]      { background-color: lightgray   !important; }
 
 

@@ -139,6 +139,7 @@ db.init(app_cfg.db_dir).then(() => {
 	      let data1 = {
 		        product_name:   cfg.product_name,
 		        comment:        'comment',
+            status:         'QUEUED',
 		        pid:            0,
 		        prev_time_diff: last_job ? last_job.time_diff : undefined
 	      };
@@ -180,7 +181,8 @@ db.init(app_cfg.db_dir).then(() => {
     queue.on('OnQueueJobStarted', (data) => {
 	      // sys.log(job.product_id, "started");
         console.log(`Started: "${data.job.product_id}, pid=${data.job.exec.pid}"`.bgGreen);
-        data.job.data.pid = data.job.exec.pid;
+        data.job.data.pid    = data.job.exec.pid;
+        data.job.data.status = 'WORKING';
     });
 
     var title_renamed = '';
@@ -188,7 +190,7 @@ db.init(app_cfg.db_dir).then(() => {
     let log_combi_last_sub = 0;
 
     queue.on('OnQueueJobLog', (data) => {
-        console.log('> ', data.text.green);
+        console.log(`${data.job.product_id}> `.bgMagenta, data.text.green);
         // let log_file = working_dir + generate_log_name(log_combi);
         // sys.log_file(log_file, `${data.line}\n`);
         let line = data.text;
@@ -234,7 +236,7 @@ db.init(app_cfg.db_dir).then(() => {
     });
 
     queue.on('OnQueueJobError', (data) => {
-        console.log('> ', data.text.red);
+        console.log(`${data.job.product_id}> `.bgMagenta, data.text.red);
          // let log_file = working_dir + generate_log_name(log_combi);
          // sys.log_file(log_file, '!! '+data.line+'\n');
         update_client(Update_Jobs)
@@ -244,13 +246,20 @@ db.init(app_cfg.db_dir).then(() => {
         // sys.log(job.product_id, "finished");
         console.log(`Finished: "${data.job.product_id}, ${data.job.status}, pid=${data.job.exec.pid}, code=${data.job.exec.exitCode}"`.bgGreen);
 
-        // job.status = "OK";
-        switch (data.job.exec.exitCode) {
-        case 0:	 data.job.data.status = "OK";      break;
-        case 1:	 data.job.data.status = "WARNING"; break;
-        case 2:	 data.job.data.status = "ERROR";   break;
-        case 3:	 data.job.data.status = "HALT";    break;
-        default: data.job.data.status = "N/A";     break;
+        if (data.job.status == 'halted') {
+            data.job.data.status = 'HALTED';
+        }
+        else if (data.job.status == 'finished') {
+            switch (data.job.exec.exitCode) {
+            case 0:	 data.job.data.status = "OK";      break;
+            case 1:	 data.job.data.status = "WARNING"; break;
+            case 2:	 data.job.data.status = "ERROR";   break;
+            case 3:	 data.job.data.status = "HALT";    break;
+            default: data.job.data.status = "N/A";     break;
+            }
+        }
+        else {
+            data.job.data.status = `(${data.job.status})`;
         }
         db.add_history(data.job);
         setImmediate(() => update_client(Update_ALL));

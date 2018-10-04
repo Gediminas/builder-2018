@@ -50,14 +50,14 @@ function _execute_job(emiter, job) {
         child.stdout.on('data', function(data) {
             buf_stdout.buffer += data;
             sys.buf_to_full_lines(buf_stdout, (line) => {
-                emiter.emit('OnQueueJobLog', { text: line })
+                emiter.emit('OnQueueJobLog', { job: job, text: line })
             });
         })
 
         child.stderr.on('data', function(data) {
             buf_stderr.buffer += data;
             sys.buf_to_full_lines(buf_stderr, (line) => {
-                emiter.emit('OnQueueJobError', { text: line })
+                emiter.emit('OnQueueJobError', { job: job, text: line })
             });
         })
 
@@ -66,7 +66,7 @@ function _execute_job(emiter, job) {
                 if (active[i].uid === job.uid) {
                     let closed_job = active.splice(i, 1)[0];
                     if (closed_job.status === 'halting') {
-                        closed_job.status = 'halt';
+                        closed_job.status = 'halted';
                     } else {
                         closed_job.status = 'finished';
                     }
