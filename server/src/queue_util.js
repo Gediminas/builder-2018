@@ -141,6 +141,7 @@ class Queue extends EventEmitter {
                 // let job = db.findLast_history({"data.pid": pid})
                 //job.data.status = "HALT";
                 // sys.log("KILLED", data, pid);
+                console.log('job killed'.bgRed);
 			       });
              return;
         }
