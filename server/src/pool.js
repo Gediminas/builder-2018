@@ -1,5 +1,3 @@
-"use strict";
-
 const events = require('events');
 const kill   = require('tree-kill');
 const assert = require('better-assert');
