@@ -86,7 +86,7 @@ function _execute_job(emiter, job) {
     }
 }
 
-class Queue extends EventEmitter {
+class Pool extends EventEmitter {
     constructor() {
         super();
     }
@@ -158,5 +158,5 @@ class Queue extends EventEmitter {
     }
 }
 
-module.exports = new Queue();
+module.exports = new Pool();
 
