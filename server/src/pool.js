@@ -4,22 +4,18 @@ const assert = require('better-assert');
 
 let waitingTasks = [];
 let activeTasks  = [];
-let maxWorkers = 2;
+let maxWorkers   = 2;
 
 function _buf_to_full_lines(ref_buffer, fnDoOnLine) {
-    //normalize EOL to LF
-    ref_buffer.buffer = ref_buffer.buffer.replace(/\r\n/g, '\n'); 
-    let bClosed = ref_buffer.buffer[ref_buffer.buffer.length-1] === '\n';
+    ref_buffer.buffer = ref_buffer.buffer.replace(/\r\n/g, '\n'); //normalize EOL to LF
+    let bClosed = (ref_buffer.buffer.slice(-1) === '\n');
     let lines = ref_buffer.buffer.split('\n');
     ref_buffer.buffer = lines.pop();
     assert(!bClosed || ref_buffer.buffer === '');
-    if (fnDoOnLine !== false) {
-        for (let line of lines) {
-            fnDoOnLine(line);
-        }
+    for (let line of lines) {
+        fnDoOnLine(line);
     }
 }
-
 
 function _get_time_stamp() {
     return new Date().getTime();
