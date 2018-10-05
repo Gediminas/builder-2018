@@ -58,7 +58,7 @@ let update_client = function(update_flags, client_socket) {
     state['hjobs'] = hjobs;
   }
   if ((update_flags & Update_Jobs) != 0) {
-    var jobs = pool.get_jobs();
+    var jobs = pool.allTasks();
     state['jobs'] = jobs; 
   }
   if (Object.keys(state).length !== 0) {

@@ -7,7 +7,7 @@ const sys      = require('./sys_util.js');
 const kill     = require('tree-kill');
 
 let waiting = [];
-let active  = [];
+let activeTasks  = [];
 let g_max_active = undefined;
 
 function _get_time_stamp() {
@@ -15,19 +15,19 @@ function _get_time_stamp() {
 }
 
 function _process_queue(emiter) {
-    if (active.length >= g_max_active) {
+    if (activeTasks.length >= g_max_active) {
         return;
     }
     for (let i1 in waiting) {
         let job = waiting[i1];
-        if (active.some(e => e.product_id === job.product_id)) {
+        if (activeTasks.some(e => e.product_id === job.product_id)) {
             continue; //do not alow 2 instances of the same product
         }
         let starting_job = waiting.splice(i1, 1)[0];
         starting_job.should.be.equal(job);
         starting_job.time_start = _get_time_stamp();
         starting_job.status = "starting";
-        active.push(starting_job);
+        activeTasks.push(starting_job);
         emiter.emit('OnJobStarting', { job: starting_job });
         setImmediate(() => _execute_job(emiter, starting_job));
         return;
@@ -62,9 +62,9 @@ function _execute_job(emiter, job) {
         })
 
         child.on('close', function(exitCode) {
-            for (let i in active) {
-                if (active[i].uid === job.uid) {
-                    let closed_job = active.splice(i, 1)[0];
+            for (let i in activeTasks) {
+                if (activeTasks[i].uid === job.uid) {
+                    let closed_job = activeTasks.splice(i, 1)[0];
                     if (closed_job.status === 'halting') {
                         closed_job.status = 'halted';
                     } else {
@@ -125,7 +125,7 @@ class Pool extends EventEmitter {
             }
         }
 
-        for (let job of active) {
+        for (let job of activeTasks) {
             if (job.uid != job_uid) {
                 continue;
             }
@@ -145,16 +145,12 @@ class Pool extends EventEmitter {
     }
 
 
-    get_active() {
-        return active;
+    activeTasks() {
+        return activeTasks;
     }
 
-    get_jobs() {
-        return active.concat(waiting);
-    }
-
-    get_active() {
-        return active;
+    allTasks() {
+        return activeTasks.concat(waiting);
     }
 }
 

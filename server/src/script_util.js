@@ -35,7 +35,7 @@ exports.load_cfg = function(product_id) {
 }
 
 exports.get_job_by_product = function(product_id) {
-	let jobs = pool.get_jobs();
+	let jobs = pool.allTasks();
 	for (let i in jobs) {
 		if (jobs[i].product_id == product_id) {
 			return jobs[i];
