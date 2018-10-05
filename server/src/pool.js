@@ -1,14 +1,27 @@
 "use strict";
 
-const should   = require('should');
-const colors   = require('colors');
-const EventEmitter = require('events');
-const sys      = require('./sys_util.js');
-const kill     = require('tree-kill');
+const events = require('events');
+const kill   = require('tree-kill');
+const assert = require('assert');
 
 let waitingTasks = [];
 let activeTasks  = [];
 let maxWorkers = 2;
+
+function _buf_to_full_lines(ref_buffer, fnDoOnLine) {
+    //normalize EOL to LF
+    ref_buffer.buffer = ref_buffer.buffer.replace(/\r\n/g, '\n'); 
+    let bClosed = ref_buffer.buffer[ref_buffer.buffer.length-1] === '\n';
+    let lines = ref_buffer.buffer.split('\n');
+    ref_buffer.buffer = lines.pop();
+    assert(!bClosed || ref_buffer.buffer === '');
+    if (fnDoOnLine !== false) {
+        for (let line of lines) {
+            fnDoOnLine(line);
+        }
+    }
+}
+
 
 function _get_time_stamp() {
     return new Date().getTime();
@@ -24,7 +37,7 @@ function _process_queue(emiter) {
             continue; //do not alow 2 instances of the same product
         }
         let starting_job = waitingTasks.splice(i1, 1)[0];
-        starting_job.should.be.equal(job);
+        assert(starting_job === job);
         starting_job.time_start = _get_time_stamp();
         starting_job.status = "starting";
         activeTasks.push(starting_job);
@@ -49,15 +62,15 @@ function _execute_job(emiter, job) {
 
         child.stdout.on('data', function(data) {
             buf_stdout.buffer += data;
-            sys.buf_to_full_lines(buf_stdout, (line) => {
-                emiter.emit('taskLog', { job: job, text: line })
+            _buf_to_full_lines(buf_stdout, (line) => {
+                emiter.emit('taskOutput', { job: job, text: line })
             });
         })
 
         child.stderr.on('data', function(data) {
             buf_stderr.buffer += data;
-            sys.buf_to_full_lines(buf_stderr, (line) => {
-                emiter.emit('taskError', { job: job, text: line })
+            _buf_to_full_lines(buf_stderr, (line) => {
+                emiter.emit('taskOutputError', { job: job, text: line })
             });
         })
 
@@ -70,9 +83,9 @@ function _execute_job(emiter, job) {
                     } else {
                         closed_job.status = 'finished';
                     }
-                    closed_job.should.be.equal(job)
+                    assert(closed_job === job);
                     closed_job.exec.exitCode = exitCode;
-                    emiter.emit('taskFinished', { job: closed_job })
+                    emiter.emit('taskCompleted', { job: closed_job })
                     setImmediate(() => _process_queue(emiter));
                     return;
                 }
@@ -86,7 +99,7 @@ function _execute_job(emiter, job) {
     }
 }
 
-class Pool extends EventEmitter {
+class Pool extends events {
     constructor() {
         super();
     }

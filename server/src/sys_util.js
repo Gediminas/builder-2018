@@ -2,7 +2,6 @@
 
 const fs = require('fs');
 const moment = require('moment');
-const assert = require('assert');
 
 //console.log('sys::__dirname:', __dirname);
 
@@ -77,21 +76,6 @@ Number.prototype.pad = function(size) {
   while (s.length < (size || 2)) {s = "0" + s;}
   return s;
 }
-
-exports.buf_to_full_lines = function (ref_buffer, fnDoOnLine) {
-  //normalize EOL to LF
-  ref_buffer.buffer = ref_buffer.buffer.replace(/\r\n/g, '\n'); 
-  let bClosed = ref_buffer.buffer[ref_buffer.buffer.length-1] === '\n';
-  let lines = ref_buffer.buffer.split('\n');
-  ref_buffer.buffer = lines.pop();
-  assert(!bClosed || ref_buffer.buffer === '');
-  if (fnDoOnLine !== false) {
-    for (let line of lines) {
-        fnDoOnLine(line);
-    }
-  }
-}
-
 
 exports.log_file = function (log_file, text) {
     fs.appendFileSync(log_file, text, {encoding: "utf8"}, function(){

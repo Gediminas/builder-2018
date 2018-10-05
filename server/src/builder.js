@@ -189,7 +189,7 @@ db.init(app_cfg.db_dir).then(() => {
     let log_combi = [];
     let log_combi_last_sub = 0;
 
-    pool.on('taskLog', (data) => {
+    pool.on('taskOutput', (data) => {
         console.log(`${data.job.product_id}> `.bgMagenta, data.text.green);
         // let log_file = working_dir + generate_log_name(log_combi);
         // sys.log_file(log_file, `${data.line}\n`);
@@ -235,14 +235,14 @@ db.init(app_cfg.db_dir).then(() => {
         update_client(Update_Jobs)
     });
 
-    pool.on('taskError', (data) => {
+    pool.on('taskOutputError', (data) => {
         console.log(`${data.job.product_id}> `.bgMagenta, data.text.red);
          // let log_file = working_dir + generate_log_name(log_combi);
          // sys.log_file(log_file, '!! '+data.line+'\n');
         update_client(Update_Jobs)
     });
 
-    pool.on('taskFinished', (data) => {
+    pool.on('taskCompleted', (data) => {
         // sys.log(job.product_id, "finished");
         console.log(`Finished: "${data.job.product_id}, ${data.job.status}, pid=${data.job.exec.pid}, code=${data.job.exec.exitCode}"`.bgGreen);
 
