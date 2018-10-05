@@ -8,7 +8,7 @@ const sys      = require('./sys_util.js');
 const db       = require('./builder_db_utils.js');
 const merge    = require('merge');
 const path     = require('path');
-const core    = require('./core.js');
+const pool    = require('./pool.js');
 
 var cron_jobs = [];
 
@@ -35,7 +35,7 @@ exports.load_cfg = function(product_id) {
 }
 
 exports.get_job_by_product = function(product_id) {
-	let jobs = core.get_jobs();
+	let jobs = pool.get_jobs();
 	for (let i in jobs) {
 		if (jobs[i].product_id == product_id) {
 			return jobs[i];

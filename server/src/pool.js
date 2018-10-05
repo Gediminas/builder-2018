@@ -28,7 +28,7 @@ function _process_queue(emiter) {
         starting_job.time_start = _get_time_stamp();
         starting_job.status = "starting";
         active.push(starting_job);
-        emiter.emit('OnQueueJobStarting', { job: starting_job });
+        emiter.emit('OnJobStarting', { job: starting_job });
         setImmediate(() => _execute_job(emiter, starting_job));
         return;
     }
@@ -45,19 +45,19 @@ function _execute_job(emiter, job) {
         job.status = 'started';
 
         job.exec.pid = child.pid;
-        emiter.emit('OnQueueJobStarted', { job: job })
+        emiter.emit('OnJobStarted', { job: job })
 
         child.stdout.on('data', function(data) {
             buf_stdout.buffer += data;
             sys.buf_to_full_lines(buf_stdout, (line) => {
-                emiter.emit('OnQueueJobLog', { job: job, text: line })
+                emiter.emit('OnJobLog', { job: job, text: line })
             });
         })
 
         child.stderr.on('data', function(data) {
             buf_stderr.buffer += data;
             sys.buf_to_full_lines(buf_stderr, (line) => {
-                emiter.emit('OnQueueJobError', { job: job, text: line })
+                emiter.emit('OnJobError', { job: job, text: line })
             });
         })
 
@@ -72,7 +72,7 @@ function _execute_job(emiter, job) {
                     }
                     closed_job.should.be.equal(job)
                     closed_job.exec.exitCode = exitCode;
-                    emiter.emit('OnQueueJobFinished', { job: closed_job })
+                    emiter.emit('OnJobFinished', { job: closed_job })
                     setImmediate(() => _process_queue(emiter));
                     return;
                 }
@@ -93,7 +93,7 @@ class Queue extends EventEmitter {
 
     init(max_active) {
         g_max_active = 2;
-        this.emit('OnQueueInit', { time: new Date() })
+        this.emit('OnInit', { time: new Date() })
     }
 
     add_job(product_id, job_data) {
@@ -110,7 +110,7 @@ class Queue extends EventEmitter {
             data:       job_data,
         };
         waiting.push(new_job);
-        this.emit('OnQueueJobAdded', { job: new_job })
+        this.emit('OnJobAdded', { job: new_job })
         setImmediate(() => _process_queue(this));
         return new_job;
     }
@@ -120,7 +120,7 @@ class Queue extends EventEmitter {
         for (let i in waiting) {
             if (waiting[i].uid == job_uid) {
                 let removed_job = waiting.splice(i, 1);
-                emitter.emit('OnQueueJobRemoved', { job: removed_job })
+                emitter.emit('OnJobRemoved', { job: removed_job })
                 return;
             }
         }
@@ -132,11 +132,11 @@ class Queue extends EventEmitter {
             //assert(job.exec.pid && data.exec.pid > 0);
 
             job.status = "halting";
-            this.emit('OnQueueJobKilling', { job: job })
+            this.emit('OnJobKilling', { job: job })
 
             kill(job.exec.pid, 'SIGTERM', function() { //SIGKILL
                 job.status = "halted";
-                emitter.emit('OnQueueJobKilled', { job: job })
+                emitter.emit('OnJobKilled', { job: job })
 			       });
              return;
         }
