@@ -6,24 +6,24 @@ const EventEmitter = require('events');
 const sys      = require('./sys_util.js');
 const kill     = require('tree-kill');
 
-let waiting = [];
+let waitingTasks = [];
 let activeTasks  = [];
-let g_max_active = undefined;
+let maxWorkers = 2;
 
 function _get_time_stamp() {
     return new Date().getTime();
 }
 
 function _process_queue(emiter) {
-    if (activeTasks.length >= g_max_active) {
+    if (activeTasks.length >= maxWorkers) {
         return;
     }
-    for (let i1 in waiting) {
-        let job = waiting[i1];
+    for (let i1 in waitingTasks) {
+        let job = waitingTasks[i1];
         if (activeTasks.some(e => e.product_id === job.product_id)) {
             continue; //do not alow 2 instances of the same product
         }
-        let starting_job = waiting.splice(i1, 1)[0];
+        let starting_job = waitingTasks.splice(i1, 1)[0];
         starting_job.should.be.equal(job);
         starting_job.time_start = _get_time_stamp();
         starting_job.status = "starting";
@@ -91,9 +91,9 @@ class Pool extends EventEmitter {
         super();
     }
 
-    init(max_active) {
-        g_max_active = 2;
-        this.emit('OnInit', { time: new Date() })
+    initialize(_maxWorkers) {
+        maxWorkers = _maxWorkers;
+        this.emit('initialized', { time: new Date() })
     }
 
     addTask(product_id, job_data) {
@@ -109,7 +109,7 @@ class Pool extends EventEmitter {
             exec:       {},
             data:       job_data,
         };
-        waiting.push(new_job);
+        waitingTasks.push(new_job);
         this.emit('taskAdded', { job: new_job })
         setImmediate(() => _process_queue(this));
         return new_job;
@@ -117,9 +117,9 @@ class Pool extends EventEmitter {
 
     dropTask(job_uid) {
         let emitter = this
-        for (let i in waiting) {
-            if (waiting[i].uid == job_uid) {
-                let removed_job = waiting.splice(i, 1);
+        for (let i in waitingTasks) {
+            if (waitingTasks[i].uid == job_uid) {
+                let removed_job = waitingTasks.splice(i, 1);
                 emitter.emit('taskRemoved', { job: removed_job })
                 return;
             }
@@ -150,7 +150,7 @@ class Pool extends EventEmitter {
     }
 
     allTasks() {
-        return activeTasks.concat(waiting);
+        return activeTasks.concat(waitingTasks);
     }
 }
 

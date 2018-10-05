@@ -115,8 +115,8 @@ function generate_log_name(log_combi) {
 
 db.init(app_cfg.db_dir).then(() => {
 
-    pool.on('OnInit', (data) => {
-        console.log(`Init: "${data.time}"`.bgMagenta);
+    pool.on('initialized', (data) => {
+        console.log(`initialized: "${data.time}"`.bgMagenta);
         update_client(Update_Products | Update_Jobs); //because job was added
     });
 
@@ -267,7 +267,7 @@ db.init(app_cfg.db_dir).then(() => {
     });
 
 
-    pool.init(2);
+    pool.initialize(2);
 });
 
 
