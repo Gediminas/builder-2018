@@ -2,7 +2,7 @@
 
 const events = require('events');
 const kill   = require('tree-kill');
-const assert = require('assert');
+const assert = require('better-assert');
 
 let waitingTasks = [];
 let activeTasks  = [];
