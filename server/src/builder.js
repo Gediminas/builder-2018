@@ -73,14 +73,14 @@ io.on('connection', function(socket){
   update_client(Update_ALL, socket);
 
 	socket.on('job_add', function(data){
-		//script.add_job(data.product_id, "user comment");
+		//script.addTask(data.product_id, "user comment");
     //update_client(Update_Products | Update_Jobs, socket)
-    pool.add_job(data.product_id, "user comment");
+    pool.addTask(data.product_id, "user comment");
 	});
 
 	socket.on('job_kill', function(data){
-      pool.remove_job(data.job_uid);
-});
+      pool.dropTask(data.job_uid);
+  });
 
 	socket.on('sys_shutdown', function(data){
 		sys.log("Stoping cron jobs...");
@@ -120,11 +120,11 @@ db.init(app_cfg.db_dir).then(() => {
         update_client(Update_Products | Update_Jobs); //because job was added
     });
 
-    pool.on('OnJobStarting', (data) => {
+    pool.on('taskStarting', (data) => {
         console.log(`Starting: "${data.job.product_id}"`.bgMagenta);
     });
 
-    pool.on('OnJobAdded', (data) => {
+    pool.on('taskAdded', (data) => {
         console.log(`Added: "${data.job.product_id}"`.bgMagenta);
         let product_id = data.job.product_id;
 	      let cfg      = script.load_cfg(product_id);
@@ -145,7 +145,7 @@ db.init(app_cfg.db_dir).then(() => {
 	      };
         data.job.data = data1;
 
-        //FIXME: Should be moved to OnJobStarting() or similar
+        //FIXME: Should be moved to taskStarting() or similar
         let app_cfg     = script.load_app_cfg();
         let script_js   = app_cfg.script_dir + product_id + '/index.js';
         let product_dir = app_cfg.working_dir + product_id + '/';
@@ -166,19 +166,19 @@ db.init(app_cfg.db_dir).then(() => {
         update_client(Update_Products | Update_Jobs)
     });
 
-    pool.on('OnJobRemoved', (data) => {
+    pool.on('taskRemoved', (data) => {
         console.log(`Removed: "${data.job.product_id}"`.bgMagenta);
     });
 
-    pool.on('OnJobKilling', (data) => {
+    pool.on('taskKilling', (data) => {
         console.log(`Killing: "${data.job.product_id}"`.bgMagenta);
     });
 
-    pool.on('OnJobKilled', (data) => {
+    pool.on('taskKilled', (data) => {
         console.log(`Killed: "${data.job.product_id}"`.bgMagenta);
     });
 
-    pool.on('OnJobStarted', (data) => {
+    pool.on('taskStarted', (data) => {
 	      // sys.log(job.product_id, "started");
         console.log(`Started: "${data.job.product_id}, pid=${data.job.exec.pid}"`.bgGreen);
         data.job.data.pid    = data.job.exec.pid;
@@ -189,7 +189,7 @@ db.init(app_cfg.db_dir).then(() => {
     let log_combi = [];
     let log_combi_last_sub = 0;
 
-    pool.on('OnJobLog', (data) => {
+    pool.on('taskLog', (data) => {
         console.log(`${data.job.product_id}> `.bgMagenta, data.text.green);
         // let log_file = working_dir + generate_log_name(log_combi);
         // sys.log_file(log_file, `${data.line}\n`);
@@ -229,20 +229,20 @@ db.init(app_cfg.db_dir).then(() => {
                     title_renamed = '';
                     // let log_file = working_dir + generate_log_name(log_combi);
                     // sys.log_file(log_file, `${line}\n`);
-                    //emiter.emit('OnJobLog', { text: line })
+                    //emiter.emit('taskLog', { text: line })
                     // update_client(Update_Jobs)
                 }
         update_client(Update_Jobs)
     });
 
-    pool.on('OnJobError', (data) => {
+    pool.on('taskError', (data) => {
         console.log(`${data.job.product_id}> `.bgMagenta, data.text.red);
          // let log_file = working_dir + generate_log_name(log_combi);
          // sys.log_file(log_file, '!! '+data.line+'\n');
         update_client(Update_Jobs)
     });
 
-    pool.on('OnJobFinished', (data) => {
+    pool.on('taskFinished', (data) => {
         // sys.log(job.product_id, "finished");
         console.log(`Finished: "${data.job.product_id}, ${data.job.status}, pid=${data.job.exec.pid}, code=${data.job.exec.exitCode}"`.bgGreen);
 
