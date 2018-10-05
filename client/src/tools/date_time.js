@@ -25,7 +25,7 @@ export function toDate(time) {
 
 export function toTime(time) {
   //return new Date(time).toLocaleTimeString()
-  return moment(time).format('hh:mm')
+  return moment(time).format('HH:mm')
 }
 
 export function time_to_now(time_start) {

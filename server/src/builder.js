@@ -12,7 +12,7 @@ const socketio = require('socket.io');
 const sys      = require('./sys_util.js');
 const script   = require('./script_util.js');
 const db       = require('./builder_db_utils.js');
-const core    = require('./core.js');
+const core     = require('./core.js');
 
 const app_cfg = script.load_app_cfg();
 const io  = socketio(app_cfg.server_port);
