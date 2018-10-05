@@ -12,7 +12,7 @@ const socketio = require('socket.io');
 const sys      = require('./sys_util.js');
 const script   = require('./script_util.js');
 const db       = require('./builder_db_utils.js');
-const queue    = require('./queue_util.js');
+const core    = require('./core.js');
 
 const app_cfg = script.load_app_cfg();
 const io  = socketio(app_cfg.server_port);
@@ -58,7 +58,7 @@ let update_client = function(update_flags, client_socket) {
     state['hjobs'] = hjobs;
   }
   if ((update_flags & Update_Jobs) != 0) {
-    var jobs = queue.get_jobs();
+    var jobs = core.get_jobs();
     state['jobs'] = jobs; 
   }
   if (Object.keys(state).length !== 0) {
@@ -75,11 +75,11 @@ io.on('connection', function(socket){
 	socket.on('job_add', function(data){
 		//script.add_job(data.product_id, "user comment");
     //update_client(Update_Products | Update_Jobs, socket)
-    queue.add_job(data.product_id, "user comment");
+    core.add_job(data.product_id, "user comment");
 	});
 
 	socket.on('job_kill', function(data){
-      queue.remove_job(data.job_uid);
+      core.remove_job(data.job_uid);
 });
 
 	socket.on('sys_shutdown', function(data){
@@ -93,7 +93,7 @@ io.on('connection', function(socket){
 	});
 });
 
-// QUEUE =====================================================
+// core =====================================================
 
 function generate_log_name(log_combi) {
   let name = log_combi.reduce((cobined_name, sub_nr) => {
@@ -115,16 +115,16 @@ function generate_log_name(log_combi) {
 
 db.init(app_cfg.db_dir).then(() => {
 
-    queue.on('OnQueueInit', (data) => {
+    core.on('OnQueueInit', (data) => {
         console.log(`Init: "${data.time}"`.bgMagenta);
         update_client(Update_Products | Update_Jobs); //because job was added
     });
 
-    queue.on('OnQueueJobStarting', (data) => {
+    core.on('OnQueueJobStarting', (data) => {
         console.log(`Starting: "${data.job.product_id}"`.bgMagenta);
     });
 
-    queue.on('OnQueueJobAdded', (data) => {
+    core.on('OnQueueJobAdded', (data) => {
         console.log(`Added: "${data.job.product_id}"`.bgMagenta);
         let product_id = data.job.product_id;
 	      let cfg      = script.load_cfg(product_id);
@@ -166,19 +166,19 @@ db.init(app_cfg.db_dir).then(() => {
         update_client(Update_Products | Update_Jobs)
     });
 
-    queue.on('OnQueueJobRemoved', (data) => {
+    core.on('OnQueueJobRemoved', (data) => {
         console.log(`Removed: "${data.job.product_id}"`.bgMagenta);
     });
 
-    queue.on('OnQueueJobKilling', (data) => {
+    core.on('OnQueueJobKilling', (data) => {
         console.log(`Killing: "${data.job.product_id}"`.bgMagenta);
     });
 
-    queue.on('OnQueueJobKilled', (data) => {
+    core.on('OnQueueJobKilled', (data) => {
         console.log(`Killed: "${data.job.product_id}"`.bgMagenta);
     });
 
-    queue.on('OnQueueJobStarted', (data) => {
+    core.on('OnQueueJobStarted', (data) => {
 	      // sys.log(job.product_id, "started");
         console.log(`Started: "${data.job.product_id}, pid=${data.job.exec.pid}"`.bgGreen);
         data.job.data.pid    = data.job.exec.pid;
@@ -189,7 +189,7 @@ db.init(app_cfg.db_dir).then(() => {
     let log_combi = [];
     let log_combi_last_sub = 0;
 
-    queue.on('OnQueueJobLog', (data) => {
+    core.on('OnQueueJobLog', (data) => {
         console.log(`${data.job.product_id}> `.bgMagenta, data.text.green);
         // let log_file = working_dir + generate_log_name(log_combi);
         // sys.log_file(log_file, `${data.line}\n`);
@@ -235,14 +235,14 @@ db.init(app_cfg.db_dir).then(() => {
         update_client(Update_Jobs)
     });
 
-    queue.on('OnQueueJobError', (data) => {
+    core.on('OnQueueJobError', (data) => {
         console.log(`${data.job.product_id}> `.bgMagenta, data.text.red);
          // let log_file = working_dir + generate_log_name(log_combi);
          // sys.log_file(log_file, '!! '+data.line+'\n');
         update_client(Update_Jobs)
     });
 
-    queue.on('OnQueueJobFinished', (data) => {
+    core.on('OnQueueJobFinished', (data) => {
         // sys.log(job.product_id, "finished");
         console.log(`Finished: "${data.job.product_id}, ${data.job.status}, pid=${data.job.exec.pid}, code=${data.job.exec.exitCode}"`.bgGreen);
 
@@ -267,7 +267,7 @@ db.init(app_cfg.db_dir).then(() => {
     });
 
 
-    queue.init(2);
+    core.init(2);
 });
 
 
