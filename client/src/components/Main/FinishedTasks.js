@@ -1,16 +1,16 @@
 import React, { PureComponent } from 'react'
-import Job from './FinishedJob'
+import Task from './FinishedTask'
 
 export default class extends PureComponent {
-  getHJobs() {
-    return this.props.hjobs || []
+  getHTasks() {
+    return this.props.htasks || []
   }
   render() {
-    let ui_jobs = this.getHJobs().map((hjob) => {
-      let job_uid = hjob.get('uid')
-      return <Job key={job_uid} hjob={hjob} />
+    let ui_tasks = this.getHTasks().map((htask) => {
+      let task_uid = htask.get('uid')
+      return <Task key={task_uid} htask={htask} />
     })
-    let header = (this.getHJobs().size > 0)
+    let header = (this.getHTasks().size > 0)
       ? (
           <div className='row_header'>
             <div className='cell_header'>id</div>
@@ -24,12 +24,12 @@ export default class extends PureComponent {
             <div className='cell_header'>debug</div>
           </div>
         )
-      : (<div>no finnished jobs...</div>)
+      : (<div>no finnished tasks...</div>)
     return (
-      <div className='jobs'>
+      <div className='tasks'>
         <div className='table'>
           {header}
-          {ui_jobs}
+          {ui_tasks}
         </div>
       </div>
     )

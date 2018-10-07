@@ -4,15 +4,15 @@ import {toDate, toTime, time_to_now, toHHMMSS} from '../../tools/date_time.js'
 export default class extends PureComponent {
 
   render() {
-    //let job_id       = this.props.job.get('id')
-    let job_uid        = this.props.job.get('uid')
-    //let product_id     = this.props.job.get('product_id')
-    let time_start     = this.props.job.get('time_start')
-    let comment        = this.props.job.getIn(['data', 'comment'])
-    let pid            = this.props.job.getIn(['data', 'pid'])
-    //let status         = this.props.job.getIn(['data', 'status'])
-    let product_name   = this.props.job.getIn(['data', 'product_name'])
-    let prev_time_diff = this.props.job.getIn(['data', 'prev_time_diff'])
+    //let task_id       = this.props.task.get('id')
+    let task_uid        = this.props.task.get('uid')
+    //let product_id     = this.props.task.get('product_id')
+    let time_start     = this.props.task.get('time_start')
+    let comment        = this.props.task.getIn(['data', 'comment'])
+    let pid            = this.props.task.getIn(['data', 'pid'])
+    //let status         = this.props.task.getIn(['data', 'status'])
+    let product_name   = this.props.task.getIn(['data', 'product_name'])
+    let prev_time_diff = this.props.task.getIn(['data', 'prev_time_diff'])
     let duration       = time_to_now(time_start)
     let percent        = Math.floor(100 * duration / prev_time_diff)
 
@@ -26,8 +26,8 @@ export default class extends PureComponent {
       <div className='row'>
         <div className='cell'>
           <button type="button"
-                  className="btn btn_killjob_on"
-                  onClick={() => this.props.kill_job(job_uid, pid)}>
+                  className="btn btn_killtask_on"
+                  onClick={() => this.props.kill_task(task_uid, pid)}>
             -
           </button>
         </div>
