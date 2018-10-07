@@ -11,11 +11,11 @@ function set_state(state, newState) {
   return state.merge(newState)
 }
 
-export function add_job(state, entry) {
+export function add_task(state, entry) {
     return state
 }
 
-export function kill_job(state, entry) {
+export function kill_task(state, entry) {
     return state
 }
 
@@ -25,10 +25,10 @@ export default function(state = Map(), action) {
     return set_connection_state(state, action.state, action.connected)
   case 'SET_STATE':
     return set_state(state, action.state)
-  case 'ADD_JOB':
-    return add_job(state, action.product_id)
-  case 'KILL_JOB':
-    return kill_job(state, action.job_uid, action.pid)
+  case 'ADD_TASK':
+    return add_task(state, action.product_id)
+  case 'KILL_TASK':
+    return kill_task(state, action.task_uid, action.pid)
   default:
     break
   }

@@ -22,7 +22,7 @@ export default class extends PureComponent {
     )
     let ui_products = this.getProducts().map((product) => {
       let product_id = product.get('product_id')
-      return <Product key={product_id} product={product} add_job={this.props.add_job} />
+      return <Product key={product_id} product={product} add_task={this.props.add_task} />
     })
     return (
       <div className='products'>

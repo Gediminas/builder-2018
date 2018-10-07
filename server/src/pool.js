@@ -26,60 +26,60 @@ function _process_queue(emiter) {
         return;
     }
     for (let i1 in waitingTasks) {
-        let job = waitingTasks[i1];
-        if (activeTasks.some(e => e.product_id === job.product_id)) {
+        let task = waitingTasks[i1];
+        if (activeTasks.some(e => e.product_id === task.product_id)) {
             continue; //do not alow 2 instances of the same product
         }
-        let starting_job = waitingTasks.splice(i1, 1)[0];
-        assert(starting_job === job);
-        starting_job.time_start = _get_time_stamp();
-        starting_job.status = "starting";
-        activeTasks.push(starting_job);
-        emiter.emit('taskStarting', { job: starting_job });
-        setImmediate(() => _execute_job(emiter, starting_job));
+        let starting_task = waitingTasks.splice(i1, 1)[0];
+        assert(starting_task === task);
+        starting_task.time_start = _get_time_stamp();
+        starting_task.status = "starting";
+        activeTasks.push(starting_task);
+        emiter.emit('taskStarting', { task: starting_task });
+        setImmediate(() => _execute_task(emiter, starting_task));
         return;
     }
 }
 
-function _execute_job(emiter, job) {
-    switch (job.exec.method) {
+function _execute_task(emiter, task) {
+    switch (task.exec.method) {
     case 'execFile':
         let buf_stdout = {buffer: ''};
         let buf_stderr = {buffer: ''};
 
         const execFile = require('child_process').execFile;
-        const child = execFile(job.exec.file, job.exec.args, job.exec.options, job.exec.callback);
-        job.status = 'started';
+        const child = execFile(task.exec.file, task.exec.args, task.exec.options, task.exec.callback);
+        task.status = 'started';
 
-        job.exec.pid = child.pid;
-        emiter.emit('taskStarted', { job: job })
+        task.exec.pid = child.pid;
+        emiter.emit('taskStarted', { task: task })
 
         child.stdout.on('data', function(data) {
             buf_stdout.buffer += data;
             _buf_to_full_lines(buf_stdout, (line) => {
-                emiter.emit('taskOutput', { job: job, text: line })
+                emiter.emit('taskOutput', { task: task, text: line })
             });
         })
 
         child.stderr.on('data', function(data) {
             buf_stderr.buffer += data;
             _buf_to_full_lines(buf_stderr, (line) => {
-                emiter.emit('taskOutputError', { job: job, text: line })
+                emiter.emit('taskOutputError', { task: task, text: line })
             });
         })
 
         child.on('close', function(exitCode) {
             for (let i in activeTasks) {
-                if (activeTasks[i].uid === job.uid) {
-                    let closed_job = activeTasks.splice(i, 1)[0];
-                    if (closed_job.status === 'halting') {
-                        closed_job.status = 'halted';
+                if (activeTasks[i].uid === task.uid) {
+                    let closed_task = activeTasks.splice(i, 1)[0];
+                    if (closed_task.status === 'halting') {
+                        closed_task.status = 'halted';
                     } else {
-                        closed_job.status = 'finished';
+                        closed_task.status = 'finished';
                     }
-                    assert(closed_job === job);
-                    closed_job.exec.exitCode = exitCode;
-                    emiter.emit('taskCompleted', { job: closed_job })
+                    assert(closed_task === task);
+                    closed_task.exec.exitCode = exitCode;
+                    emiter.emit('taskCompleted', { task: closed_task })
                     setImmediate(() => _process_queue(emiter));
                     return;
                 }
@@ -87,8 +87,8 @@ function _execute_job(emiter, job) {
         });
         break;
     default:
-        console.error(`unknown method ${job.method}`.red);
-        //reject(job);
+        console.error(`unknown method ${task.method}`.red);
+        //reject(task);
         break;
     }
 }
@@ -103,9 +103,9 @@ class Pool extends events {
         this.emit('initialized', { time: new Date() })
     }
 
-    addTask(product_id, job_data) {
+    addTask(product_id, task_data) {
         let timestamp = _get_time_stamp();
-        let new_job = {
+        let new_task = {
             uid:        timestamp,
             product_id: product_id,
             status:     "queued",
@@ -114,36 +114,36 @@ class Pool extends events {
             time_end:   0,
             time_diff:  0,
             exec:       {},
-            data:       job_data,
+            data:       task_data,
         };
-        waitingTasks.push(new_job);
-        this.emit('taskAdded', { job: new_job })
+        waitingTasks.push(new_task);
+        this.emit('taskAdded', { task: new_task })
         setImmediate(() => _process_queue(this));
-        return new_job;
+        return new_task;
     }
 
-    dropTask(job_uid) {
+    dropTask(task_uid) {
         let emitter = this
         for (let i in waitingTasks) {
-            if (waitingTasks[i].uid == job_uid) {
-                let removed_job = waitingTasks.splice(i, 1);
-                emitter.emit('taskRemoved', { job: removed_job })
+            if (waitingTasks[i].uid == task_uid) {
+                let removed_task = waitingTasks.splice(i, 1);
+                emitter.emit('taskRemoved', { task: removed_task })
                 return;
             }
         }
 
-        for (let job of activeTasks) {
-            if (job.uid != job_uid) {
+        for (let task of activeTasks) {
+            if (task.uid != task_uid) {
                 continue;
             }
-            //assert(job.exec.pid && data.exec.pid > 0);
+            //assert(task.exec.pid && data.exec.pid > 0);
 
-            job.status = "halting";
-            this.emit('taskKilling', { job: job })
+            task.status = "halting";
+            this.emit('taskKilling', { task: task })
 
-            kill(job.exec.pid, 'SIGTERM', function() { //SIGKILL
-                job.status = "halted";
-                emitter.emit('taskKilled', { job: job })
+            kill(task.exec.pid, 'SIGTERM', function() { //SIGKILL
+                task.status = "halted";
+                emitter.emit('taskKilled', { task: task })
 			       });
              return;
         }

@@ -8,7 +8,7 @@ body {
 .products {
   __overflow-x:auto;
 }
-.jobs {
+.tasks {
   __overflow-x:auto;
 }
 
@@ -76,17 +76,17 @@ body {
 	_margin: 0px;
 }
 
-.btn_addjob { 
+.btn_addtask { 
 	background-color: lightgrey;
 }
-.btn_killjob_on { 
+.btn_killtask_on { 
 	background-color: red;
 }
-.btn_killjob_off { 
+.btn_killtask_off { 
 	background-color: lightgray;
 }
 
-#div_jobs {
+#div_tasks {
 	min-height: 100px;
 }
 
@@ -111,7 +111,7 @@ progress:before {
 }
 */
 
-.jobs_time_to_now {
+.tasks_time_to_now {
   text-align:right;
 }
 
@@ -132,8 +132,8 @@ tr.tr_up_separator_forced  td { border-top-style:solid;  border-top-color:red; b
 tr.tr_up_separator         td { border-top-style:solid;  border-top-color:black; border-top-width: 1px; }
 td.AT_status_bld { border-style:solid;  border-color:yellow; border-width: 1px; background-color:yellow; }
 
-input[class='job_added']    { height:20px; width:30px; font-size: 60%; margin:-5px; background-color: yellow; }
-input[class='job_notadded'] { height:20px; width:30px; font-size: 60%; margin:-5px; background-color: lightgray; }
+input[class='task_added']    { height:20px; width:30px; font-size: 60%; margin:-5px; background-color: yellow; }
+input[class='task_notadded'] { height:20px; width:30px; font-size: 60%; margin:-5px; background-color: lightgray; }
 
 a.prod_name:link, a.prod_name:visited  { text-decoration: none; color:black; }
 a.res_status:link,a.res_status:visited { text-decoration: none; color:black; }

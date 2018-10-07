@@ -59,7 +59,7 @@ ReactDOM.render((
     <BrowserRouter> 
       <Switch>
         <Route exact path='/'                       component={BuilderContainer} />
-        <Route exact path='/log/:prod_id/:job_uid?' component={LogViewerContainer} />
+        <Route exact path='/log/:prod_id/:task_uid?' component={LogViewerContainer} />
       </Switch>
     </BrowserRouter>
   </div>

@@ -3,14 +3,14 @@ export default socket => store => next => action => {
     //console.log('send action', action)
     //socket.emit('action', action)
     switch(action.type) {
-    case 'ADD_JOB':
-      socket.emit('job_add', {
+    case 'ADD_TASK':
+      socket.emit('task_add', {
         'product_id': action.product_id
       })
       break
-    case 'KILL_JOB':
-      socket.emit('job_kill', {
-        'job_uid': action.job_uid,
+    case 'KILL_TASK':
+      socket.emit('task_kill', {
+        'task_uid': action.task_uid,
         'pid':    action.pid
       })
       break

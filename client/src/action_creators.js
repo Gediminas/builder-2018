@@ -12,19 +12,19 @@ export function set_state(state) {
   }
 }
 
-export function add_job(product_id) {
+export function add_task(product_id) {
   return {
     meta: {remote: true},
-    type: 'ADD_JOB',
+    type: 'ADD_TASK',
     product_id
   }
 }
 
-export function kill_job(job_uid, pid) {
+export function kill_task(task_uid, pid) {
   return {
     meta: {remote: true},
-    type: 'KILL_JOB',
-    job_uid,
+    type: 'KILL_TASK',
+    task_uid,
     pid
   }
 }

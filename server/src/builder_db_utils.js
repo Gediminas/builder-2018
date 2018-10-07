@@ -44,8 +44,8 @@ exports.init = function(path) {
 }
 
 exports.add_history = function(data) {
-	var job = tb_history.insert(data);
-	job.id = job.$loki;
+	var task = tb_history.insert(data);
+	task.id = task.$loki;
 }
 
 exports.get_history = function(limit) {

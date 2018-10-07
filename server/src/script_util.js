@@ -10,7 +10,7 @@ const merge    = require('merge');
 const path     = require('path');
 const pool    = require('./pool.js');
 
-var cron_jobs = [];
+var cron_tasks = [];
 
 exports.load_app_cfg = function(product_id) {
 	let app_cfg = JSON.parse(fs.readFileSync(__dirname + "/../../_cfg/config.json", 'utf8'));
@@ -34,11 +34,11 @@ exports.load_cfg = function(product_id) {
 	return mrg;
 }
 
-exports.get_job_by_product = function(product_id) {
-	let jobs = pool.allTasks();
-	for (let i in jobs) {
-		if (jobs[i].product_id == product_id) {
-			return jobs[i];
+exports.get_task_by_product = function(product_id) {
+	let tasks = pool.allTasks();
+	for (let i in tasks) {
+		if (tasks[i].product_id == product_id) {
+			return tasks[i];
 		}
 	}
 	return db.findLast_history({"product_id": product_id});
@@ -52,10 +52,10 @@ exports.init = function(product_id)
 		let cron_time = scfg["cron"];
 		//sys.script_log(product_id, JSON.stringify(scfg))
 		if (cron_time) {
-			let cron_job = new CronJob(cron_time, function() {
-				exports.add_job(product_id, scfg["cron_comment"]);
+			let cron_task = new CronJob(cron_time, function() {
+				exports.add_task(product_id, scfg["cron_comment"]);
 			}, null, true, gcfg["time_zone"]);
-			cron_jobs.push(cron_job);
+			cron_tasks.push(cron_task);
 		}
 	}
 	catch (e) {
@@ -91,8 +91,8 @@ exports.init_all = function()
 
 exports.destroy_all = function()
 {
-	for (let i in cron_jobs) {
-		cron_jobs[i].stop();
+	for (let i in cron_tasks) {
+		cron_tasks[i].stop();
 	}
 }
 
@@ -104,12 +104,12 @@ exports.get_products = function(on_loaded) {
       for (let i in files) {
         let product_id = files[i];
         let cfg = exports.load_cfg(product_id);
-        let last_job = exports.get_job_by_product(product_id);
+        let last_task = exports.get_task_by_product(product_id);
         let product = { 
           product_id:   product_id,
           product_name: cfg.product_name,
           cfg:          cfg,
-          last_job:     last_job
+          last_task:     last_task
          };
         products.push(product);
       }
