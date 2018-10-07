@@ -16,7 +16,7 @@ export default socket => store => next => action => {
       break
     default:
       break
-    }
+     }
   }
   return next(action)
 }

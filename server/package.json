@@ -36,5 +36,9 @@
     "should": "^13.2.3",
     "socket.io": "^2.1.1",
     "tree-kill": "^1.2.0"
+  },
+  "devDependencies": {
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-plugin-import": "^2.14.0"
   }
 }
