@@ -1,19 +1,20 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import { BrowserRouter, Route, Switch } from 'react-router-dom'
-import {createStore, applyMiddleware} from 'redux'
-import {Provider} from 'react-redux'
+import { createStore, applyMiddleware } from 'redux'
+import { Provider } from 'react-redux'
 import io from 'socket.io-client'
 import reducer from './reducer'
-import {set_state, set_connection_state} from './action_creators'
+import { set_state, set_connection_state } from './action_creators'
 import remoteActionMiddleware from './remote_action_middleware'
-import {BuilderContainer} from './components/Main/Builder'
-import {LogViewerContainer} from './components/LogViewer/LogViewer'
-import {ConnectionStateContainer} from './components/common/ConnectionState'
+import { BuilderContainer } from './components/Main/Builder'
+import { LogViewerContainer } from './components/LogViewer/LogViewer'
+import { ConnectionStateContainer } from './components/common/ConnectionState'
 
 
 require('./style.css')
 const cfg = require('../../_cfg/config.json')
+
 console.log(cfg)
 console.log(cfg.server_address)
 console.log(cfg.server_port)
@@ -23,18 +24,18 @@ console.log(cfg.server_port)
 const socket = io(cfg.server_address + ':' + cfg.server_port)
 
 const createStoreWithMiddleware = applyMiddleware(
-  remoteActionMiddleware(socket)
+    remoteActionMiddleware(socket)
 )(createStore)
 const store = createStoreWithMiddleware(reducer)
 
 let connection_events = [
-  'connect',
-  'connect_error',
-  'connect_timeout',
-  'reconnect',
-  'reconnecting',
-  'reconnect_error',
-  'reconnect_failed'
+    'connect',
+    'connect_error',
+    'connect_timeout',
+    'reconnect',
+    'reconnecting',
+    'reconnect_error',
+    'reconnect_failed',
 ]
 connection_events.forEach(ev =>
   socket.on(ev, () => store.dispatch(set_connection_state(ev, socket.connected)))
