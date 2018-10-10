@@ -2,6 +2,7 @@
     "extends": "airbnb",
     "rules": {
         "indent": ["error", 4],
-        "semi": ["error", "never"]
+        "semi": ["error", "never"],
+        "camelcase": ["error", {"properties": "never"}]
     }
 }
