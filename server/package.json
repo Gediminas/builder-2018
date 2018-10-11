@@ -1,7 +1,7 @@
 {
   "name": "builder-server",
   "version": "0.0.1",
-  "description": "Automatated builds/tasks server",
+  "description": "Automatated tasks server",
   "main": "./src/builder.js",
   "scripts": {
     "start": "sh forever.sh node ./src/builder.js",
@@ -33,12 +33,7 @@
     "lokijs": "^1.5.5",
     "merge": "^1.2.0",
     "moment": "^2.22.2",
-    "should": "^13.2.3",
     "socket.io": "^2.1.1",
     "tree-kill": "^1.2.0"
-  },
-  "devDependencies": {
-    "eslint-config-airbnb-base": "^13.1.0",
-    "eslint-plugin-import": "^2.14.0"
   }
 }
