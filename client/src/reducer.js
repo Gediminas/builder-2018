@@ -1,32 +1,36 @@
-import { Map } from 'immutable'
+import {Map} from 'immutable'
 
-const setConnectionState = (state, connectionState, connected) => {
-    state.set('connection', Map({
+function set_connection_state(state, connectionState, connected) {
+    return state.set('connection', Map({
         state: connectionState,
-        connected,
+        connected
     }))
 }
 
+function set_state(state, newState) {
+    return state.merge(newState)
+}
 
-const setState = (state, newState) => state.merge(newState)
-const addTask = state => state
-const killTask = state => state
+export function add_task(state, entry) {
+    return state
+}
 
-export { addTask, killTask }
+export function kill_task(state, entry) {
+    return state
+}
 
-export default function (state = Map(), action) {
+export default function(state = Map(), action) {
     switch (action.type) {
     case 'SET_CONNECTION_STATE':
-        return setConnectionState(state, action.state, action.connected)
+        return set_connection_state(state, action.state, action.connected)
     case 'SET_STATE':
-        return setState(state, action.state)
+        return set_state(state, action.state)
     case 'ADD_TASK':
-        return addTask(state, action.product_id)
+        return add_task(state, action.product_id)
     case 'KILL_TASK':
-        return killTask(state, action.task_uid, action.pid)
+        return kill_task(state, action.task_uid, action.pid)
     default:
         break
     }
     return state
 }
-

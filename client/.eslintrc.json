@@ -2,8 +2,8 @@
     "extends": "airbnb",
     "rules": {
         "no-console": 0,
-        "camelcase": [2, {"properties": "never"}],
-        "indent": [2, 4],
-        "semi": [2, "never"]
+        "camelcase": ["error", {"properties": "never"}],
+        "indent": ["error", 2],
+        "semi": ["error", "never"]
     }
 }

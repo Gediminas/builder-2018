@@ -47,7 +47,6 @@ let update_client = function(update_flags, client_socket) {
     script.get_products((products) => {
       var state = {}
       state['products'] = products;
-      //console.log('delayed');
       emit_state(state, client_socket)
     });
   }
