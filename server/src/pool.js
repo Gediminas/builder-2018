@@ -68,19 +68,20 @@ function executeTask(emiter, task) {
 
         child.on('close', (exitCode) => {
             for (const i in activeTasks) {
-                if (activeTasks[i].uid === task.uid) {
-                    const closedTask = activeTasks.splice(i, 1)[0]
-                    if (closedTask.status === 'halting') {
-                        closedTask.status = 'halted'
-                    } else {
-                        closedTask.status = 'finished'
-                    }
-                    assert(closedTask === task)
-                    closedTask.exec.exitCode = exitCode
-                    emiter.emit('taskCompleted', { task: closedTask })
-                    setImmediate(() => processQueue(emiter))
-                    return
+                if (activeTasks[i].uid !== task.uid) {
+                    continue
                 }
+                const closedTask = activeTasks.splice(i, 1)[0]
+                if (closedTask.status === 'halting') {
+                    closedTask.status = 'halted'
+                } else {
+                    closedTask.status = 'finished'
+                }
+                assert(closedTask === task)
+                closedTask.exec.exitCode = exitCode
+                emiter.emit('taskCompleted', { task: closedTask })
+                setImmediate(() => processQueue(emiter))
+                return
             }
         })
         break
