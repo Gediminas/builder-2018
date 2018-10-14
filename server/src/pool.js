@@ -45,38 +45,39 @@ function executeTask(emiter, task) {
         let bufOut = ''
         let bufErr = ''
 
-        const child = execFile(task.exec.file, task.exec.args, task.exec.options, task.exec.callback)
+        const child = execFile(task.exec.file, task.exec.args,
+            task.exec.options, task.exec.callback)
         task.status = 'started'
 
         task.exec.pid = child.pid
-        emiter.emit('taskStarted', { task: task })
+        emiter.emit('taskStarted', { task })
 
         child.stdout.on('data', (data) => {
-            bufOut += data;
+            bufOut += data
             bufOut = bufferToFullLines(bufOut, (line) => {
-                emiter.emit('taskOutput', { task: task, text: line })
+                emiter.emit('taskOutput', { task, text: line })
             })
         })
 
-        child.stderr.on('data', function(data) {
-            bufErr += data;
+        child.stderr.on('data', (data) => {
+            bufErr += data
             bufErr = bufferToFullLines(bufErr, (line) => {
-                emiter.emit('taskOutputError', { task: task, text: line })
-            });
+                emiter.emit('taskOutputError', { task, text: line })
+            })
         })
 
-        child.on('close', function(exitCode) {
-            for (let i in activeTasks) {
+        child.on('close', (exitCode) => {
+            for (const i in activeTasks) {
                 if (activeTasks[i].uid === task.uid) {
-                    let closed_task = activeTasks.splice(i, 1)[0];
-                    if (closed_task.status === 'halting') {
-                        closed_task.status = 'halted'
+                    const closedTask = activeTasks.splice(i, 1)[0]
+                    if (closedTask.status === 'halting') {
+                        closedTask.status = 'halted'
                     } else {
-                        closed_task.status = 'finished'
+                        closedTask.status = 'finished'
                     }
-                    assert(closed_task === task)
-                    closed_task.exec.exitCode = exitCode
-                    emiter.emit('taskCompleted', { task: closed_task })
+                    assert(closedTask === task)
+                    closedTask.exec.exitCode = exitCode
+                    emiter.emit('taskCompleted', { task: closedTask })
                     setImmediate(() => processQueue(emiter))
                     return
                 }
@@ -86,16 +87,12 @@ function executeTask(emiter, task) {
     }
     default:
         console.error(`unknown method ${task.method}`.red)
-        // reject(task);
+        // reject(task)
         break
     }
 }
 
 class Pool extends events {
-    // constructor() {
-    //     super()
-    // }
-
     initialize(_maxWorkers) {
         maxWorkers = _maxWorkers
         this.emit('initialized', { time: new Date() })
@@ -121,10 +118,10 @@ class Pool extends events {
     }
 
     dropTask(taskUid) {
-        let emitter = this
-        for (let i in waitingTasks) {
+        const emitter = this
+        for (const i in waitingTasks) {
             if (waitingTasks[i].uid === taskUid) {
-                let removedTask = waitingTasks.splice(i, 1)
+                const removedTask = waitingTasks.splice(i, 1)
                 emitter.emit('taskRemoved', { task: removedTask })
                 return
             }
@@ -133,11 +130,11 @@ class Pool extends events {
         for (const task of activeTasks) {
             if (task.uid === taskUid) {
                 task.status = 'halting'
-                this.emit('taskKilling', { task: task })
+                this.emit('taskKilling', { task })
 
                 kill(task.exec.pid, 'SIGTERM', () => { // SIGKILL
                     task.status = 'halted'
-                    emitter.emit('taskKilled', { task: task })
+                    emitter.emit('taskKilled', { task })
                 })
                 return
             }
