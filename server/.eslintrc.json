@@ -1,8 +1,17 @@
 {
     "extends": "airbnb",
     "rules": {
-        "indent": ["error", 2],
+        "no-console": 0,
+        "indent": ["error", 4],
         "semi": ["error", "never"],
-        "camelcase": ["error", {"properties": "never"}]
+        "camelcase": ["error", {"properties": "never"}],
+        "no-continue": 0,
+        "no-restricted-syntax": [
+            "error",
+            "ForOfStatement",
+            "ForInStatement",
+            "LabeledStatement",
+            "WithStatement"
+        ]
     }
 }
