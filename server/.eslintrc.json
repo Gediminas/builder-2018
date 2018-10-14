@@ -1,20 +1,21 @@
 {
-    "extends": "airbnb",
-    "rules": {
-        "no-console": 0,
-        "indent": ["error", 4],
-        "semi": ["error", "never"],
-        "camelcase": 0,
-        "no-continue": 0,
-        "no-restricted-syntax": [
-            "error",
-            /*"ForOfStatement",*/
-            /*"ForInStatement",*/
-            "LabeledStatement",
-            "WithStatement"
-        ],
-        "guard-for-in": 0,
-        "no-param-reassign": ["error", { "props": false }],
-        "no-use-before-define": ["error", { "functions": false, "classes": true }]
-    }
+  "extends": "airbnb",
+  "rules": {
+    "no-console": 0,
+    "indent": ["error", 2],
+    "semi": ["error", "never"],
+    "camelcase": 0,
+    "no-continue": 0,
+    "no-restricted-syntax": [
+      "error",
+      /*"ForOfStatement",*/
+      /*"ForInStatement",*/
+      "LabeledStatement",
+      "WithStatement"
+    ],
+    "guard-for-in": 0,
+    "no-param-reassign": ["error", { "props": false }],
+    "no-use-before-define": ["error", { "functions": false, "classes": true }],
+    "class-method-use-this": 0
+  }
 }
