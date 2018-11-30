@@ -1,9 +1,10 @@
 const socketio = require('socket.io')
-require('colors')
 const sys = require('./sys_util.js')
 const script = require('./script_util.js')
 const db = require('./builder_db_utils.js')
 const pool = require('./pool.js')
+require('colors')
+require('./pool_logger_tty.js')
 
 const app_cfg = script.load_app_cfg()
 const io = socketio(app_cfg.server_port)
@@ -105,16 +106,10 @@ function generate_log_name(log_combi) {
 db.init(app_cfg.db_dir).then(() => {
 
     pool.on('initialized', (data) => {
-        console.log(`initialized: "${data.time}"`.bgMagenta)
         update_client(Update_Products | Update_Tasks); //because task was added
     })
 
-    pool.on('taskStarting', (data) => {
-        console.log(`Starting: "${data.task.product_id}"`.bgMagenta)
-    })
-
     pool.on('taskAdded', (data) => {
-        console.log(`Added: "${data.task.product_id}"`.bgMagenta)
         let product_id = data.task.product_id
         let cfg      = script.load_cfg(product_id)
         let last_task = db.findLast_history({"$and": [{ "product_id" : product_id},{"data.status": "OK"}]})
@@ -138,7 +133,7 @@ db.init(app_cfg.db_dir).then(() => {
         let app_cfg     = script.load_app_cfg()
         let script_js   = app_cfg.script_dir + product_id + '/index.js'
         let product_dir = app_cfg.working_dir + product_id + '/'
-        console.log(product_dir);
+        // console.log(product_dir.bgGray);
         let working_dir = product_dir + sys.to_fs_time_string(data.task.time_add) + '/' //FIXME: task.time_start
 
         sys.ensure_dir(product_dir)
@@ -155,21 +150,7 @@ db.init(app_cfg.db_dir).then(() => {
         update_client(Update_Products | Update_Tasks)
     })
 
-    pool.on('taskRemoved', (data) => {
-        console.log(`Removed: "${data.task.product_id}"`.bgMagenta)
-    })
-
-    pool.on('taskKilling', (data) => {
-        console.log(`Killing: "${data.task.product_id}"`.bgMagenta)
-    })
-
-    pool.on('taskKilled', (data) => {
-        console.log(`Killed: "${data.task.product_id}"`.bgMagenta)
-    })
-
     pool.on('taskStarted', (data) => {
-        // sys.log(task.product_id, "started");
-        console.log(`Started: "${data.task.product_id}, pid=${data.task.exec.pid}"`.bgGreen)
         data.task.data.pid    = data.task.exec.pid
         data.task.data.status = 'WORKING'
     });
@@ -180,68 +161,14 @@ db.init(app_cfg.db_dir).then(() => {
     let sub = 0;
 
     pool.on('taskOutput', (data) => {
-        // let log_file = working_dir + generate_log_name(log_combi);
-        // sys.log_file(log_file, `${data.line}\n`);
-        let line = data.text
-        if (0 === line.indexOf('@title')) {
-            // title_renamed = line.substr(7);
-        }
-        else if (0 === line.indexOf('@sub')) {
-          sub++;
-            // let title_orig = line.substr(5);
-            // if (!title_orig) {
-            //     title_orig = '<no-name>';
-            // }
-            // let title = title_renamed !== '' ? title_renamed : title_orig;
-
-            // let log_name_main = generate_log_name(log_combi);
-            // let log_file_main = working_dir + log_name_main;
-            // log_combi.push(log_combi_last_sub+1);
-            // log_combi_last_sub = 0;
-            // let log_name_sub = generate_log_name(log_combi);
-            // let log_file_sub = working_dir + log_name_sub;
-
-            // sys.log_file(log_file_main, `* [${title}] (${log_name_sub})\n`);
-
-            // if (title_renamed) {
-            //     sys.log_file(log_file_sub,  `${title_renamed}`);
-            // }
-            // sys.log_file(log_file_sub,  `${title_orig}\n`);
-            // sys.log_file(log_file_sub,  `[back] (${log_name_main})\n`);
-            // sys.log_file(log_file_sub,  '----------\n');
-        }
-        else if (0 === line.indexOf('@end')) {
-          sub--;
-            // if (log_combi.length) {
-            //     log_combi_last_sub = log_combi.pop();
-            // }
-        }
-        else {
-            title_renamed = '';
-            // let log_file = working_dir + generate_log_name(log_combi);
-            // sys.log_file(log_file, `${line}\n`);
-            //emiter.emit('taskLog', { text: line })
-            // update_client(Update_Tasks)
-        }
-      let spaces = '';
-      for (let i=0; i<sub; i++) {
-        spaces = spaces + '  ';
-      }
-      console.log(`${data.task.product_id}> `.bgMagenta, spaces, data.text.green)
         update_client(Update_Tasks)
     })
 
     pool.on('taskOutputError', (data) => {
-        console.log(`${data.task.product_id}> `.bgMagenta, data.text.red)
-        // let log_file = working_dir + generate_log_name(log_combi);
-        // sys.log_file(log_file, '!! '+data.line+'\n');
         update_client(Update_Tasks)
     })
 
     pool.on('taskCompleted', (data) => {
-        // sys.log(task.product_id, "finished");
-        console.log(`Finished: "${data.task.product_id}, ${data.task.status}, pid=${data.task.exec.pid}, code=${data.task.exec.exitCode}"`.bgGreen)
-
         if (data.task.status == 'halted') {
             data.task.data.status = 'HALTED';
         }
@@ -261,7 +188,6 @@ db.init(app_cfg.db_dir).then(() => {
         setImmediate(() => update_client(Update_ALL))
 
     })
-
 
     pool.initialize(2)
 })
