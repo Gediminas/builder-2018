@@ -177,9 +177,9 @@ db.init(app_cfg.db_dir).then(() => {
     var title_renamed = ''
     let log_combi = []
     let log_combi_last_sub = 0
+    let sub = 0;
 
     pool.on('taskOutput', (data) => {
-        console.log(`${data.task.product_id}> `.bgMagenta, data.text.green)
         // let log_file = working_dir + generate_log_name(log_combi);
         // sys.log_file(log_file, `${data.line}\n`);
         let line = data.text
@@ -187,6 +187,7 @@ db.init(app_cfg.db_dir).then(() => {
             // title_renamed = line.substr(7);
         }
         else if (0 === line.indexOf('@sub')) {
+          sub++;
             // let title_orig = line.substr(5);
             // if (!title_orig) {
             //     title_orig = '<no-name>';
@@ -210,6 +211,7 @@ db.init(app_cfg.db_dir).then(() => {
             // sys.log_file(log_file_sub,  '----------\n');
         }
         else if (0 === line.indexOf('@end')) {
+          sub--;
             // if (log_combi.length) {
             //     log_combi_last_sub = log_combi.pop();
             // }
@@ -221,6 +223,11 @@ db.init(app_cfg.db_dir).then(() => {
             //emiter.emit('taskLog', { text: line })
             // update_client(Update_Tasks)
         }
+      let spaces = '';
+      for (let i=0; i<sub; i++) {
+        spaces = spaces + '  ';
+      }
+      console.log(`${data.task.product_id}> `.bgMagenta, spaces, data.text.green)
         update_client(Update_Tasks)
     })
 
