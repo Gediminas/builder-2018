@@ -14,31 +14,30 @@ sys.ensure_dir(app_cfg.script_dir)
 sys.ensure_dir(app_cfg.working_dir)
 sys.ensure_dir(app_cfg.db_dir)
 
-console.log('------------------------------------------------------------'.bgBlue)
+console.log('----------------------------------------------------------'.bgBlue)
 console.log('config:'.bgBlue, JSON.stringify(app_cfg, null, 2).bgBlue)
 console.log(`Socket server starting on port: ${app_cfg.server_port}`.bgBlue)
-console.log('------------------------------------------------------------'.bgBlue)
+console.log('----------------------------------------------------------'.bgBlue)
 
-const Update_Products =  1 // 000001
-const Update_Tasks =  2 // 000010
-const Update_History =  4 // 000100
-const Update_ALL = 63 // 111111
+const Update_Products = 1
+const Update_Tasks = 2
+const Update_History = 4
+const Update_ALL = 63
 
-let emit_state = function(state, client_socket) {
+const emitState = (state, client_socket) => {
   if (!client_socket) {
     io.emit('state', state)
-  }
-  else {
+  } else {
     client_socket.emit('state', state)
   }
 }
 
-let update_client = function(update_flags, client_socket) {
+const updateClient = (update_flags, client_socket) => {
   if ((update_flags & Update_Products) != 0) {
     script.get_products((products) => {
       var state = {}
       state['products'] = products
-      emit_state(state, client_socket)
+      emitState(state, client_socket)
     });
   }
   var state = {}
@@ -53,18 +52,18 @@ let update_client = function(update_flags, client_socket) {
   }
   if (Object.keys(state).length !== 0) {
     //console.log('direct')
-    emit_state(state, client_socket)
+    emitState(state, client_socket)
   }
 }
 
 io.on('connection', function(socket){
   sys.log(`Client connected: ${socket.conn.remoteAddress}`.bgBlue)
 
-  update_client(Update_ALL, socket)
+  updateClient(Update_ALL, socket)
 
   socket.on('task_add', function(data){
     //script.addTask(data.product_id, "user comment");
-    //update_client(Update_Products | Update_Tasks, socket)
+    //updateClient(Update_Products | Update_Tasks, socket)
     pool.addTask(data.product_id, "user comment")
   });
 
@@ -106,7 +105,7 @@ function generate_log_name(log_combi) {
 db.init(app_cfg.db_dir).then(() => {
 
   pool.on('initialized', (data) => {
-    update_client(Update_Products | Update_Tasks); //because task was added
+    updateClient(Update_Products | Update_Tasks); //because task was added
   })
 
   pool.on('taskAdded', (data) => {
@@ -147,27 +146,26 @@ db.init(app_cfg.db_dir).then(() => {
       callback: null,
     }
     // END FIXME
-    update_client(Update_Products | Update_Tasks)
+    updateClient(Update_Products | Update_Tasks)
   })
 
   pool.on('taskStarted', (data) => {
-    data.task.data.pid    = data.task.exec.pid
+    data.task.data.pid = data.task.exec.pid
     data.task.data.status = 'WORKING'
   })
 
-  pool.on('taskOutput', (data) => {
-    update_client(Update_Tasks)
+  pool.on('taskOutput', () => {
+    updateClient(Update_Tasks)
   })
 
-  pool.on('taskOutputError', (data) => {
-    update_client(Update_Tasks)
+  pool.on('taskOutputError', () => {
+    updateClient(Update_Tasks)
   })
 
   pool.on('taskCompleted', (data) => {
-    if (data.task.status == 'halted') {
+    if (data.task.status === 'halted') {
       data.task.data.status = 'HALTED'
-    }
-    else if (data.task.status == 'finished') {
+    } else if (data.task.status === 'finished') {
       switch (data.task.exec.exitCode) {
       case 0: data.task.data.status = 'OK'; break
       case 1: data.task.data.status = 'WARNING'; break
@@ -179,7 +177,7 @@ db.init(app_cfg.db_dir).then(() => {
       data.task.data.status = `(${data.task.status})`
     }
     db.add_history(data.task)
-    setImmediate(() => update_client(Update_ALL))
+    setImmediate(() => updateClient(Update_ALL))
   })
 
   pool.initialize(2)
