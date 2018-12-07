@@ -5,6 +5,7 @@ const db = require('./builder_db_utils.js')
 const pool = require('./pool.js')
 require('colors')
 require('./pool_logger_tty.js')
+require('./pool_logger_log.js')
 
 const app_cfg = script.load_app_cfg()
 const io = socketio(app_cfg.server_port)
@@ -84,24 +85,6 @@ io.on('connection', function(socket){
 
 // pool =====================================================
 
-function generate_log_name(log_combi) {
-  let name = log_combi.reduce((cobined_name, sub_nr) => {
-    let sub_txt = sub_nr.pad(3)
-    if (!cobined_name) {
-      cobined_name = sub_txt
-    }
-    else {
-      cobined_name = cobined_name + '-' + sub_txt
-    }
-    return cobined_name
-  }, false)
-  if (name == '') {
-    name = '_main'
-  }
-  name = name + '.log'
-  return name
-}
-
 db.init(app_cfg.db_dir).then(() => {
 
   pool.on('initialized', (data) => {
@@ -131,22 +114,31 @@ db.init(app_cfg.db_dir).then(() => {
     //FIXME: Should be moved to taskStarting() or similar
     let app_cfg     = script.load_app_cfg()
     let script_js   = app_cfg.script_dir + product_id + '/index.js'
-    let product_dir = app_cfg.working_dir + product_id + '/'
-    // console.log(product_dir.bgGray);
-    let working_dir = product_dir + sys.to_fs_time_string(data.task.time_add) + '/' //FIXME: task.time_start
-
-    sys.ensure_dir(product_dir)
-    sys.ensure_dir(working_dir)
 
     data.task.exec = {
       method  : 'execFile',
       file    : 'node',
       args    : [script_js],
-      options : { cwd: working_dir },
+      options : { cwd: '' },
       callback: null,
     }
     // END FIXME
     updateClient(Update_Products | Update_Tasks)
+  })
+
+  pool.on('taskStarting', (data) => {
+    const app_cfg = script.load_app_cfg()
+    sys.ensure_dir(app_cfg.working_dir)
+
+    let product_dir = app_cfg.working_dir + data.task.product_id + '/'
+    console.log(`>> product_dir: ${product_dir}`)
+    let working_dir = product_dir + sys.to_fs_time_string(data.task.time_add) + '/' //FIXME: task.time_start
+
+    sys.ensure_dir(product_dir)
+    sys.ensure_dir(working_dir)
+
+    data.task.working_dir = working_dir
+    data.task.exec.options.cwd = working_dir
   })
 
   pool.on('taskStarted', (data) => {
