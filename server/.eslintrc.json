@@ -3,6 +3,9 @@
   "rules": {
     "no-console": 0,
     "indent": ["error", 2],
+    "key-spacing": ["error", {
+      "align": "colon"
+    }],
     "semi": ["error", "never"],
     "camelcase": 0,
     "no-continue": 0,
