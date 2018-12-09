@@ -62,17 +62,17 @@ io.on('connection', function(socket){
 
   updateClient(Update_ALL, socket)
 
-  socket.on('task_add', function(data){
-    //script.addTask(data.product_id, "user comment");
+  socket.on('task_add', function(param){
+    //script.addTask(param.product_id, "user comment");
     //updateClient(Update_Products | Update_Tasks, socket)
-    pool.addTask(data.product_id, "user comment")
+    pool.addTask(param.product_id, {user_comment: "user comment"})
   });
 
-  socket.on('task_kill', function(data){
-    pool.dropTask(data.task_uid)
+  socket.on('task_kill', function(param){
+    pool.dropTask(param.task_uid)
   });
 
-  socket.on('sys_shutdown', function(data){
+  socket.on('sys_shutdown', function(param){
     sys.log("Stoping cron tasks...")
     script.destroy_all()
     
@@ -85,16 +85,16 @@ io.on('connection', function(socket){
 
 // pool =====================================================
 
-pool.on('initialized', (data) => {
+pool.on('initialized', (param) => {
   updateClient(Update_Products | Update_Tasks); //because task was added
 })
 
-pool.on('taskAdded', (data) => {
-  let product_id = data.task.product_id
+pool.on('taskAdded', (param) => {
+  let product_id = param.task.product_id
   let cfg      = script.load_cfg(product_id)
-  let last_task = db.findLast_history({"$and": [{ "product_id" : product_id},{"data.status": "OK"}]})
+  let last_task = db.findLast_history({"$and": [{ "product_id" : product_id},{"param.status": "OK"}]})
   if (!last_task) {
-    last_task = db.findLast_history({"$and": [{ "product_id" : product_id},{"data.status": "WARNING"}]})
+    last_task = db.findLast_history({"$and": [{ "product_id" : product_id},{"param.status": "WARNING"}]})
   }
   if (!last_task) {
     last_task = db.findLast_history({ "product_id" : product_id})
@@ -107,13 +107,13 @@ pool.on('taskAdded', (data) => {
     pid:            0,
     prev_time_diff: last_task ? last_task.time_diff : undefined
   };
-  data.task.data = data1
+  param.task.data = data1
 
   //FIXME: Should be moved to taskStarting() or similar
   let app_cfg     = script.load_app_cfg()
   let script_js   = app_cfg.script_dir + product_id + '/index.js'
 
-  data.task.exec = {
+  param.task.exec = {
     file    : 'node',
     args    : [script_js],
     options : { cwd: '' },
@@ -122,24 +122,24 @@ pool.on('taskAdded', (data) => {
   updateClient(Update_Products | Update_Tasks)
 })
 
-pool.on('taskStarting', (data) => {
+pool.on('taskStarting', (param) => {
   const app_cfg = script.load_app_cfg()
   sys.ensure_dir(app_cfg.working_dir)
 
-  let product_dir = app_cfg.working_dir + data.task.product_id + '/'
+  let product_dir = app_cfg.working_dir + param.task.product_id + '/'
   console.log(`>> product_dir: ${product_dir}`)
-  let working_dir = product_dir + sys.to_fs_time_string(data.task.time_add) + '/' //FIXME: task.time_start
+  let working_dir = product_dir + sys.to_fs_time_string(param.task.time_add) + '/' //FIXME: task.time_start
 
   sys.ensure_dir(product_dir)
   sys.ensure_dir(working_dir)
 
-  data.task.working_dir = working_dir
-  data.task.exec.options.cwd = working_dir
+  param.task.working_dir = working_dir
+  param.task.exec.options.cwd = working_dir
 })
 
-pool.on('taskStarted', (data) => {
-  data.task.data.pid = data.task.exec.pid
-  data.task.data.status = 'WORKING'
+pool.on('taskStarted', (param) => {
+  param.task.data.pid = param.task.exec.pid
+  param.task.data.status = 'WORKING'
 })
 
 pool.on('taskOutput', () => {
@@ -150,21 +150,21 @@ pool.on('taskOutputError', () => {
   updateClient(Update_Tasks)
 })
 
-pool.on('taskCompleted', (data) => {
-  if (data.task.status === 'halted') {
-    data.task.data.status = 'HALTED'
-  } else if (data.task.status === 'finished') {
-    switch (data.task.exec.exitCode) {
-    case 0: data.task.data.status = 'OK'; break
-    case 1: data.task.data.status = 'WARNING'; break
-    case 2: data.task.data.status = 'ERROR'; break
-    case 3: data.task.data.status = 'HALT'; break
-    default: data.task.data.status = 'N/A'; break
+pool.on('taskCompleted', (param) => {
+  if (param.task.status === 'halted') {
+    param.task.data.status = 'HALTED'
+  } else if (param.task.status === 'finished') {
+    switch (param.task.exec.exitCode) {
+    case 0: param.task.data.status = 'OK'; break
+    case 1: param.task.data.status = 'WARNING'; break
+    case 2: param.task.data.status = 'ERROR'; break
+    case 3: param.task.data.status = 'HALT'; break
+    default: param.task.data.status = 'N/A'; break
     }
   } else {
-    data.task.data.status = `(${data.task.status})`
+    param.task.data.status = `(${param.task.status})`
   }
-  db.add_history(data.task)
+  db.add_history(param.task)
   setImmediate(() => updateClient(Update_ALL))
 })
 

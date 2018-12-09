@@ -3,37 +3,37 @@ require('colors')
 
 let sub = 0
 
-pool.on('initialized', (data) => {
-  console.log(`initialized: "${data.time}"`.bgMagenta)
+pool.on('initialized', (param) => {
+  console.log(`initialized: "${param.time}"`.bgMagenta)
 })
 
-pool.on('taskStarting', (data) => {
-  console.log(`Starting: "${data.task.product_id}"`.bgMagenta)
+pool.on('taskStarting', (param) => {
+  console.log(`Starting: "${param.task.product_id}"`.bgMagenta)
 })
 
-pool.on('taskAdded', (data) => {
-  console.log(`Added: "${data.task.product_id}"`.bgMagenta)
+pool.on('taskAdded', (param) => {
+  console.log(`Added: "${param.task.product_id}"`.bgMagenta)
 })
 
-pool.on('taskRemoved', (data) => {
-  console.log(`Removed: "${data.task.product_id}"`.bgMagenta)
+pool.on('taskRemoved', (param) => {
+  console.log(`Removed: "${param.task.product_id}"`.bgMagenta)
 })
 
-pool.on('taskKilling', (data) => {
-  console.log(`Killing: "${data.task.product_id}"`.bgMagenta)
+pool.on('taskKilling', (param) => {
+  console.log(`Killing: "${param.task.product_id}"`.bgMagenta)
 })
 
-pool.on('taskKilled', (data) => {
-  console.log(`Killed: "${data.task.product_id}"`.bgMagenta)
+pool.on('taskKilled', (param) => {
+  console.log(`Killed: "${param.task.product_id}"`.bgMagenta)
 })
 
-pool.on('taskCompleted', (data) => {
-  console.log(`Finished: "${data.task.product_id}, ${data.task.status},
-    pid=${data.task.exec.pid}, code=${data.task.exec.exitCode}"`.bgGreen)
+pool.on('taskCompleted', (param) => {
+  console.log(`Finished: "${param.task.product_id}, ${param.task.status},
+    pid=${param.task.exec.pid}, code=${param.task.exec.exitCode}"`.bgGreen)
 })
 
-pool.on('taskOutput', (data) => {
-  const line = data.text
+pool.on('taskOutput', (param) => {
+  const line = param.text
   // if (line.indexOf('@title') === 0)
   if (line.indexOf('@sub') === 0) {
     sub++
@@ -44,9 +44,9 @@ pool.on('taskOutput', (data) => {
   for (let i = 0; i < sub; i++) {
     spaces += '  '
   }
-  console.log(`${data.task.product_id}> `.bgMagenta, spaces, data.text.green)
+  console.log(`${param.task.product_id}> `.bgMagenta, spaces, param.text.green)
 })
 
-pool.on('taskOutputError', (data) => {
-  console.log(`${data.task.product_id}> `.bgMagenta, data.text.red)
+pool.on('taskOutputError', (param) => {
+  console.log(`${param.task.product_id}> `.bgMagenta, param.text.red)
 })

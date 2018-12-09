@@ -27,35 +27,35 @@ let log_combi = []
 let log_combi_last_sub = 0
 let sub = 0
 
-pool.on('initialized', (data) => {
+pool.on('initialized', (param) => {
 })
 
-pool.on('taskAdded', (data) => {
+pool.on('taskAdded', (param) => {
 })
 
-pool.on('taskStarting', (data) => {
+pool.on('taskStarting', (param) => {
 })
 
-pool.on('taskStarted', (data) => {
+pool.on('taskStarted', (param) => {
 })
 
-pool.on('taskRemoved', (data) => {
+pool.on('taskRemoved', (param) => {
 })
 
-pool.on('taskKilling', (data) => {
+pool.on('taskKilling', (param) => {
 })
 
-pool.on('taskKilled', (data) => {
+pool.on('taskKilled', (param) => {
 })
 
-pool.on('taskCompleted', (data) => {
-  // sys.log_file(log_file, '!! '+data.line+'\n');
+pool.on('taskCompleted', (param) => {
+  // sys.log_file(log_file, '!! '+param.line+'\n');
 })
 
-pool.on('taskOutput', (data) => {
-  let log_file = data.task.wworking_dir + generate_log_name(log_combi);
-  sys.log_file(log_file, `${data.line}\n`);
-  let line = data.text
+pool.on('taskOutput', (param) => {
+  let log_file = param.task.working_dir + generate_log_name(log_combi);
+  sys.log_file(log_file, `${param.line}\n`);
+  let line = param.text
   if (line.indexOf('@title') === 0) {
     title_renamed = line.substr(7)
   }
@@ -68,11 +68,11 @@ pool.on('taskOutput', (data) => {
     let title = title_renamed !== '' ? title_renamed : title_orig
 
     let log_name_main = generate_log_name(log_combi)
-    let log_file_main = data.task.working_dir + log_name_main
+    let log_file_main = param.task.working_dir + log_name_main
     log_combi.push(log_combi_last_sub+1)
     log_combi_last_sub = 0
     let log_name_sub = generate_log_name(log_combi)
-    let log_file_sub = data.task.working_dir + log_name_sub
+    let log_file_sub = param.task.working_dir + log_name_sub
 
     sys.log_file(log_file_main, `* [${title}] (${log_name_sub})\n`)
 
@@ -91,7 +91,7 @@ pool.on('taskOutput', (data) => {
   }
   else {
     title_renamed = '';
-    let log_file = data.task.working_dir + generate_log_name(log_combi)
+    let log_file = param.task.working_dir + generate_log_name(log_combi)
     sys.log_file(log_file, `${line}\n`)
     //console.log(`>> log: ${log_file}`)
   }
@@ -99,10 +99,10 @@ pool.on('taskOutput', (data) => {
   for (let i=0; i<sub; i++) {
     spaces = spaces + '  '
   }
-  //console.log(`${data.task.product_id}> `.bgBlue, spaces, data.text.blue)
+  //console.log(`${param.task.product_id}> `.bgBlue, spaces, param.text.blue)
 })
 
-pool.on('taskOutputError', (data) => {
+pool.on('taskOutputError', (param) => {
   // let log_file = working_dir + generate_log_name(log_combi);
-  // sys.log_file(log_file, '!! '+data.line+'\n');
+  // sys.log_file(log_file, '!! '+param.line+'\n');
 })

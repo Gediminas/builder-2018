@@ -26,12 +26,13 @@ function processQueue(emiter) {
   for (const i1 in waitingTasks) {
     const task = waitingTasks[i1]
     if (activeTasks.some(e => e.productId === task.productId)) {
-      continue // do not alow 2 instances of the same product
+      continue // TEMP: do not alow 2 instances of the same product
     }
     const startingTask = waitingTasks.splice(i1, 1)[0]
     assert(startingTask === task)
-    startingTask.time_start = getTimeStamp()
+    assert(startingTask.status === 'queued')
     startingTask.status = 'starting'
+    startingTask.time_start = getTimeStamp()
     activeTasks.push(startingTask)
     emiter.emit('taskStarting', { task: startingTask })
     setImmediate(() => executeTask(emiter, startingTask))
@@ -40,25 +41,23 @@ function processQueue(emiter) {
 }
 
 function executeTask(emiter, task) {
-  let bufOut = ''
-  let bufErr = ''
-
   const child = execFile(task.exec.file, task.exec.args, task.exec.options, null)
+  child.bufOut = '';
+  child.bufErr = '';
   task.status = 'started'
-
   task.exec.pid = child.pid
   emiter.emit('taskStarted', { task })
 
-  child.stdout.on('data', (data) => {
-    bufOut += data
-    bufOut = bufferToFullLines(bufOut, (line) => {
+  child.stdout.on('data', (text) => {
+    child.bufOut += text
+    child.bufOut = bufferToFullLines(child.bufOut, (line) => {
       emiter.emit('taskOutput', { task, text: line })
     })
   })
 
-  child.stderr.on('data', (data) => {
-    bufErr += data
-    bufErr = bufferToFullLines(bufErr, (line) => {
+  child.stderr.on('data', (text) => {
+    child.bufErr += text
+    child.bufErr = bufferToFullLines(child.bufErr, (line) => {
       emiter.emit('taskOutputError', { task, text: line })
     })
   })
@@ -105,7 +104,6 @@ class Pool extends events {
     waitingTasks.push(newTask)
     this.emit('taskAdded', { task: newTask })
     setImmediate(() => processQueue(this))
-    return newTask
   }
 
   dropTask(taskUid) {
