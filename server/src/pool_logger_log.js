@@ -1,31 +1,38 @@
+const fs = require('fs');
 const pool = require('./pool.js')
-const sys = require('./sys_util.js')
-const script = require('./script_util.js')
 require('colors')
 
 
-function generate_log_name(log_combi) {
-  let name = log_combi.reduce((cobined_name, sub_nr) => {
-    let sub_txt = sub_nr.pad(3)
-    if (!cobined_name) {
-      cobined_name = sub_txt
-    }
-    else {
-      cobined_name = cobined_name + '-' + sub_txt
-    }
-    return cobined_name
+let titleRenamed = ''
+const logCombi = []
+let logCombiLastSub = 0
+let sub = 0
+
+Number.prototype.pad = (size) => {
+  let s = String(this)
+  while (s.length < (size || 2)) { s = `0${s}` }
+  return s
+}
+
+const generateLogName = (_logCombi) => {
+  let name = _logCombi.reduce((combinedName, subNr) => {
+    const subTxt = subNr.pad(3)
+    return combinedName ? `${combinedName}-${subTxt}` : subTxt
   }, false)
-  if (name == '') {
+  if (name === '') {
     name = '_main'
   }
-  name = name + '.log'
+  name += '.log'
   return name
 }
 
-let title_renamed = ''
-let log_combi = []
-let log_combi_last_sub = 0
-let sub = 0
+const logToFile = (file, text) => {
+  fs.appendFileSync(file, text, {encoding: "utf8"}, (err) => {
+    if (err) {
+      console.error(err);
+    }
+  });
+}
 
 pool.on('initialized', (param) => {
 })
@@ -49,51 +56,51 @@ pool.on('taskKilled', (param) => {
 })
 
 pool.on('taskCompleted', (param) => {
-  // sys.log_file(log_file, '!! '+param.line+'\n');
+  // logToFile(file, '!! '+param.line+'\n');
 })
 
 pool.on('taskOutput', (param) => {
-  let log_file = param.task.working_dir + generate_log_name(log_combi);
-  sys.log_file(log_file, `${param.line}\n`);
-  let line = param.text
-  if (line.indexOf('@title') === 0) {
-    title_renamed = line.substr(7)
+  let file = param.task.working_dir + generateLogName(logCombi);
+  logToFile(file, `${param.text}\n`);
+  let text = param.text
+  if (text.indexOf('@title') === 0) {
+    titleRenamed = text.substr(7)
   }
-  else if (line.indexOf('@sub') === 0) {
+  else if (text.indexOf('@sub') === 0) {
     sub++
-    let title_orig = line.substr(5)
+    let title_orig = text.substr(5)
     if (!title_orig) {
       title_orig = '<no-name>'
     }
-    let title = title_renamed !== '' ? title_renamed : title_orig
+    let title = titleRenamed !== '' ? titleRenamed : title_orig
 
-    let log_name_main = generate_log_name(log_combi)
+    let log_name_main = generateLogName(logCombi)
     let log_file_main = param.task.working_dir + log_name_main
-    log_combi.push(log_combi_last_sub+1)
-    log_combi_last_sub = 0
-    let log_name_sub = generate_log_name(log_combi)
+    logCombi.push(logCombiLastSub+1)
+    logCombiLastSub = 0
+    let log_name_sub = generateLogName(logCombi)
     let log_file_sub = param.task.working_dir + log_name_sub
 
-    sys.log_file(log_file_main, `* [${title}] (${log_name_sub})\n`)
+    logToFile(log_file_main, `* [${title}] (${log_name_sub})\n`)
 
-    if (title_renamed) {
-      sys.log_file(log_file_sub,  `${title_renamed}`)
+    if (titleRenamed) {
+      logToFile(log_file_sub,  `${titleRenamed}`)
     }
-    sys.log_file(log_file_sub,  `${title_orig}\n`)
-    sys.log_file(log_file_sub,  `[back] (${log_name_main})\n`)
-    sys.log_file(log_file_sub,  '----------\n')
+    logToFile(log_file_sub,  `${title_orig}\n`)
+    logToFile(log_file_sub,  `[back] (${log_name_main})\n`)
+    logToFile(log_file_sub,  '----------\n')
   }
-  else if (line.indexOf('@end') === 0) {
+  else if (text.indexOf('@end') === 0) {
     sub--
-    if (log_combi.length) {
-      log_combi_last_sub = log_combi.pop()
+    if (logCombi.length) {
+      logCombiLastSub = logCombi.pop()
     }
   }
   else {
-    title_renamed = '';
-    let log_file = param.task.working_dir + generate_log_name(log_combi)
-    sys.log_file(log_file, `${line}\n`)
-    //console.log(`>> log: ${log_file}`)
+    titleRenamed = '';
+    let file = param.task.working_dir + generateLogName(logCombi)
+    logToFile(file, `FROM LOGGER CMD:  ${text}\n`)
+    //console.log(`>> log: ${file}`)
   }
   let spaces = ''
   for (let i=0; i<sub; i++) {
@@ -103,6 +110,6 @@ pool.on('taskOutput', (param) => {
 })
 
 pool.on('taskOutputError', (param) => {
-  // let log_file = working_dir + generate_log_name(log_combi);
-  // sys.log_file(log_file, '!! '+param.line+'\n');
+  // let file = working_dir + generateLogName(logCombi);
+  // logToFile(file, '!! '+param.line+'\n');
 })

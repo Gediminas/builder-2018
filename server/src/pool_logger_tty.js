@@ -33,11 +33,11 @@ pool.on('taskCompleted', (param) => {
 })
 
 pool.on('taskOutput', (param) => {
-  const line = param.text
-  // if (line.indexOf('@title') === 0)
-  if (line.indexOf('@sub') === 0) {
+  const text = param.text
+  // if (text.indexOf('@title') === 0)
+  if (text.indexOf('@sub') === 0) {
     sub++
-  } else if (line.indexOf('@end') === 0) {
+  } else if (text.indexOf('@end') === 0) {
     sub--
   }
   let spaces = ''

@@ -71,16 +71,3 @@ exports.ensure_dir = function (dirPath) {
   }
 }
 
-Number.prototype.pad = function(size) {
-  var s = String(this);
-  while (s.length < (size || 2)) {s = "0" + s;}
-  return s;
-}
-
-exports.log_file = function (log_file, text) {
-    fs.appendFileSync(log_file, text, {encoding: "utf8"}, function(){
-        if (err) {
-            console.error(err);
-        }
-    });
-}
