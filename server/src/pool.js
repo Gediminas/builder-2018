@@ -36,7 +36,7 @@ function processQueue(emiter) {
     task.status = 'starting'
     task.time_start = time
     activeTasks.push(task)
-    emiter.emit('taskStarting', { time, task })
+    emiter.emit('task-starting', { time, task })
     setImmediate(() => executeTask(emiter, task))
     return
   }
@@ -50,14 +50,14 @@ function executeTask(emiter, task) {
   task.exec.pid = child.pid
   {
     const time = getTimeStamp()
-    emiter.emit('taskStarted', { time, task })
+    emiter.emit('task-started', { time, task })
   }
 
   child.stdout.on('data', (data) => {
     child.bufOut += data
     child.bufOut = bufferToFullLines(child.bufOut, (text) => {
       const time = getTimeStamp()
-      emiter.emit('taskOutput', { time, task, text })
+      emiter.emit('task-output', { time, task, text })
     })
   })
 
@@ -65,7 +65,7 @@ function executeTask(emiter, task) {
     child.bufErr += data
     child.bufErr = bufferToFullLines(child.bufErr, (text) => {
       const time = getTimeStamp()
-      emiter.emit('taskOutputError', { time, task, text })
+      emiter.emit('task-output-error', { time, task, text })
     })
   })
 
@@ -83,7 +83,7 @@ function executeTask(emiter, task) {
         task.status = 'finished'
       }
       task.exec.exitCode = exitCode
-      emiter.emit('taskCompleted', { time, task })
+      emiter.emit('task-completed', { time, task })
       setImmediate(() => processQueue(emiter))
       return
     }
@@ -111,7 +111,7 @@ class Pool extends events {
       data      : taskData,
     }
     waitingTasks.push(task)
-    this.emit('taskAdded', { time, task })
+    this.emit('task-added', { time, task })
     setImmediate(() => processQueue(this))
   }
 
@@ -121,7 +121,7 @@ class Pool extends events {
     for (const i in waitingTasks) {
       if (waitingTasks[i].uid === taskUid) {
         const task = waitingTasks.splice(i, 1)
-        emitter.emit('taskRemoved', { time, task })
+        emitter.emit('task-removed', { time, task })
         return
       }
     }
@@ -129,11 +129,11 @@ class Pool extends events {
     for (const task of activeTasks) {
       if (task.uid === taskUid) {
         task.status = 'halting'
-        this.emit('taskKilling', { time, task })
+        this.emit('task-killing', { time, task })
 
         kill(task.exec.pid, 'SIGTERM', () => { // SIGKILL
           task.status = 'halted'
-          emitter.emit('taskKilled', { time, task })
+          emitter.emit('task-killed', { time, task })
         })
         return
       }

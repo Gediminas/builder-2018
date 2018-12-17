@@ -89,7 +89,7 @@ pool.on('initialized', (param) => {
   updateClient(Update_Products | Update_Tasks); //because task was added
 })
 
-pool.on('taskAdded', (param) => {
+pool.on('task-added', (param) => {
   let product_id = param.task.product_id
   let cfg      = script.load_cfg(product_id)
   let last_task = db.findLast_history({"$and": [{ "product_id" : product_id},{"param.status": "OK"}]})
@@ -122,7 +122,7 @@ pool.on('taskAdded', (param) => {
   updateClient(Update_Products | Update_Tasks)
 })
 
-pool.on('taskStarting', (param) => {
+pool.on('task-starting', (param) => {
   const app_cfg = script.load_app_cfg()
   sys.ensure_dir(app_cfg.working_dir)
 
@@ -137,20 +137,20 @@ pool.on('taskStarting', (param) => {
   param.task.exec.options.cwd = working_dir
 })
 
-pool.on('taskStarted', (param) => {
+pool.on('task-started', (param) => {
   param.task.data.pid = param.task.exec.pid
   param.task.data.status = 'WORKING'
 })
 
-pool.on('taskOutput', () => {
+pool.on('task-output', () => {
   updateClient(Update_Tasks)
 })
 
-pool.on('taskOutputError', () => {
+pool.on('task-output-error', () => {
   updateClient(Update_Tasks)
 })
 
-pool.on('taskCompleted', (param) => {
+pool.on('task-completed', (param) => {
   if (param.task.status === 'halted') {
     param.task.data.status = 'HALTED'
   } else if (param.task.status === 'finished') {

@@ -37,29 +37,29 @@ const logToFile = (file, text) => {
 pool.on('initialized', (param) => {
 })
 
-pool.on('taskAdded', (param) => {
+pool.on('task-added', (param) => {
 })
 
-pool.on('taskStarting', (param) => {
+pool.on('task-starting', (param) => {
 })
 
-pool.on('taskStarted', (param) => {
+pool.on('task-started', (param) => {
 })
 
-pool.on('taskRemoved', (param) => {
+pool.on('task-removed', (param) => {
 })
 
-pool.on('taskKilling', (param) => {
+pool.on('task-killing', (param) => {
 })
 
-pool.on('taskKilled', (param) => {
+pool.on('task-killed', (param) => {
 })
 
-pool.on('taskCompleted', (param) => {
+pool.on('task-completed', (param) => {
   // logToFile(file, '!! '+param.line+'\n');
 })
 
-pool.on('taskOutput', (param) => {
+pool.on('task-output', (param) => {
   let file = param.task.working_dir + generateLogName(logCombi);
   logToFile(file, `${param.text}\n`);
   let text = param.text
@@ -109,7 +109,7 @@ pool.on('taskOutput', (param) => {
   //console.log(`${param.task.product_id}> `.bgBlue, spaces, param.text.blue)
 })
 
-pool.on('taskOutputError', (param) => {
+pool.on('task-output-error', (param) => {
   // let file = working_dir + generateLogName(logCombi);
   // logToFile(file, '!! '+param.line+'\n');
 })
