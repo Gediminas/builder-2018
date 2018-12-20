@@ -1,4 +1,6 @@
 const socketio = require('socket.io')
+const glob     = require("glob")
+const path     = require('path');
 const sys = require('./sys_util.js')
 const script = require('./script_util.js')
 const db = require('./builder_db_utils.js')
@@ -25,6 +27,49 @@ const Update_Tasks = 2
 const Update_History = 4
 const Update_ALL = 63
 
+const getTaskByProduct = (product_id) => {
+  const tasks = pool.allTasks()
+  for (const i in tasks) {
+    if (tasks[i].product_id === product_id) {
+      return tasks[i]
+    }
+  }
+  return db.findLast_history({ product_id })
+}
+
+const getScripts = () => new Promise((resolve, reject) => {
+  // console.log("reading from: " + __dirname + '/../../' + config['script_dir']);
+  const config = script.load_app_cfg()
+  glob('*/index.*', { cwd: config.script_dir, matchBase: 1 }, (err, files) => {
+    if (err) {
+      reject(err)
+    }
+    const scripts = files.map(file => path.dirname(file))
+    resolve(scripts)
+  })
+})
+
+const getProducts = (on_loaded) => {
+  getScripts()
+    .then((files) => {
+      //console.log('scripts', files)
+      const products = []
+      for (const i in files) {
+        const product_id = files[i]
+        const cfg = script.load_cfg(product_id)
+        const lastTask = getTaskByProduct(product_id)
+        const product = {
+          product_id,
+          product_name: cfg.product_name,
+          cfg,
+          last_task   : lastTask,
+        }
+        products.push(product)
+      }
+      on_loaded(products)
+    })
+}
+
 const emitState = (state, client_socket) => {
   if (!client_socket) {
     io.emit('state', state)
@@ -35,7 +80,7 @@ const emitState = (state, client_socket) => {
 
 const updateClient = (update_flags, client_socket) => {
   if ((update_flags & Update_Products) != 0) {
-    script.get_products((products) => {
+    getProducts((products) => {
       var state = {}
       state['products'] = products
       emitState(state, client_socket)

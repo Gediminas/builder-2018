@@ -3,7 +3,6 @@
 const CronJob  = require('cron').CronJob;
 const fs       = require('fs');
 //const execFile = require('child_process').execFile;
-const glob     = require("glob")
 const sys      = require('./sys_util.js');
 const db       = require('./builder_db_utils.js');
 const merge    = require('merge');
@@ -32,16 +31,6 @@ exports.load_cfg = function(product_id) {
 		mrg.product_name = product_id;
 	}
 	return mrg;
-}
-
-exports.get_task_by_product = function(product_id) {
-	let tasks = pool.allTasks();
-	for (let i in tasks) {
-		if (tasks[i].product_id == product_id) {
-			return tasks[i];
-		}
-	}
-	return db.findLast_history({"product_id": product_id});
 }
 
 // //Init cron:
@@ -73,49 +62,7 @@ exports.get_task_by_product = function(product_id) {
 //     }
 //   });
 // };
-
-// exports.destroy_all = function()
-// {
-// 	for (let i in cron_tasks) {
-// 		cron_tasks[i].stop();
-// 	}
-// }
+// exports.destroy_all = function() {for (let i in cron_tasks) {cron_tasks[i].stop();}}
 
 
-function get_scripts() {
-	let config = exports.load_app_cfg();
-	return new Promise(function(resolve, reject) {
-    //console.log("reading from: " + __dirname + '/../../' + config['script_dir']);
-    glob("*/index.*", {'cwd': config['script_dir'], 'matchBase': 1 }, (err, files) => {
-      if (err) {
-        reject(err);
-      }
-      let scripts = files.map(file => {
-        //console.log(file);
-        return path.dirname(file);
-      });
-      resolve(scripts);
-    });
-  });
-}
 
-exports.get_products = function(on_loaded) {
-	let products =  [];
-  get_scripts()
-    .then((files) => {
-      //console.log('scripts', files);
-      for (let i in files) {
-        let product_id = files[i];
-        let cfg = exports.load_cfg(product_id);
-        let last_task = exports.get_task_by_product(product_id);
-        let product = { 
-          product_id:   product_id,
-          product_name: cfg.product_name,
-          cfg:          cfg,
-          last_task:     last_task
-         };
-        products.push(product);
-      }
-      on_loaded(products);
-    })
-}
