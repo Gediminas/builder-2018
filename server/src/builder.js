@@ -73,8 +73,8 @@ io.on('connection', function(socket){
   });
 
   socket.on('sys_shutdown', function(param){
-    sys.log("Stoping cron tasks...")
-    script.destroy_all()
+    // sys.log("Stoping cron tasks...")
+    // script.destroy_all()
     
     setTimeout(() => {
       sys.log("Exit.")

@@ -44,24 +44,43 @@ exports.get_task_by_product = function(product_id) {
 	return db.findLast_history({"product_id": product_id});
 }
 
-exports.init = function(product_id)
-{
-	try {
-		let gcfg = exports.load_app_cfg();
-		let scfg = exports.load_cfg(product_id);
-		let cron_time = scfg["cron"];
-		//sys.script_log(product_id, JSON.stringify(scfg))
-		if (cron_time) {
-			let cron_task = new CronJob(cron_time, function() {
-				exports.add_task(product_id, scfg["cron_comment"]);
-			}, null, true, gcfg["time_zone"]);
-			cron_tasks.push(cron_task);
-		}
-	}
-	catch (e) {
-		sys.script_log(product_id, 'ERROR: ' + e);
-	}
-}
+// //Init cron:
+//
+// exports.init = function(product_id)
+// {
+// 	try {
+// 		let gcfg = exports.load_app_cfg();
+// 		let scfg = exports.load_cfg(product_id);
+// 		let cron_time = scfg["cron"];
+// 		//sys.script_log(product_id, JSON.stringify(scfg))
+// 		if (cron_time) {
+// 			let cron_task = new CronJob(cron_time, function() {
+// 				exports.add_task(product_id, scfg["cron_comment"]);
+// 			}, null, true, gcfg["time_zone"]);
+// 			cron_tasks.push(cron_task);
+// 		}
+// 	}
+// 	catch (e) {
+// 		sys.script_log(product_id, 'ERROR: ' + e);
+// 	}
+// }
+//
+// exports.init_all = function()
+// {
+//   get_scripts().then((scripts) => {
+//     for (let i in scripts) {
+//       exports.init(scripts[i]);
+//     }
+//   });
+// };
+
+// exports.destroy_all = function()
+// {
+// 	for (let i in cron_tasks) {
+// 		cron_tasks[i].stop();
+// 	}
+// }
+
 
 function get_scripts() {
 	let config = exports.load_app_cfg();
@@ -78,22 +97,6 @@ function get_scripts() {
       resolve(scripts);
     });
   });
-}
-
-exports.init_all = function()
-{
-  get_scripts().then((scripts) => {
-    for (let i in scripts) {
-      exports.init(scripts[i]);
-    }
-  });
-};
-
-exports.destroy_all = function()
-{
-	for (let i in cron_tasks) {
-		cron_tasks[i].stop();
-	}
 }
 
 exports.get_products = function(on_loaded) {
