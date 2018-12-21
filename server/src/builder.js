@@ -1,8 +1,9 @@
 const socketio = require('socket.io')
-const glob     = require("glob")
-const path     = require('path');
+const glob = require('glob')
+const path = require('path')
+const fs = require('fs')
+const merge = require('merge')
 const sys = require('./sys_util.js')
-const script = require('./script_util.js')
 const db = require('./builder_db_utils.js')
 const pool = require('./pool.js')
 require('colors')
@@ -37,6 +38,27 @@ const getTaskByProduct = (product_id) => {
   return db.findLast_history({ product_id })
 }
 
+const load_app_cfg = (product_id) => {
+	const acfg = JSON.parse(fs.readFileSync(__dirname + '/../../_cfg/config.json', 'utf8'))
+  acfg.script_dir  = path.normalize(__dirname + '/../../' + app_cfg.script_dir)
+  acfg.working_dir = path.normalize(__dirname + '/../../' + app_cfg.working_dir)
+  acfg.db_dir      = path.normalize(__dirname + '/../../' + app_cfg.db_dir)
+  return acfg
+}
+
+const load_cfg = (product_id) => {
+  const config = script.load_app_cfg()
+  const def = JSON.parse(fs.readFileSync(__dirname + '/../../_cfg/script_defaults.json', 'utf8'))
+  const cfg = JSON.parse(fs.readFileSync(config['script_dir'] + product_id + '/script.cfg', 'utf8'))
+  const srv = JSON.parse(fs.readFileSync(config['script_dir'] + product_id + '/server.cfg', 'utf8'))
+  // for(var key in json_svr) json_cfg[key]=json_svr[key]; //json merge
+  const mrg = merge.recursive(def, cfg, srv)
+  if (!mrg.product_name) {
+    mrg.product_name = product_id
+  }
+  return mrg
+}
+
 const getScripts = () => new Promise((resolve, reject) => {
   // console.log("reading from: " + __dirname + '/../../' + config['script_dir']);
   const config = script.load_app_cfg()
@@ -56,7 +78,7 @@ const getProducts = (on_loaded) => {
       const products = []
       for (const i in files) {
         const product_id = files[i]
-        const cfg = script.load_cfg(product_id)
+        const cfg = load_cfg(product_id)
         const lastTask = getTaskByProduct(product_id)
         const product = {
           product_id,
@@ -136,8 +158,8 @@ pool.on('initialized', (param) => {
 
 pool.on('task-added', (param) => {
   let product_id = param.task.product_id
-  let cfg      = script.load_cfg(product_id)
-  let last_task = db.findLast_history({"$and": [{ "product_id" : product_id},{"param.status": "OK"}]})
+  let product_name = param.task.product_id
+  let last_task  = db.findLast_history({"$and": [{ "product_id" : product_id},{"param.status": "OK"}]})
   if (!last_task) {
     last_task = db.findLast_history({"$and": [{ "product_id" : product_id},{"param.status": "WARNING"}]})
   }
@@ -146,7 +168,7 @@ pool.on('task-added', (param) => {
   }
   //console.log(last_task);
   let data1 = {
-    product_name:   cfg.product_name,
+    product_name,
     comment:        'comment',
     status:         'QUEUED',
     pid:            0,
