@@ -63,5 +63,5 @@ pool.on('task-output', (param) => {
 })
 
 pool.on('task-output-error', (param) => {
-  log(`${param.task.product_id}> `.bgMagenta, param.text.bkRed.yellow)
+  log(`${param.task.product_id}> `.bgMagenta, param.text.bkRed)
 })

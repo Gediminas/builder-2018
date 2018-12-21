@@ -8,7 +8,6 @@ function bufferToFullLines(origBuffer, fnDoOnLine) {
   const newBuffer = lines.pop()
   lines.forEach(line => fnDoOnLine(line))
   assert(newBuffer === '' || origBuffer.slice(-1) !== '\n')
-  assert(newBuffer === '')
   return newBuffer
 }
 
