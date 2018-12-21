@@ -81,11 +81,13 @@ class Pool extends events {
 
   _processQueue(emiter) {
     if (this.activeTasks.length >= this.maxWorkers) {
+      console.log(`>> FAIL: activeTasks.length = ${this.activeTasks.length}\n`);
       return
     }
     for (const i1 in this.waitingTasks) {
       const task = this.waitingTasks[i1]
-      if (this.activeTasks.some(e => e.productId === task.productId)) {
+      if (this.activeTasks.some(e => e.product_id === task.product_id)) {
+        console.log(`>> FAIL: product_id = ${task.product_id}\n`);
         continue // TEMP: do not alow 2 instances of the same product
       }
       const time = getTimeStamp()
@@ -96,6 +98,7 @@ class Pool extends events {
       task.time_start = time
       this.activeTasks.push(task)
       emiter.emit('task-starting', { time, task })
+      console.log(`>> OK: _executeTask ${task.product_id}\n`);
       setImmediate(() => this._executeTask(emiter, task))
       return
     }
