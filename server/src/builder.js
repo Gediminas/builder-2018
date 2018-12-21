@@ -10,7 +10,38 @@ require('colors')
 require('./pool_logger_tty.js')
 require('./pool_logger_log.js')
 
-const app_cfg = script.load_app_cfg()
+const getTaskByProduct = (product_id) => {
+  const tasks = pool.allTasks()
+  for (const i in tasks) {
+    if (tasks[i].product_id === product_id) {
+      return tasks[i]
+    }
+  }
+  return db.findLast_history({ product_id })
+}
+
+const load_app_cfg = (product_id) => {
+	const acfg = JSON.parse(fs.readFileSync(__dirname + '/../../_cfg/config.json', 'utf8'))
+  acfg.script_dir  = path.normalize(__dirname + '/../../' + acfg.script_dir)
+  acfg.working_dir = path.normalize(__dirname + '/../../' + acfg.working_dir)
+  acfg.db_dir      = path.normalize(__dirname + '/../../' + acfg.db_dir)
+  return acfg
+}
+
+const load_cfg = (product_id) => {
+  const config = load_app_cfg()
+  const def = JSON.parse(fs.readFileSync(__dirname + '/../../_cfg/script_defaults.json', 'utf8'))
+  const cfg = JSON.parse(fs.readFileSync(config['script_dir'] + product_id + '/script.cfg', 'utf8'))
+  const srv = JSON.parse(fs.readFileSync(config['script_dir'] + product_id + '/server.cfg', 'utf8'))
+  // for(var key in json_svr) json_cfg[key]=json_svr[key]; //json merge
+  const mrg = merge.recursive(def, cfg, srv)
+  if (!mrg.product_name) {
+    mrg.product_name = product_id
+  }
+  return mrg
+}
+
+const app_cfg = load_app_cfg()
 const io = socketio(app_cfg.server_port)
 
 
@@ -28,40 +59,10 @@ const Update_Tasks = 2
 const Update_History = 4
 const Update_ALL = 63
 
-const getTaskByProduct = (product_id) => {
-  const tasks = pool.allTasks()
-  for (const i in tasks) {
-    if (tasks[i].product_id === product_id) {
-      return tasks[i]
-    }
-  }
-  return db.findLast_history({ product_id })
-}
-
-const load_app_cfg = (product_id) => {
-	const acfg = JSON.parse(fs.readFileSync(__dirname + '/../../_cfg/config.json', 'utf8'))
-  acfg.script_dir  = path.normalize(__dirname + '/../../' + app_cfg.script_dir)
-  acfg.working_dir = path.normalize(__dirname + '/../../' + app_cfg.working_dir)
-  acfg.db_dir      = path.normalize(__dirname + '/../../' + app_cfg.db_dir)
-  return acfg
-}
-
-const load_cfg = (product_id) => {
-  const config = script.load_app_cfg()
-  const def = JSON.parse(fs.readFileSync(__dirname + '/../../_cfg/script_defaults.json', 'utf8'))
-  const cfg = JSON.parse(fs.readFileSync(config['script_dir'] + product_id + '/script.cfg', 'utf8'))
-  const srv = JSON.parse(fs.readFileSync(config['script_dir'] + product_id + '/server.cfg', 'utf8'))
-  // for(var key in json_svr) json_cfg[key]=json_svr[key]; //json merge
-  const mrg = merge.recursive(def, cfg, srv)
-  if (!mrg.product_name) {
-    mrg.product_name = product_id
-  }
-  return mrg
-}
 
 const getScripts = () => new Promise((resolve, reject) => {
   // console.log("reading from: " + __dirname + '/../../' + config['script_dir']);
-  const config = script.load_app_cfg()
+  const config = load_app_cfg()
   glob('*/index.*', { cwd: config.script_dir, matchBase: 1 }, (err, files) => {
     if (err) {
       reject(err)
@@ -125,12 +126,11 @@ const updateClient = (update_flags, client_socket) => {
 }
 
 io.on('connection', function(socket){
-  sys.log(`Client connected: ${socket.conn.remoteAddress}`.bgBlue)
+  console.log(`Client connected: ${socket.conn.remoteAddress}`.bgBlue)
 
   updateClient(Update_ALL, socket)
 
   socket.on('task_add', function(param){
-    //script.addTask(param.product_id, "user comment");
     //updateClient(Update_Products | Update_Tasks, socket)
     pool.addTask(param.product_id, {user_comment: "user comment"})
   });
@@ -142,9 +142,9 @@ io.on('connection', function(socket){
   socket.on('sys_shutdown', function(param){
     // sys.log("Stoping cron tasks...")
     // script.destroy_all()
-    
+
     setTimeout(() => {
-      sys.log("Exit.")
+      console.log("Exit.")
       process.exit(0)
     }, 100)
   });
@@ -177,7 +177,6 @@ pool.on('task-added', (param) => {
   param.task.data = data1
 
   //FIXME: Should be moved to taskStarting() or similar
-  let app_cfg     = script.load_app_cfg()
   let script_js   = app_cfg.script_dir + product_id + '/index.js'
 
   param.task.exec = {
@@ -190,7 +189,6 @@ pool.on('task-added', (param) => {
 })
 
 pool.on('task-starting', (param) => {
-  const app_cfg = script.load_app_cfg()
   sys.ensure_dir(app_cfg.working_dir)
 
   let product_dir = app_cfg.working_dir + param.task.product_id + '/'
