@@ -133,11 +133,11 @@ io.on('connection', function(socket){
   socket.on('task_add', function(param){
     //updateClient(Update_Products | Update_Tasks, socket)
     pool.addTask(param.product_id, {user_comment: "user comment"})
-  });
+  })
 
   socket.on('task_kill', function(param){
     pool.dropTask(param.task_uid)
-  });
+  })
 
   socket.on('sys_shutdown', function(param){
     // sys.log("Stoping cron tasks...")
@@ -234,5 +234,5 @@ pool.on('task-completed', (param) => {
 })
 
 db.init(app_cfg.db_dir).then(() => {
-  pool.initialize(2)
+  pool.initialize(9)
 })
