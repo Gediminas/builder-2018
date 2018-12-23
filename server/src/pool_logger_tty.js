@@ -5,19 +5,25 @@ const colors = require('colors')
 let sub = 0
 
 const worker2ColorFnc = [
-  colors.bgWhite.black,
-  colors.bgYellow.black,
   colors.bgCyan.black,
-  colors.bgMagenta.white,
-  colors.bgRed.white,
-  colors.bgBlue.white,
+  colors.bgGreen.black,
+  colors.bgMagenta.black,
+  colors.bgRed.black,
+  colors.bgCyan.grey,
+  colors.bgGreen.grey,
+  colors.bgMagenta.grey,
+  colors.bgRed.grey,
 ]
 
 const log = (param, ...args) => {
   if (param.task) {
-    const colorFnc = param.task.worker_nr
-      ? worker2ColorFnc[parseInt(param.task.worker_nr, 10)]
-      : colors.bgGreen.white
+    // let colorFnc = colors.bgYellow.black
+    // if (param.task.worker_nr) {
+    //   const colorNr = (param.task.worker_nr - 1) % worker2ColorFnc.length
+    //   colorFnc = worker2ColorFnc[colorNr]
+    //   args.unshift(colors.bgWhite.black(param.task.worker_nr))
+    // }
+    const colorFnc = worker2ColorFnc[0]
     args.unshift(colorFnc(param.task.uid))
     args.unshift(colorFnc(param.task.product_id))
   }

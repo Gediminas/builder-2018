@@ -29,7 +29,6 @@ class Pool extends events {
     const task = {
       uid       : time,
       product_id: productId,
-      worker_nr : 0,
       status    : 'queued',
       time_add  : time,
       time_start: 0,
@@ -98,7 +97,7 @@ class Pool extends events {
       assert(task.status === 'queued')
       task.status     = 'starting'
       task.time_start = time
-      task.worker_nr  = this.activeTasks.push(task)
+      this.activeTasks.push(task)
       emiter.emit('task-starting', { time, task })
       setImmediate(() => this._executeTask(emiter, task))
       return
