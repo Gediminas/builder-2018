@@ -7,8 +7,9 @@ const sys = require('./sys_util.js')
 const db = require('./builder_db_utils.js')
 const pool = require('./pool.js')
 require('colors')
-require('./pool_logger_tty.js')
-require('./pool_logger_log.js')
+require('./pool_listener_tty.js')
+require('./pool_listener_log.js')
+const gui = require('./pool_listener_gui.js')
 
 const getTaskByProduct = (product_id) => {
   const tasks = pool.allTasks()
@@ -207,14 +208,6 @@ pool.on('task-started', (param) => {
   param.task.data.status = 'WORKING'
 })
 
-pool.on('task-output', () => {
-  updateClient(Update_Tasks)
-})
-
-pool.on('task-output-error', () => {
-  updateClient(Update_Tasks)
-})
-
 pool.on('task-completed', (param) => {
   if (param.task.status === 'halted') {
     param.task.data.status = 'HALTED'
@@ -234,5 +227,6 @@ pool.on('task-completed', (param) => {
 })
 
 db.init(app_cfg.db_dir).then(() => {
+  gui.initialize(io)
   pool.initialize(9)
 })
