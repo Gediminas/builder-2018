@@ -56,9 +56,7 @@ console.log(`Socket server starting on port: ${app_cfg.server_port}`.bgBlue)
 console.log('----------------------------------------------------------'.bgBlue)
 
 const Update_Products = 1
-const Update_Tasks = 2
 const Update_History = 4
-const Update_ALL = 63
 
 
 const getScripts = () => new Promise((resolve, reject) => {
@@ -105,42 +103,30 @@ const emitState = (state, client_socket) => {
 const updateClient = (update_flags, client_socket) => {
   if ((update_flags & Update_Products) != 0) {
     getProducts((products) => {
-      var state = {}
-      state['products'] = products
-      emitState(state, client_socket)
+      emitState({ products }, client_socket)
     });
   }
-  var state = {}
   if ((update_flags & Update_History) != 0) {
-    var show_history_limit = app_cfg.show_history_limit
-    var htasks = db.get_history(show_history_limit)
-    state['htasks'] = htasks
-  }
-  if ((update_flags & Update_Tasks) != 0) {
-    var tasks = pool.allTasks()
-    state['tasks'] = tasks
-  }
-  if (Object.keys(state).length !== 0) {
-    //console.log('direct')
-    emitState(state, client_socket)
+    const htasks = db.get_history(app_cfg.show_history_limit)
+    emitState({ htasks }, client_socket)
   }
 }
 
 io.on('connection', function(socket){
   console.log(`Client connected: ${socket.conn.remoteAddress}`.bgBlue)
 
-  updateClient(Update_ALL, socket)
+  updateClient(Update_Products |  Update_History, socket)
+  socket.emit('state', { tasks: pool.allTasks() })
 
-  socket.on('task_add', function(param){
-    //updateClient(Update_Products | Update_Tasks, socket)
+  socket.on('task_add', (param) => {
     pool.addTask(param.product_id, {user_comment: "user comment"})
   })
 
-  socket.on('task_kill', function(param){
+  socket.on('task_kill', (param) => {
     pool.dropTask(param.task_uid)
   })
 
-  socket.on('sys_shutdown', function(param){
+  socket.on('sys_shutdown', (param) => {
     // sys.log("Stoping cron tasks...")
     // script.destroy_all()
 
@@ -154,7 +140,7 @@ io.on('connection', function(socket){
 // pool =====================================================
 
 pool.on('initialized', (param) => {
-  updateClient(Update_Products | Update_Tasks); //because task was added
+  updateClient(Update_Products) //because task was added
 })
 
 pool.on('task-added', (param) => {
@@ -186,7 +172,7 @@ pool.on('task-added', (param) => {
     options : { cwd: '' },
   }
   // END FIXME
-  updateClient(Update_Products | Update_Tasks)
+  updateClient(Update_Products)
 })
 
 pool.on('task-starting', (param) => {
@@ -223,7 +209,7 @@ pool.on('task-completed', (param) => {
     param.task.data.status = `(${param.task.status})`
   }
   db.add_history(param.task)
-  setImmediate(() => updateClient(Update_ALL))
+  setImmediate(() => updateClient(Update_Products | Update_History))
 })
 
 db.init(app_cfg.db_dir).then(() => {
