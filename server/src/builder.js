@@ -13,9 +13,9 @@ const gui = require('./pool_listener_gui.js')
 
 const getTaskByProduct = (product_id) => {
   const tasks = pool.allTasks()
-  for (const i in tasks) {
-    if (tasks[i].product_id === product_id) {
-      return tasks[i]
+  for (const task of tasks) {
+    if (task.product_id === product_id) {
+      return task
     }
   }
   return db.findLast_history({ product_id })
@@ -59,37 +59,26 @@ const Update_Products = 1
 const Update_History = 4
 
 
-const getScripts = () => new Promise((resolve, reject) => {
-  // console.log("reading from: " + __dirname + '/../../' + config['script_dir']);
-  const config = load_app_cfg()
-  glob('*/index.*', { cwd: config.script_dir, matchBase: 1 }, (err, files) => {
+const getProducts = (script_dir, on_loaded) => {
+  glob('*/index.*', { cwd: script_dir, matchBase: 1 }, (err, files) => {
     if (err) {
       reject(err)
     }
-    const scripts = files.map(file => path.dirname(file))
-    resolve(scripts)
-  })
-})
-
-const getProducts = (on_loaded) => {
-  getScripts()
-    .then((files) => {
-      //console.log('scripts', files)
-      const products = []
-      for (const i in files) {
-        const product_id = files[i]
-        const cfg = load_cfg(product_id)
-        const lastTask = getTaskByProduct(product_id)
-        const product = {
-          product_id,
-          product_name: cfg.product_name,
-          cfg,
-          last_task   : lastTask,
-        }
-        products.push(product)
+    const dirNames = files.map(file => path.dirname(file))
+    const products = []
+    for (const product_id of dirNames) {
+      const cfg = load_cfg(product_id)
+      const lastTask = getTaskByProduct(product_id)
+      const product = {
+        product_id,
+        product_name: cfg.product_name,
+        cfg,
+        last_task: lastTask,
       }
-      on_loaded(products)
-    })
+      products.push(product)
+    }
+    on_loaded(products)
+  })
 }
 
 const emitState = (state, client_socket) => {
@@ -101,8 +90,9 @@ const emitState = (state, client_socket) => {
 }
 
 const updateClient = (update_flags, client_socket) => {
+  const config = load_app_cfg()
   if ((update_flags & Update_Products) != 0) {
-    getProducts((products) => {
+    getProducts(config.script_dir, (products) => {
       emitState({ products }, client_socket)
     });
   }
