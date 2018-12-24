@@ -62,7 +62,8 @@ const Update_History = 4
 const getProducts = (script_dir, on_loaded) => {
   glob('*/index.*', { cwd: script_dir, matchBase: 1 }, (err, files) => {
     if (err) {
-      reject(err)
+      // reject(err)
+      return null
     }
     const dirNames = files.map(file => path.dirname(file))
     const products = []
