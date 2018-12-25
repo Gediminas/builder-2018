@@ -145,14 +145,13 @@ pool.on('task-added', (param) => {
     last_task = db.findLast_history({ "product_id" : product_id})
   }
   //console.log(last_task);
-  let data1 = {
+  param.task.data = {
     product_name,
     comment:        'comment',
     status:         'QUEUED',
     pid:            0,
     prev_time_diff: last_task ? last_task.time_diff : undefined
-  };
-  param.task.data = data1
+  }
 
   //FIXME: Should be moved to taskStarting() or similar
   let script_js   = app_cfg.script_dir + product_id + '/index.js'
@@ -167,12 +166,13 @@ pool.on('task-added', (param) => {
 })
 
 pool.on('task-starting', (param) => {
-  sys.ensure_dir(app_cfg.working_dir)
 
   let product_dir = app_cfg.working_dir + param.task.product_id + '/'
-  console.log(`>> product_dir: ${product_dir}`)
   let working_dir = product_dir + sys.to_fs_time_string(param.task.time_add) + '/' //FIXME: task.time_start
 
+  console.log(`>> product_dir: ${product_dir}`)
+
+  sys.ensure_dir(app_cfg.working_dir)
   sys.ensure_dir(product_dir)
   sys.ensure_dir(working_dir)
 
@@ -180,25 +180,7 @@ pool.on('task-starting', (param) => {
   param.task.exec.options.cwd = working_dir
 })
 
-pool.on('task-started', (param) => {
-  param.task.data.pid = param.task.exec.pid
-  param.task.data.status = 'WORKING'
-})
-
 pool.on('task-completed', (param) => {
-  if (param.task.status === 'halted') {
-    param.task.data.status = 'HALTED'
-  } else if (param.task.status === 'finished') {
-    switch (param.task.exec.exitCode) {
-    case 0: param.task.data.status = 'OK'; break
-    case 1: param.task.data.status = 'WARNING'; break
-    case 2: param.task.data.status = 'ERROR'; break
-    case 3: param.task.data.status = 'HALT'; break
-    default: param.task.data.status = 'N/A'; break
-    }
-  } else {
-    param.task.data.status = `(${param.task.status})`
-  }
   db.add_history(param.task)
   setImmediate(() => updateClient(Update_Products | Update_History))
 })
