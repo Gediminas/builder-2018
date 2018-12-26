@@ -11,6 +11,8 @@ require('./pool_listener_tty.js')
 require('./pool_listener_log.js')
 const gui = require('./pool_listener_gui.js')
 
+let g_products = []
+
 const getTaskByProduct = (product_id) => {
   const tasks = pool.allTasks()
   for (const task of tasks) {
@@ -93,9 +95,10 @@ const emitState = (state, client_socket) => {
 const updateClient = (update_flags, client_socket) => {
   const config = load_app_cfg()
   if ((update_flags & Update_Products) != 0) {
-    getProducts(config.script_dir, (products) => {
-      emitState({ products }, client_socket)
-    });
+      for (const product of g_products) {
+        product.lastTask = db.findLast_history({ product_id: product.product_id })
+      }
+      emitState({ g_products }, client_socket)
   }
   if ((update_flags & Update_History) != 0) {
     const htasks = db.get_history(app_cfg.show_history_limit)
@@ -187,5 +190,9 @@ pool.on('task-completed', (param) => {
 
 db.init(app_cfg.db_dir).then(() => {
   gui.initialize(io)
+  const config = load_app_cfg()
+  getProducts(config.script_dir, (_products) => {
+    g_products = _products
+  })
   pool.initialize(9)
 })
