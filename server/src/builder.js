@@ -80,12 +80,12 @@ const emitState = (state, client_socket) => {
 
 const emitProducts = (client_socket) => {
   setImmediate(() => emitState({ products: g_products }, client_socket))
-})
+}
 
 const emitHistory = (client_socket) => {
   const htasks = db.get_history(appCfg.show_history_limit)
   setImmediate(() => emitState({ htasks }, client_socket))
-})
+}
 
 io.on('connection', function(socket){
   console.log(`Client connected: ${socket.conn.remoteAddress}`.bgBlue)
