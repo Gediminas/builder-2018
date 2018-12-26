@@ -13,16 +13,6 @@ const gui = require('./pool_listener_gui.js')
 
 let g_products = []
 
-const getTaskByProduct = (product_id) => {
-  const tasks = pool.allTasks()
-  for (const task of tasks) {
-    if (task.product_id === product_id) {
-      return task
-    }
-  }
-  return db.findLast_history({ product_id })
-}
-
 const load_app_cfg = (product_id) => {
 	const acfg = JSON.parse(fs.readFileSync(__dirname + '/../../_cfg/config.json', 'utf8'))
   acfg.script_dir  = path.normalize(__dirname + '/../../' + acfg.script_dir)
@@ -64,22 +54,24 @@ const Update_History = 4
 const getProducts = (script_dir, on_loaded) => {
   glob('*/index.*', { cwd: script_dir, matchBase: 1 }, (err, files) => {
     if (err) {
-      // reject(err)
-      return null
+      return
     }
-    const dirNames = files.map(file => path.dirname(file))
-    const products = []
-    for (const product_id of dirNames) {
+    const products = files.map((file) => {
+      const product_id = path.dirname(file)
       const cfg = load_cfg(product_id)
-      const lastTask = getTaskByProduct(product_id)
-      const product = {
+      const script_js   = script_dir + product_id + '/index.js'
+
+      return {
         product_id,
         product_name: cfg.product_name,
         cfg,
-        last_task: lastTask,
+        exec: {
+          file    : 'node',
+          args    : [script_js],
+          options : { cwd: '' },
+        },
       }
-      products.push(product)
-    }
+    })
     on_loaded(products)
   })
 }
@@ -95,10 +87,7 @@ const emitState = (state, client_socket) => {
 const updateClient = (update_flags, client_socket) => {
   const config = load_app_cfg()
   if ((update_flags & Update_Products) != 0) {
-      for (const product of g_products) {
-        product.lastTask = db.findLast_history({ product_id: product.product_id })
-      }
-      emitState({ g_products }, client_socket)
+    emitState({ products: g_products }, client_socket)
   }
   if ((update_flags & Update_History) != 0) {
     const htasks = db.get_history(app_cfg.show_history_limit)
@@ -156,14 +145,13 @@ pool.on('task-added', (param) => {
     prev_time_diff: last_task ? last_task.time_diff : undefined
   }
 
-  //FIXME: Should be moved to taskStarting() or similar
-  let script_js   = app_cfg.script_dir + product_id + '/index.js'
-
-  param.task.exec = {
-    file    : 'node',
-    args    : [script_js],
-    options : { cwd: '' },
+  for (const product of g_products) {
+    if (product.product_id === param.task.product_id) {
+      param.task.exec = product.exec
+      break
+    }
   }
+
   // END FIXME
   updateClient(Update_Products)
 })
@@ -185,14 +173,22 @@ pool.on('task-starting', (param) => {
 
 pool.on('task-completed', (param) => {
   db.add_history(param.task)
+  for (const product of g_products) {
+    if (product.product_id === param.task.product_id) {
+      product.last_task = db.findLast_history({ product_id: product.product_id })
+    }
+  }
   setImmediate(() => updateClient(Update_Products | Update_History))
 })
 
 db.init(app_cfg.db_dir).then(() => {
-  gui.initialize(io)
   const config = load_app_cfg()
   getProducts(config.script_dir, (_products) => {
     g_products = _products
+    for (const product of g_products) {
+      product.last_task = db.findLast_history({ product_id: product.product_id })
+    }
+    gui.initialize(io)
+    pool.initialize(9)
   })
-  pool.initialize(9)
 })
