@@ -51,7 +51,7 @@ const Update_Products = 1
 const Update_History = 4
 
 
-const getProducts = (script_dir, on_loaded) => {
+const loadProducts = (script_dir, on_loaded) => {
   glob('*/index.*', { cwd: script_dir, matchBase: 1 }, (err, files) => {
     if (err) {
       return
@@ -59,7 +59,7 @@ const getProducts = (script_dir, on_loaded) => {
     const products = files.map((file) => {
       const product_id = path.dirname(file)
       const cfg = load_cfg(product_id)
-      const script_js   = script_dir + product_id + '/index.js'
+      const script_js   = script_dir + file
 
       return {
         product_id,
@@ -183,7 +183,7 @@ pool.on('task-completed', (param) => {
 
 db.init(app_cfg.db_dir).then(() => {
   const config = load_app_cfg()
-  getProducts(config.script_dir, (_products) => {
+  loadProducts(config.script_dir, (_products) => {
     g_products = _products
     for (const product of g_products) {
       product.last_task = db.findLast_history({ product_id: product.product_id })
