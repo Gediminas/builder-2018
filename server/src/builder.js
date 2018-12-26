@@ -70,29 +70,30 @@ const loadProducts = (script_dir, on_loaded) => {
   })
 }
 
-const emitState = (state, client_socket) => {
-  if (!client_socket) {
-    io.emit('state', state)
-  } else {
-    client_socket.emit('state', state)
-  }
+const emitState = (emitter) => {
+  emitter.emit('state', {
+    products: g_products,
+    tasks: pool.allTasks(),
+    htasks: db.get_history(appCfg.show_history_limit),
+  })
 }
 
-const emitProducts = (client_socket) => {
-  setImmediate(() => emitState({ products: g_products }, client_socket))
+const emitProducts = (emitter) => {
+  setImmediate(() => emitter.emit({ products: g_products }))
 }
 
-const emitHistory = (client_socket) => {
+const emitHistory = (emitter) => {
   const htasks = db.get_history(appCfg.show_history_limit)
-  setImmediate(() => emitState({ htasks }, client_socket))
+  setImmediate(() => emitter.emit({ htasks }))
 }
 
 io.on('connection', function(socket){
   console.log(`Client connected: ${socket.conn.remoteAddress}`.bgBlue)
 
-  emitProducts(socket)
-  emitHistory(socket)
-  socket.emit('state', { tasks: pool.allTasks() })
+  for (const product of g_products) {
+    product.last_task = db.findLast_history({ product_id: product.product_id })
+  }
+  emitState(socket)
 
   socket.on('task_add', (param) => {
     pool.addTask(param.product_id, {user_comment: "user comment"})
@@ -116,7 +117,10 @@ io.on('connection', function(socket){
 // pool =====================================================
 
 pool.on('initialized', (param) => {
-  emitProducts()
+  for (const product of g_products) {
+    product.last_task = db.findLast_history({ product_id: product.product_id })
+  }
+  emitProducts(io)
 })
 
 pool.on('task-added', (param) => {
@@ -144,8 +148,6 @@ pool.on('task-added', (param) => {
       break
     }
   }
-
-  emitProducts()
 })
 
 pool.on('task-starting', (param) => {
@@ -170,8 +172,8 @@ pool.on('task-completed', (param) => {
       product.last_task = db.findLast_history({ product_id: product.product_id })
     }
   }
-  emitProducts()
-  emitHistory()
+  emitProducts(io)
+  emitHistory(io)
 })
 
 db.init(appCfg.db_dir).then(() => {
