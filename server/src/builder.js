@@ -147,13 +147,13 @@ pool.on('task-added', (param) => {
 pool.on('task-starting', (param) => {
 
   let product_dir = cfgApp.working_dir + param.task.product_id + '/'
-  let working_dir = product_dir + sys.to_fs_time_string(param.task.time_add) + '/' //FIXME: task.time_start
+  let working_dir = product_dir + sys.timeToDir(param.task.time_add) + '/' //FIXME: task.time_start
 
   console.log(`>> product_dir: ${product_dir}`)
 
-  sys.ensure_dir(cfgApp.working_dir)
-  sys.ensure_dir(product_dir)
-  sys.ensure_dir(working_dir)
+  sys.ensureDir(cfgApp.working_dir)
+  sys.ensureDir(product_dir)
+  sys.ensureDir(working_dir)
 
   param.task.working_dir = working_dir
   param.task.exec.options.cwd = working_dir
@@ -166,9 +166,9 @@ pool.on('task-completed', (param) => {
   emitHistory(io)
 })
 
-sys.ensure_dir(cfgApp.script_dir)
-sys.ensure_dir(cfgApp.working_dir)
-sys.ensure_dir(cfgApp.db_dir)
+sys.ensureDir(cfgApp.script_dir)
+sys.ensureDir(cfgApp.working_dir)
+sys.ensureDir(cfgApp.db_dir)
 
 console.log('----------------------------------------------------------'.bgBlue)
 console.log('config:'.bgBlue, JSON.stringify(cfgApp, null, 2).bgBlue)

@@ -1,6 +1,6 @@
-const pool = require('./pool.js')
-const sys = require('./sys_util.js')
 const colors = require('colors')
+const pool   = require('./pool.js')
+const sys    = require('./sys_util.js')
 
 let sub = 0
 
@@ -27,7 +27,7 @@ const log = (param, ...args) => {
     args.unshift(colorFnc(param.task.uid))
     args.unshift(colorFnc(param.task.product_id))
   }
-  console.log(sys.to_time_string(param.time).grey, ...args)
+  console.log(sys.timeToString(param.time).grey, ...args)
 }
 
 pool.on('initialized',   param => log(param, 'Initialized'.bgGreen))

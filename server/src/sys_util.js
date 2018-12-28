@@ -1,14 +1,14 @@
 const fs = require('fs');
 const moment = require('moment');
 
-exports.to_time_string = timestamp => moment(timestamp)
+exports.timeToString = timestamp => moment(timestamp)
   .format('YYYY-MM-DD HH:mm:ss')
 
-exports.to_fs_time_string = timestamp => moment(timestamp)
+exports.timeToDir = timestamp => moment(timestamp)
   .format('YYYY-MM-DD_HH-mm-ss_SSS')
 
 
-exports.ensure_dir = (dirPath) => {
+exports.ensureDir = (dirPath) => {
   try {
     fs.mkdirSync(dirPath)
     console.log(`Folder created: ${dirPath}`)
