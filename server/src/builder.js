@@ -10,40 +10,28 @@ require('colors')
 require('./pool_listener_tty.js')
 require('./pool_listener_log.js')
 const gui = require('./pool_listener_gui.js')
+const cfgApp = require('../../_cfg/config.json')
+const cfgDef = require('../../_cfg/script_defaults.json')
+
+const io = socketio(cfgApp.server_port)
 
 let g_products = []
 
-const appCfg = JSON.parse(fs.readFileSync(__dirname + '/../../_cfg/config.json', 'utf8'))
-appCfg.script_dir  = path.normalize(__dirname + '/../../' + appCfg.script_dir)
-appCfg.working_dir = path.normalize(__dirname + '/../../' + appCfg.working_dir)
-appCfg.db_dir      = path.normalize(__dirname + '/../../' + appCfg.db_dir)
+cfgApp.script_dir  = path.normalize(__dirname + '/../../' + cfgApp.script_dir)
+cfgApp.working_dir = path.normalize(__dirname + '/../../' + cfgApp.working_dir)
+cfgApp.db_dir      = path.normalize(__dirname + '/../../' + cfgApp.db_dir)
 
-const load_cfg = (product_id) => {
-  const def = JSON.parse(fs.readFileSync(__dirname + '/../../_cfg/script_defaults.json', 'utf8'))
-  const cfg = JSON.parse(fs.readFileSync(appCfg.script_dir + product_id + '/script.cfg', 'utf8'))
-  const srv = JSON.parse(fs.readFileSync(appCfg.script_dir + product_id + '/server.cfg', 'utf8'))
-  // for(var key in json_svr) json_cfg[key]=json_svr[key]; //json merge
-  const mrg = merge.recursive(def, cfg, srv)
+const load_cfg = (script_dir, product_id) => {
+  const cfgPath = path.normalize(script_dir + product_id + '/script.cfg')
+  const srvPath = path.normalize(script_dir + product_id + '/server.cfg')
+  const cfg = JSON.parse(fs.readFileSync(cfgPath, 'utf8'))
+  const srv = JSON.parse(fs.readFileSync(srvPath, 'utf8'))
+  const mrg = merge.recursive(cfgDef, cfg, srv)
   if (!mrg.product_name) {
     mrg.product_name = product_id
   }
   return mrg
 }
-
-const io = socketio(appCfg.server_port)
-
-
-sys.ensure_dir(appCfg.script_dir)
-sys.ensure_dir(appCfg.working_dir)
-sys.ensure_dir(appCfg.db_dir)
-
-console.log('----------------------------------------------------------'.bgBlue)
-console.log('config:'.bgBlue, JSON.stringify(appCfg, null, 2).bgBlue)
-console.log(`Socket server starting on port: ${appCfg.server_port}`.bgBlue)
-console.log('----------------------------------------------------------'.bgBlue)
-
-const Update_Products = 1
-const Update_History = 4
 
 const loadProducts = (script_dir, on_loaded) => {
   glob('*/index.*', { cwd: script_dir, matchBase: 1 }, (err, files) => {
@@ -52,7 +40,7 @@ const loadProducts = (script_dir, on_loaded) => {
     }
     const products = files.map((file) => {
       const product_id = path.dirname(file)
-      const cfg = load_cfg(product_id)
+      const cfg = load_cfg(script_dir, product_id)
       const script_js   = script_dir + file
 
       return {
@@ -74,7 +62,7 @@ const emitState = (emitter) => {
   emitter.emit('state', {
     products: g_products,
     tasks: pool.allTasks(),
-    htasks: db.get_history(appCfg.show_history_limit),
+    htasks: db.get_history(cfgApp.show_history_limit),
   })
 }
 
@@ -83,8 +71,16 @@ const emitProducts = (emitter) => {
 }
 
 const emitHistory = (emitter) => {
-  const htasks = db.get_history(appCfg.show_history_limit)
+  const htasks = db.get_history(cfgApp.show_history_limit)
   setImmediate(() => emitter.emit({ htasks }))
+}
+
+const updateProducts = (db, product_id) => {
+  for (const product of g_products) {
+    if (!product_id || product.product_id === product_id) {
+      product.last_task = db.findLast_history({ product_id: product.product_id })
+    }
+  }
 }
 
 io.on('connection', function(socket){
@@ -117,9 +113,7 @@ io.on('connection', function(socket){
 // pool =====================================================
 
 pool.on('initialized', (param) => {
-  for (const product of g_products) {
-    product.last_task = db.findLast_history({ product_id: product.product_id })
-  }
+  updateProducts(db)
   emitProducts(io)
 })
 
@@ -152,12 +146,12 @@ pool.on('task-added', (param) => {
 
 pool.on('task-starting', (param) => {
 
-  let product_dir = appCfg.working_dir + param.task.product_id + '/'
+  let product_dir = cfgApp.working_dir + param.task.product_id + '/'
   let working_dir = product_dir + sys.to_fs_time_string(param.task.time_add) + '/' //FIXME: task.time_start
 
   console.log(`>> product_dir: ${product_dir}`)
 
-  sys.ensure_dir(appCfg.working_dir)
+  sys.ensure_dir(cfgApp.working_dir)
   sys.ensure_dir(product_dir)
   sys.ensure_dir(working_dir)
 
@@ -167,21 +161,24 @@ pool.on('task-starting', (param) => {
 
 pool.on('task-completed', (param) => {
   db.add_history(param.task)
-  for (const product of g_products) {
-    if (product.product_id === param.task.product_id) {
-      product.last_task = db.findLast_history({ product_id: product.product_id })
-    }
-  }
+  updateProducts(db, param.task.product_id)
   emitProducts(io)
   emitHistory(io)
 })
 
-db.init(appCfg.db_dir).then(() => {
-  loadProducts(appCfg.script_dir, (_products) => {
+sys.ensure_dir(cfgApp.script_dir)
+sys.ensure_dir(cfgApp.working_dir)
+sys.ensure_dir(cfgApp.db_dir)
+
+console.log('----------------------------------------------------------'.bgBlue)
+console.log('config:'.bgBlue, JSON.stringify(cfgApp, null, 2).bgBlue)
+console.log(`Socket server starting on port: ${cfgApp.server_port}`.bgBlue)
+console.log('----------------------------------------------------------'.bgBlue)
+
+db.init(cfgApp.db_dir).then(() => {
+  loadProducts(cfgApp.script_dir, (_products) => {
     g_products = _products
-    for (const product of g_products) {
-      product.last_task = db.findLast_history({ product_id: product.product_id })
-    }
+    updateProducts(db)
     gui.initialize(io)
     pool.initialize(9)
   })
