@@ -11,34 +11,19 @@ const bufferToFullLines = (origBuffer, fnDoOnLine) => {
   return newBuffer
 }
 
-const getTimeStamp = () => {
-  return new Date().valueOf()
-}
-
 class Pool extends events {
   initialize(_maxWorkers) {
-    const time = getTimeStamp()
     this.waitingTasks = []
     this.activeTasks = []
     this.maxWorkers = _maxWorkers
-    this.emit('initialized', { time })
+    const param = {}
+    this.emit('initialized', param)
   }
 
   addTask(productId, taskData) {
-    const time = getTimeStamp()
-    const task = {
-      uid       : time,
-      product_id: productId,
-      status    : 'queued',
-      time_add  : time,
-      time_start: 0,
-      time_end  : 0,
-      time_diff : 0,
-      exec      : {},
-      data      : taskData,
-    }
+    const task = {}
     this.waitingTasks.push(task)
-    this.emit('task-added', { time, task })
+    this.emit('task-added', { task, productId, taskData })
     setImmediate(() => this._processQueue(this))
   }
 
@@ -46,9 +31,8 @@ class Pool extends events {
     const emitter = this
     for (const i in this.waitingTasks) {
       if (this.waitingTasks[i].uid === taskUid) {
-        const time = getTimeStamp()
         const task = this.waitingTasks.splice(i, 1)[0]
-        emitter.emit('task-removed', { time, task })
+        emitter.emit('task-removed', { task })
         return
       }
     }
@@ -56,15 +40,11 @@ class Pool extends events {
     for (const task of this.activeTasks) {
       if (task.uid === taskUid) {
         {
-          const time = getTimeStamp()
-          task.status = 'halting'
-          this.emit('task-killing', { time, task })
+          this.emit('task-killing', { task })
         }
 
         kill(task.exec.pid, 'SIGTERM', () => { // SIGKILL
-          const time = getTimeStamp()
-          task.status = 'halted'
-          emitter.emit('task-killed', { time, task })
+          emitter.emit('task-killed', { task })
         })
         return
       }
@@ -88,17 +68,13 @@ class Pool extends events {
     }
     for (const i1 in this.waitingTasks) {
       const task = this.waitingTasks[i1]
-      //if (this.activeTasks.some(e => e.product_id === task.product_id)) {
-        //continue // TEMP: do not alow 2 instances of the same product
-      //}
-      const time = getTimeStamp()
+      // if (this.activeTasks.some(e => e.product_id === task.product_id)) {
+      //   continue // TEMP: do not alow 2 instances of the same product
+      // }
       const taskWaiting = this.waitingTasks.splice(i1, 1)[0]
       assert(task === taskWaiting)
-      assert(task.status === 'queued')
-      task.status     = 'starting'
-      task.time_start = time
       this.activeTasks.push(task)
-      emiter.emit('task-starting', { time, task })
+      emiter.emit('task-starting', { task })
       setImmediate(() => this._executeTask(emiter, task))
       return
     }
@@ -108,26 +84,19 @@ class Pool extends events {
     const child = execFile(task.exec.file, task.exec.args, task.exec.options)
     child.bufOut = ''
     child.bufErr = ''
-    task.status = 'started'
-    task.exec.pid = child.pid
-    {
-      const time = getTimeStamp()
-      emiter.emit('task-started', { time, task })
-    }
+    emiter.emit('task-started', { task, pid: child.pid })
 
     child.stdout.on('data', (data) => {
       child.bufOut += data
       child.bufOut = bufferToFullLines(child.bufOut, (text) => {
-        const time = getTimeStamp()
-        emiter.emit('task-output', { time, task, text })
+        emiter.emit('task-output', { task, text })
       })
     })
 
     child.stderr.on('data', (data) => {
       child.bufErr += data
       child.bufErr = bufferToFullLines(child.bufErr, (text) => {
-        const time = getTimeStamp()
-        emiter.emit('task-output-error', { time, task, text })
+        emiter.emit('task-output-error', { task, text })
       })
     })
 
@@ -136,22 +105,14 @@ class Pool extends events {
         if (this.activeTasks[i].uid !== task.uid) {
           continue
         }
-        const time = getTimeStamp()
         const closedTask = this.activeTasks.splice(i, 1)[0]
         assert(closedTask === task)
-        if (closedTask.status === 'halting') {
-          task.status = 'halted'
-        } else {
-          task.status = 'finished'
-        }
-        task.exec.exitCode = exitCode
-        emiter.emit('task-completed', { time, task })
+        emiter.emit('task-completed', { task, exitCode })
         setImmediate(() => this._processQueue(emiter))
         return
       }
     })
   }
-
 }
 
 module.exports = new Pool()
