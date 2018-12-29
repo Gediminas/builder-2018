@@ -36,7 +36,7 @@ export default class extends PureComponent {
         <div className='cell'>
           <button type="button"
             className="btn btn_addtask"
-            onClick={() => this.props.add_task(product_name)}>
+            onClick={() => this.props.add_task(product_id)}>
             + 
           </button>
         </div>

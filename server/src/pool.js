@@ -3,15 +3,15 @@ const kill = require('tree-kill')
 const assert = require('better-assert')
 const { execFile } = require('child_process')
 
-function bufferToFullLines(origBuffer, fnDoOnLine) {
+const bufferToFullLines = (origBuffer, fnDoOnLine) => {
   const lines = origBuffer.split(/\r?\n/)
   const newBuffer = lines.pop()
-  lines.forEach(line => fnDoOnLine(line))
+  lines.forEach(fnDoOnLine)
   assert(newBuffer === '' || origBuffer.slice(-1) !== '\n')
   return newBuffer
 }
 
-function getTimeStamp() {
+const getTimeStamp = () => {
   return new Date().valueOf()
 }
 
@@ -88,9 +88,9 @@ class Pool extends events {
     }
     for (const i1 in this.waitingTasks) {
       const task = this.waitingTasks[i1]
-      if (this.activeTasks.some(e => e.product_id === task.product_id)) {
-        continue // TEMP: do not alow 2 instances of the same product
-      }
+      //if (this.activeTasks.some(e => e.product_id === task.product_id)) {
+        //continue // TEMP: do not alow 2 instances of the same product
+      //}
       const time = getTimeStamp()
       const taskWaiting = this.waitingTasks.splice(i1, 1)[0]
       assert(task === taskWaiting)
@@ -105,7 +105,7 @@ class Pool extends events {
   }
 
   _executeTask(emiter, task) {
-    const child = execFile(task.exec.file, task.exec.args, task.exec.options, null)
+    const child = execFile(task.exec.file, task.exec.args, task.exec.options)
     child.bufOut = ''
     child.bufErr = ''
     task.status = 'started'
