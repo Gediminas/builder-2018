@@ -72,24 +72,6 @@ class Pool extends events {
     return this.activeTasks.concat(this.waitingTasks)
   }
 
-  _processQueue(emiter) {
-    if (this.activeTasks.length >= this.maxWorkers) {
-      return
-    }
-    for (const i1 in this.waitingTasks) {
-      const task = this.waitingTasks[i1]
-      // if (this.activeTasks.some(e => e.product_id === task.product_id)) {
-      //   continue // TEMP: do not alow 2 instances of the same product
-      // }
-      const taskWaiting = this.waitingTasks.splice(i1, 1)[0]
-      assert(task === taskWaiting)
-      this.activeTasks.push(task)
-      emiter.emit('task-starting', { task })
-      setImmediate(() => this._executeTask(emiter, task))
-      return
-    }
-  }
-
   _executeTask(emiter, task) {
     const child = execFile(task.exec.file, task.exec.args, task.exec.options)
     child.bufOut = ''
@@ -122,6 +104,24 @@ class Pool extends events {
         return
       }
     })
+  }
+
+  _processQueue(emiter) {
+    if (this.activeTasks.length >= this.maxWorkers) {
+      return
+    }
+    for (const i1 in this.waitingTasks) {
+      const task = this.waitingTasks[i1]
+      // if (this.activeTasks.some(e => e.product_id === task.product_id)) {
+      //   continue // TEMP: do not alow 2 instances of the same product
+      // }
+      const taskWaiting = this.waitingTasks.splice(i1, 1)[0]
+      assert(task === taskWaiting)
+      this.activeTasks.push(task)
+      emiter.emit('task-starting', { task })
+      setImmediate(() => this._executeTask(emiter, task))
+      return
+    }
   }
 }
 

@@ -1,16 +1,17 @@
 const assert = require('better-assert')
+const { execFile } = require('child_process')
 const pool   = require('./pool.js')
 
 const getTimeStamp = () => new Date().valueOf()
 
 
-pool.on('initialized',   param => {
+pool.on('initialized', (param) => {
   param.time = getTimeStamp()
 })
 
-pool.on('task-added',    param => {
+pool.on('task-added', (param) => {
   param.time            = getTimeStamp()
-  param.task.product_id = param.productId,
+  param.task.product_id = param.productId
   param.task.status     = 'queued'
   param.task.time_add   = param.time
   param.task.time_start = 0
@@ -20,29 +21,29 @@ pool.on('task-added',    param => {
   param.task.data       = param.taskData
 })
 
-pool.on('task-starting', param => {
+pool.on('task-starting', (param) => {
   param.time = getTimeStamp()
   assert(param.task.status === 'queued')
   param.task.status     = 'starting'
   param.task.time_start = param.time
 })
 
-pool.on('task-started',  param => {
+pool.on('task-started', (param) => {
   param.time          = getTimeStamp()
   param.task.exec.pid = param.pid
   param.task.status   = 'started'
 })
 
-pool.on('task-removed',  param => {
+pool.on('task-removed',  (param) => {
   param.time = getTimeStamp()
 })
 
-pool.on('task-killing',  param => {
+pool.on('task-killing', (param) => {
   param.time = getTimeStamp()
   param.task.status = 'halting'
 })
 
-pool.on('task-killed',   param => {
+pool.on('task-killed', (param) => {
   param.time = getTimeStamp()
   param.task.status = 'halted'
 })
