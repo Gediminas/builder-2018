@@ -10,7 +10,6 @@ pool.on('initialized',   param => {
 
 pool.on('task-added',    param => {
   param.time            = getTimeStamp()
-  param.task.uid        = param.time,
   param.task.product_id = param.productId,
   param.task.status     = 'queued'
   param.task.time_add   = param.time

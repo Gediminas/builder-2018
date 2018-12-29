@@ -3,6 +3,18 @@ const kill = require('tree-kill')
 const assert = require('better-assert')
 const { execFile } = require('child_process')
 
+let prevUid = 0
+const generateUid = () => {
+  let uid = 0
+  do {
+    assert(uid === 0) // temp check
+    uid = new Date().valueOf()
+  }
+  while (prevUid === uid)
+  prevUid = uid
+  return uid
+}
+
 const bufferToFullLines = (origBuffer, fnDoOnLine) => {
   const lines = origBuffer.split(/\r?\n/)
   const newBuffer = lines.pop()
@@ -21,7 +33,7 @@ class Pool extends events {
   }
 
   addTask(productId, taskData) {
-    const task = {}
+    const task = { uid: generateUid() }
     this.waitingTasks.push(task)
     this.emit('task-added', { task, productId, taskData })
     setImmediate(() => this._processQueue(this))
@@ -39,9 +51,7 @@ class Pool extends events {
 
     for (const task of this.activeTasks) {
       if (task.uid === taskUid) {
-        {
-          this.emit('task-killing', { task })
-        }
+        emitter.emit('task-killing', { task })
 
         kill(task.exec.pid, 'SIGTERM', () => { // SIGKILL
           emitter.emit('task-killed', { task })
