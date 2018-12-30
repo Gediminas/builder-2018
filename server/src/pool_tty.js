@@ -40,7 +40,7 @@ pool.on('task-killing',  param => log(param, 'Killing'.bgRed))
 pool.on('task-killed',   param => log(param, 'Killed'.bgRed))
 
 pool.on('task-completed', (param) => {
-  log(param, `Finished: "${param.task.status}, pid=${param.task.exec.pid}, code=${param.task.exec.exitCode}"`.bgGreen.black)
+  log(param, `Finished: "${param.task.status}, pid=${param.task.pid}, code=${param.task.exec.exitCode}"`.bgGreen.black)
 })
 
 pool.on('task-output', (param) => {

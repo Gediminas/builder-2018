@@ -20,7 +20,7 @@ pool.on('error', (param) => {
 
 pool.on('task-starting',  (param) => {})
 pool.on('task-started',   (param) => {
-  param.task.data.pid = param.task.exec.pid
+  param.task.data.pid = param.task.pid
   param.task.data.status = 'WORKING'
 })
 

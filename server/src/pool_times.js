@@ -40,7 +40,6 @@ pool.on('task-starting', (param) => {
 
 pool.on('task-started', (param) => {
   param.time          = getTimeStamp()
-  param.task.exec.pid = param.pid
   param.task.status   = 'started'
 })
 

@@ -33,7 +33,7 @@ class Pool extends events {
   }
 
   addTask(productId, taskData) {
-    const task = { uid: generateUid() }
+    const task = { uid: generateUid(), pid: 0 }
     this.waitingTasks.push(task)
     this.emit('task-added', { task, productId, taskData })
     setImmediate(() => this._processQueue(this))
@@ -53,7 +53,7 @@ class Pool extends events {
       if (task.uid === taskUid) {
         emitter.emit('task-killing', { task })
 
-        kill(task.exec.pid, 'SIGTERM', () => { // SIGKILL
+        kill(task.pid, 'SIGTERM', () => { // SIGKILL
           emitter.emit('task-killed', { task })
         })
         return
@@ -62,7 +62,6 @@ class Pool extends events {
 
     // throw "INTERNAL ERROR: 1750"
   }
-
 
   activeTasks() {
     return this.activeTasks
@@ -74,9 +73,10 @@ class Pool extends events {
 
   _executeTask(emiter, task) {
     const child = execFile(task.exec.file, task.exec.args, task.exec.options)
+    task.pid = child.pid
     child.bufOut = ''
     child.bufErr = ''
-    emiter.emit('task-started', { task, pid: child.pid })
+    emiter.emit('task-started', { task })
 
     child.stdout.on('data', (data) => {
       child.bufOut += data
