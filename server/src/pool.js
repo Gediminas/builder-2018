@@ -111,16 +111,22 @@ class Pool extends events {
       return
     }
     for (const i1 in this.waitingTasks) {
-      const task = this.waitingTasks[i1]
-      // if (this.activeTasks.some(e => e.product_id === task.product_id)) {
-      //   continue // TEMP: do not alow 2 instances of the same product
-      // }
-      const taskWaiting = this.waitingTasks.splice(i1, 1)[0]
-      assert(task === taskWaiting)
+      const taskCheck = this.waitingTasks[i1]
+      const check = { taskCheck, skip: false, lambda_skip: (e) => false }
+      emiter.emit('task-can-start', check)
+      if (check.skip || this.activeTasks.some(check.lambda_skip)) {
+        continue
+      }
+      console.log('TO ACTIVE ' + taskCheck.uid)
+      const task = this.waitingTasks.splice(i1, 1)[0]
+      assert(task === taskCheck)
       this.activeTasks.push(task)
       emiter.emit('task-starting', { task })
       setImmediate(() => this._executeTask(emiter, task))
       return
+    }
+    if (!this.activeTasks) {
+      emiter.emit('error', {msg: 'Cannot start any task'})
     }
   }
 }

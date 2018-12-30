@@ -13,6 +13,11 @@ pool.on('initialized',    (param) => {
   emitTasks()
 })
 
+pool.on('error', (param) => {
+  emitTasks() // activeTasks refresh if cannot start any
+})
+
+
 pool.on('task-starting',  (param) => {})
 pool.on('task-started',   (param) => {
   param.task.data.pid = param.task.exec.pid

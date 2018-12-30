@@ -9,6 +9,10 @@ pool.on('initialized', (param) => {
   param.time = getTimeStamp()
 })
 
+pool.on('error', (param) => {
+  param.time = getTimeStamp()
+})
+
 pool.on('task-added', (param) => {
   param.time            = getTimeStamp()
   param.task.product_id = param.productId
@@ -19,6 +23,12 @@ pool.on('task-added', (param) => {
   param.task.time_diff  = 0
   param.task.exec       = {}
   param.task.data       = param.taskData
+})
+
+pool.on('task-can-start', (param) => {
+  //do not alow 2 instances of the same product
+  param.skip = false;
+  param.lambda_skip = e => e.product_id === param.taskCheck.product_id;
 })
 
 pool.on('task-starting', (param) => {

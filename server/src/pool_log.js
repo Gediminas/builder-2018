@@ -37,6 +37,10 @@ const logToFile = (file, text) => {
 pool.on('initialized', (param) => {
 })
 
+pool.on('error', (param) => {
+  // log(param, `ERROR: ${param.msg}`.bgWhite.red)
+})
+
 pool.on('task-added', (param) => {
 })
 
