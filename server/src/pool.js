@@ -111,15 +111,16 @@ class Pool extends events {
       return
     }
     for (const i1 in this.waitingTasks) {
-      const taskCheck = this.waitingTasks[i1]
-      const check = { taskCheck, skip: false, lambda_skip: (e) => false }
+      const check = {task: this.waitingTasks[i1]}
       emiter.emit('task-can-start', check)
-      if (check.skip || this.activeTasks.some(check.lambda_skip)) {
+      if (check.skip) {
         continue
       }
-      console.log('TO ACTIVE ' + taskCheck.uid)
+      if (check.lambda_skip && this.activeTasks.some(check.lambda_skip)) {
+        continue
+      }
       const task = this.waitingTasks.splice(i1, 1)[0]
-      assert(task === taskCheck)
+      assert(task === check.task)
       this.activeTasks.push(task)
       emiter.emit('task-starting', { task })
       setImmediate(() => this._executeTask(emiter, task))

@@ -28,7 +28,7 @@ pool.on('task-added', (param) => {
 pool.on('task-can-start', (param) => {
   //do not alow 2 instances of the same product
   param.skip = false;
-  param.lambda_skip = e => e.product_id === param.taskCheck.product_id;
+  param.lambda_skip = e => e.product_id === param.task.product_id;
 })
 
 pool.on('task-starting', (param) => {
