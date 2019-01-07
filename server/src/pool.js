@@ -48,19 +48,16 @@ class Pool extends events {
         return
       }
     }
-
     for (const task of this.activeTasks) {
       if (task.uid === taskUid) {
         emitter.emit('task-killing', { task })
-
         kill(task.pid, 'SIGTERM', () => { // SIGKILL
           emitter.emit('task-killed', { task })
         })
         return
       }
     }
-
-    // throw "INTERNAL ERROR: 1750"
+    emitter.emit('task-kill-failed', { taskUid })
   }
 
   activeTasks() {

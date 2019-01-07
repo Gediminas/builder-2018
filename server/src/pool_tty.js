@@ -33,15 +33,22 @@ const log = (param, ...args) => {
 pool.on('initialized',   param => log(param, 'Initialized'.bgGreen))
 pool.on('error',         param => log(param, `ERROR: ${param.msg}`.bgWhite.red))
 pool.on('task-starting', param => log(param, 'Starting'.bgGreen))
-pool.on('task-started',  param => log(param, 'Started'.bgGreen))
+
+pool.on('task-started',  param => log(param,
+  `Started: pid=${param.task.pid}`.bgGreen))
+
 pool.on('task-added',    param => log(param, 'Added'.bgGreen))
 pool.on('task-removed',  param => log(param, 'Removed'.bgRed))
 pool.on('task-killing',  param => log(param, 'Killing'.bgRed))
 pool.on('task-killed',   param => log(param, 'Killed'.bgRed))
 
-pool.on('task-completed', (param) => {
-  log(param, `Finished: "${param.task.status}, pid=${param.task.pid}, code=${param.task.exec.exitCode}"`.bgGreen.black)
-})
+pool.on('task-kill-failed', param => log(param,
+  `WARNING: Kill Failed ${param.taskUid}`
+    .bgWhite.red))
+
+pool.on('task-completed', param => log(param,
+  `Finished: ${param.task.status}, pid=${param.task.pid}, code=${param.task.exec.exitCode}`
+    .bgGreen))
 
 pool.on('task-output', (param) => {
   const text = param.text
