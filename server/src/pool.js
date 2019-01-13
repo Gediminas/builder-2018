@@ -1,7 +1,5 @@
 const events = require('events')
-const kill = require('tree-kill')
 const assert = require('better-assert')
-const { execFile } = require('child_process')
 
 let prevUid = 0
 const generateUid = () => {
@@ -13,14 +11,6 @@ const generateUid = () => {
   while (prevUid === uid)
   prevUid = uid
   return uid
-}
-
-const bufferToFullLines = (origBuffer, fnDoOnLine) => {
-  const lines = origBuffer.split(/\r?\n/)
-  const newBuffer = lines.pop()
-  lines.forEach(fnDoOnLine)
-  assert(newBuffer === '' || origBuffer.slice(-1) !== '\n')
-  return newBuffer
 }
 
 class Pool extends events {
@@ -69,38 +59,6 @@ class Pool extends events {
   }
 
   _executeTask(emiter, task) {
-    const child = execFile(task.exec.file, task.exec.args, task.exec.options)
-    task.pid = child.pid
-    child.bufOut = ''
-    child.bufErr = ''
-    emiter.emit('task-started', { task })
-
-    child.stdout.on('data', (data) => {
-      child.bufOut += data
-      child.bufOut = bufferToFullLines(child.bufOut, (text) => {
-        emiter.emit('task-output', { task, text })
-      })
-    })
-
-    child.stderr.on('data', (data) => {
-      child.bufErr += data
-      child.bufErr = bufferToFullLines(child.bufErr, (text) => {
-        emiter.emit('task-output-error', { task, text })
-      })
-    })
-
-    child.on('close', (exitCode) => {
-      for (const i in this.activeTasks) {
-        if (this.activeTasks[i].uid !== task.uid) {
-          continue
-        }
-        const closedTask = this.activeTasks.splice(i, 1)[0]
-        assert(closedTask === task)
-        emiter.emit('task-completed', { task, exitCode })
-        setImmediate(() => this._processQueue(emiter))
-        return
-      }
-    })
   }
 
   _processQueue(emiter) {
@@ -120,13 +78,32 @@ class Pool extends events {
       assert(task === check.task)
       this.activeTasks.push(task)
       emiter.emit('task-starting', { task })
-      setImmediate(() => this._executeTask(emiter, task))
+      emiter.emit('task-start', { task })
       return
     }
     if (!this.activeTasks) {
       emiter.emit('error', {msg: 'Cannot start any task'})
     }
   }
+
 }
 
-module.exports = new Pool()
+const pool = new Pool()
+
+pool.on('task-start', (param) => {
+})
+
+pool.on('task-completed', (param) => {
+  for (const i in this.activeTasks) {
+    if (this.activeTasks[i].uid !== task.uid) {
+      continue
+    }
+    const closedTask = this.activeTasks.splice(i, 1)[0]
+    assert(closedTask === task)
+    setImmediate(() => this._processQueue(emiter))
+    return
+  }
+})
+
+
+module.exports = pool
