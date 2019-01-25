@@ -94,13 +94,13 @@ pool.on('task-start', (param) => {
 })
 
 pool.on('task-completed', (param) => {
-  for (const i in this.activeTasks) {
-    if (this.activeTasks[i].uid !== task.uid) {
+  for (const i in pool.activeTasks) {
+    if (pool.activeTasks[i].uid !== param.task.uid) {
       continue
     }
-    const closedTask = this.activeTasks.splice(i, 1)[0]
-    assert(closedTask === task)
-    setImmediate(() => this._processQueue(emiter))
+    const closedTask = pool.activeTasks.splice(i, 1)[0]
+    assert(closedTask === param.task)
+    setImmediate(() => pool._processQueue(pool))
     return
   }
 })
