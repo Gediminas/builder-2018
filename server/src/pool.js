@@ -26,7 +26,7 @@ class Pool extends events {
     const task = { uid: generateUid(), pid: 0 }
     this.waitingTasks.push(task)
     this.emit('task-added', { task, productId, taskData })
-    setImmediate(() => this._processQueue(this))
+    setImmediate(() => this._processQueue())
   }
 
   dropTask(taskUid) {
@@ -61,7 +61,8 @@ class Pool extends events {
   _executeTask(emiter, task) {
   }
 
-  _processQueue(emiter) {
+  _processQueue() {
+    const emiter = this
     if (this.activeTasks.length >= this.maxWorkers) {
       return
     }
@@ -95,13 +96,12 @@ pool.on('task-start', (param) => {
 
 pool.on('task-completed', (param) => {
   for (const i in pool.activeTasks) {
-    if (pool.activeTasks[i].uid !== param.task.uid) {
-      continue
+    if (pool.activeTasks[i].uid === param.task.uid) {
+      const closedTask = pool.activeTasks.splice(i, 1)[0]
+      assert(closedTask === param.task)
+      setImmediate(() => pool._processQueue())
+      return
     }
-    const closedTask = pool.activeTasks.splice(i, 1)[0]
-    assert(closedTask === param.task)
-    setImmediate(() => pool._processQueue(pool))
-    return
   }
 })
 
