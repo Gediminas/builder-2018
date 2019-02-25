@@ -1,5 +1,5 @@
 const { execFile } = require('child_process')
-const kill = require('tree-kill')
+//const kill = require('tree-kill')
 const assert = require('better-assert')
 const pool = require('./pool.js')
 
@@ -11,19 +11,6 @@ const bufferToFullLines = (origBuffer, fnDoOnLine) => {
   return newBuffer
 }
 
-
-pool.on('initialized', (param) => {
-})
-
-pool.on('error', (param) => {
-})
-
-pool.on('task-added', (param) => {
-})
-
-pool.on('task-can-start', (param) => {
-})
-
 pool.on('task-start', (param) => {
   const task = param.task
   const emiter = pool
@@ -31,7 +18,7 @@ pool.on('task-start', (param) => {
   task.pid = child.pid
   child.bufOut = ''
   child.bufErr = ''
-  emiter.emit('task-started', { task })
+  emiter.emit('task-start:after', { task })
 
   child.stdout.on('data', (data) => {
     child.bufOut += data
@@ -43,7 +30,7 @@ pool.on('task-start', (param) => {
   child.stderr.on('data', (data) => {
     child.bufErr += data
     child.bufErr = bufferToFullLines(child.bufErr, (text) => {
-      emiter.emit('task-output-error', { task, text })
+      emiter.emit('task-output:error', { task, text })
     })
   })
 
@@ -52,27 +39,3 @@ pool.on('task-start', (param) => {
   })
 })
 
-pool.on('task-starting', (param) => {
-})
-
-pool.on('task-started', (param) => {
-})
-
-pool.on('task-removed',  (param) => {
-})
-
-pool.on('task-killing', (param) => {
-})
-
-pool.on('task-killed', (param) => {
-})
-
-
-pool.on('task-completed', (param) => {
-})
-
-pool.on('task-output', (param) => {
-})
-
-pool.on('task-output-error', (param) => {
-})

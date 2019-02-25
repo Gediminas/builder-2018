@@ -25,20 +25,20 @@ pool.on('task-added', (param) => {
   param.task.data       = param.taskData
 })
 
-pool.on('task-can-start', (param) => {
+pool.on('task-start:check', (param) => {
   //do not alow 2 instances of the same product
   param.skip = false;
   param.lambda_skip = e => e.product_id === param.task.product_id;
 })
 
-pool.on('task-starting', (param) => {
+pool.on('task-start:before', (param) => {
   param.time = getTimeStamp()
   assert(param.task.status === 'queued')
   param.task.status     = 'starting'
   param.task.time_start = param.time
 })
 
-pool.on('task-started', (param) => {
+pool.on('task-start:after', (param) => {
   param.time          = getTimeStamp()
   param.task.status   = 'started'
 })
@@ -47,12 +47,12 @@ pool.on('task-removed',  (param) => {
   param.time = getTimeStamp()
 })
 
-pool.on('task-killing', (param) => {
+pool.on('task-kill', (param) => {
   param.time = getTimeStamp()
   param.task.status = 'halting'
 })
 
-pool.on('task-killed', (param) => {
+pool.on('task-kill:after', (param) => {
   param.time = getTimeStamp()
   param.task.status = 'halted'
 })
@@ -72,6 +72,6 @@ pool.on('task-output', (param) => {
   param.time = getTimeStamp()
 })
 
-pool.on('task-output-error', (param) => {
+pool.on('t ask-output:error', (param) => {
   param.time = getTimeStamp()
 })

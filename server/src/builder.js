@@ -145,7 +145,7 @@ pool.on('task-added', (param) => {
   }
 })
 
-pool.on('task-starting', (param) => {
+pool.on('task-start:before', (param) => {
   let product_dir = cfgApp.working_dir + param.task.product_id + '/'
   let working_dir = product_dir + sys.timeToDir(param.task.time_add) + '/' //FIXME: task.time_start
 

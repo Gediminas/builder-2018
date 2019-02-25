@@ -18,8 +18,7 @@ pool.on('error', (param) => {
 })
 
 
-pool.on('task-starting',  (param) => {})
-pool.on('task-started',   (param) => {
+pool.on('task-start:after',   (param) => {
   param.task.data.pid = param.task.pid
   param.task.data.status = 'WORKING'
 })
@@ -27,10 +26,6 @@ pool.on('task-started',   (param) => {
 pool.on('task-added',     (param) => {
   emitTasks()
 })
-
-pool.on('task-removed',   (param) => {})
-pool.on('task-killing',   (param) => {})
-pool.on('task-killed',    (param) => {})
 
 pool.on('task-completed', (param) => {
   if (param.task.status === 'halted') {
@@ -53,7 +48,7 @@ pool.on('task-output', () => {
   emitTasks()
 })
 
-pool.on('task-output-error', () => {
+pool.on('task-output:error', () => {
   emitTasks()
 })
 

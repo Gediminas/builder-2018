@@ -41,24 +41,6 @@ pool.on('error', (param) => {
   // log(param, `ERROR: ${param.msg}`.bgWhite.red)
 })
 
-pool.on('task-added', (param) => {
-})
-
-pool.on('task-starting', (param) => {
-})
-
-pool.on('task-started', (param) => {
-})
-
-pool.on('task-removed', (param) => {
-})
-
-pool.on('task-killing', (param) => {
-})
-
-pool.on('task-killed', (param) => {
-})
-
 pool.on('task-completed', (param) => {
   // logToFile(file, '!! '+param.line+'\n');
 })
@@ -113,7 +95,7 @@ pool.on('task-output', (param) => {
   //console.log(`${param.task.product_id}> `.bgBlue, spaces, param.text.blue)
 })
 
-pool.on('task-output-error', (param) => {
+pool.on('task-output:error', (param) => {
   // let file = working_dir + generateLogName(logCombi);
   // logToFile(file, '!! '+param.line+'\n');
 })

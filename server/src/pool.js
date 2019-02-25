@@ -1,4 +1,5 @@
 const events = require('events')
+const kill = require('tree-kill')
 const assert = require('better-assert')
 
 let prevUid = 0
@@ -40,14 +41,14 @@ class Pool extends events {
     }
     for (const task of this.activeTasks) {
       if (task.uid === taskUid) {
-        emitter.emit('task-killing', { task })
+        emitter.emit('task-kill', { task })
         kill(task.pid, 'SIGTERM', () => { // SIGKILL
-          emitter.emit('task-killed', { task })
+          emitter.emit('task-kill:after', { task })
         })
         return
       }
     }
-    emitter.emit('task-kill-failed', { taskUid })
+    emitter.emit('task-kill:failed', { taskUid })
   }
 
   activeTasks() {
@@ -58,9 +59,6 @@ class Pool extends events {
     return this.activeTasks.concat(this.waitingTasks)
   }
 
-  _executeTask(emiter, task) {
-  }
-
   _processQueue() {
     const emiter = this
     if (this.activeTasks.length >= this.maxWorkers) {
@@ -68,7 +66,7 @@ class Pool extends events {
     }
     for (const i1 in this.waitingTasks) {
       const check = {task: this.waitingTasks[i1]}
-      emiter.emit('task-can-start', check)
+      emiter.emit('task-start:check', check)
       if (check.skip) {
         continue
       }
@@ -78,8 +76,8 @@ class Pool extends events {
       const task = this.waitingTasks.splice(i1, 1)[0]
       assert(task === check.task)
       this.activeTasks.push(task)
-      emiter.emit('task-starting', { task })
-      emiter.emit('task-start', { task })
+      emiter.emit('task-start:before', { task })
+      emiter.emit('task-start',        { task })
       return
     }
     if (!this.activeTasks) {
