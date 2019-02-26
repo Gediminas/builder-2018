@@ -19,7 +19,7 @@ const generateLogName = (_logCombi) => {
     const subTxt = subNr.pad(3)
     return combinedName ? `${combinedName}-${subTxt}` : subTxt
   }, false)
-  if (name === '') {
+  if (name === '' || !name) {
     name = '_main'
   }
   name += '.log'
@@ -47,7 +47,6 @@ pool.on('task-completed', (param) => {
 
 pool.on('task-output', (param) => {
   let file = param.task.working_dir + generateLogName(logCombi);
-  logToFile(file, `${param.text}\n`);
   let text = param.text
   if (text.indexOf('@title') === 0) {
     titleRenamed = text.substr(7)
@@ -67,14 +66,14 @@ pool.on('task-output', (param) => {
     let log_name_sub = generateLogName(logCombi)
     let log_file_sub = param.task.working_dir + log_name_sub
 
-    logToFile(log_file_main, `* [${title}] (${log_name_sub})\n`)
+    logToFile(log_file_main, `LOGGER> * [${title}] (${log_name_sub})\n`)
 
     if (titleRenamed) {
-      logToFile(log_file_sub,  `${titleRenamed}`)
+      logToFile(log_file_sub,  `LOGGER> ${titleRenamed}`)
     }
-    logToFile(log_file_sub,  `${title_orig}\n`)
-    logToFile(log_file_sub,  `[back] (${log_name_main})\n`)
-    logToFile(log_file_sub,  '----------\n')
+    logToFile(log_file_sub,  `LOGGER> ${title_orig}\n`)
+    logToFile(log_file_sub,  `LOGGER> [back] (${log_name_main})\n`)
+    logToFile(log_file_sub,  'LOGGER> ----------\n')
   }
   else if (text.indexOf('@end') === 0) {
     sub--
@@ -85,7 +84,7 @@ pool.on('task-output', (param) => {
   else {
     titleRenamed = '';
     let file = param.task.working_dir + generateLogName(logCombi)
-    logToFile(file, `FROM LOGGER CMD:  ${text}\n`)
+    logToFile(file, `LOGGER> ${text}\n`)
     //console.log(`>> log: ${file}`)
   }
   let spaces = ''
@@ -97,5 +96,5 @@ pool.on('task-output', (param) => {
 
 pool.on('task-output:error', (param) => {
   // let file = working_dir + generateLogName(logCombi);
-  // logToFile(file, '!! '+param.line+'\n');
+  logToFile(file, 'ERROR> '+param.line+'\n');
 })
