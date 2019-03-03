@@ -85,6 +85,9 @@ class Pool extends events {
     }
   }
 
+  onTaskCompleted(param) {
+    this.emit('task-completed', param);
+  }
 }
 
 const pool = new Pool()

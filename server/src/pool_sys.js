@@ -35,7 +35,7 @@ pool.on('task-start', (param) => {
   })
 
   child.on('close', (exitCode) => {
-    emiter.emit('task-completed', { task, exitCode })
+    pool.onTaskCompleted({task, exitCode});
   })
 })
 
