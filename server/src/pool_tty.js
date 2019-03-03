@@ -53,16 +53,18 @@ pool.on('task-completed', param => log(param,
 pool.on('task-output', (param) => {
   const text = param.text
   // if (text.indexOf('@title') === 0)
+
+  log(param, ' '.repeat(sub), param.text.green)
+
   if (text.indexOf('@sub') === 0) {
     sub++
-  } else if (text.indexOf('@end') === 0) {
+  }
+  else if (text.indexOf('@end') === 0) {
     sub--
   }
-  let spaces = ''
-  for (let i = 0; i < sub; i++) {
-    spaces += '  '
-  }
-  log(param, ' '.repeat(sub), param.text.green)
+
+
+
 })
 
 pool.on('task-output:error', (param) => {
