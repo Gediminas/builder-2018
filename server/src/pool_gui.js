@@ -9,22 +9,17 @@ pool.on('initialized', (param) => {
   emitTasks()
 })
 
-pool.on('initialized',    (param) => {
-  emitTasks()
-})
-
 pool.on('error', (param) => {
   emitTasks() // activeTasks refresh if cannot start any
 })
 
-
-pool.on('task-start:after',   (param) => {
-  param.task.data.pid = param.task.pid
-  param.task.data.status = 'WORKING'
+pool.on('task-added', (param) => {
+  emitTasks()
 })
 
-pool.on('task-added',     (param) => {
-  emitTasks()
+pool.on('task-start:after', (param) => {
+  param.task.data.pid = param.task.pid
+  param.task.data.status = 'WORKING'
 })
 
 pool.on('task-completed', (param) => {
