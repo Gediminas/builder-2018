@@ -87,9 +87,9 @@ const updateProducts = (db, product_id) => {
 io.on('connection', function(socket){
   console.log(`Client connected: ${socket.conn.remoteAddress}`.bgBlue)
 
-  for (const product of g_products) {
-    product.last_task = db.findLast_history({ product_id: product.product_id })
-  }
+  // for (const product of g_products) {
+  //   product.last_task = db.findLast_history({ product_id: product.product_id })
+  // }
   emitState(socket)
 
   socket.on('task_add', (param) => {
