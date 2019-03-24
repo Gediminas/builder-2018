@@ -32,17 +32,17 @@ const log = (param, ...args) => {
 
 pool.on('initialized',   param => log(param, 'Initialized'.bgGreen))
 pool.on('error',         param => log(param, `ERROR: ${param.msg}`.bgWhite.red))
-pool.on('task-start:before', param => log(param, 'Starting'.bgGreen))
+pool.on('task-starting', param => log(param, 'Starting'.bgGreen))
 
-pool.on('task-start:after',  param => log(param,
+pool.on('task-started',  param => log(param,
   `Started: pid=${param.task.pid}`.bgGreen))
 
 pool.on('task-added',      param => log(param, 'Added'.bgGreen))
 pool.on('task-removed',    param => log(param, 'Removed'.bgRed))
-pool.on('task-kill',       param => log(param, 'Killing'.bgRed))
-pool.on('task-kill:after', param => log(param, 'Killed'.bgRed))
+pool.on('task-killing',       param => log(param, 'Killing'.bgRed))
+pool.on('task-killed', param => log(param, 'Killed'.bgRed))
 
-pool.on('task-kill:failed', param => log(param,
+pool.on('task-kill-failed', param => log(param,
   `WARNING: Kill Failed ${param.taskUid}`
     .bgWhite.red))
 

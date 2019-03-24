@@ -1,4 +1,4 @@
-const assert = require('better-assert')
+const assERT = require('better-assert')
 const { execFile } = require('child_process')
 const pool   = require('./pool.js')
 
@@ -25,20 +25,20 @@ pool.on('task-added', (param) => {
   param.task.data       = param.taskData
 })
 
-pool.on('task-start:check', (param) => {
+pool.on('task-start-check', (param) => {
   //do not alow 2 instances of the same product
   param.skip = false;
   param.lambda_skip = e => e.product_id === param.task.product_id;
 })
 
-pool.on('task-start:before', (param) => {
+pool.on('task-starting', (param) => {
   param.time = getTimeStamp()
   assert(param.task.status === 'queued')
   param.task.status     = 'starting'
   param.task.time_start = param.time
 })
 
-pool.on('task-start:after', (param) => {
+pool.on('task-started', (param) => {
   param.time          = getTimeStamp()
   param.task.status   = 'started'
 })
@@ -47,12 +47,12 @@ pool.on('task-removed',  (param) => {
   param.time = getTimeStamp()
 })
 
-pool.on('task-kill', (param) => {
+pool.on('task-killing', (param) => {
   param.time = getTimeStamp()
   param.task.status = 'halting'
 })
 
-pool.on('task-kill:after', (param) => {
+pool.on('task-killed', (param) => {
   param.time = getTimeStamp()
   param.task.status = 'halted'
 })

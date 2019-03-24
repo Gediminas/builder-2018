@@ -41,14 +41,14 @@ class Pool extends events {
     }
     for (const task of this.activeTasks) {
       if (task.uid === taskUid) {
-        emitter.emit('task-kill', { task })
+        emitter.emit('task-killing', { task })
         kill(task.pid, 'SIGTERM', () => { // SIGKILL
-          emitter.emit('task-kill:after', { task })
+          emitter.emit('task-killed', { task })
         })
         return
       }
     }
-    emitter.emit('task-kill:failed', { taskUid })
+    emitter.emit('task-kill-failed', { taskUid })
   }
 
   activeTasks() {
@@ -66,7 +66,7 @@ class Pool extends events {
     }
     for (const i1 in this.waitingTasks) {
       const check = {task: this.waitingTasks[i1]}
-      emiter.emit('task-start:check', check)
+      emiter.emit('task-start-check', check)
       if (check.skip) {
         continue
       }
@@ -76,8 +76,8 @@ class Pool extends events {
       const task = this.waitingTasks.splice(i1, 1)[0]
       assert(task === check.task)
       this.activeTasks.push(task)
-      emiter.emit('task-start:before', { task })
-      emiter.emit('task-start',        { task })
+      emiter.emit('task-starting', { task })
+      emiter.emit('task-start-impl',        { task })
       return
     }
     if (!this.activeTasks) {
@@ -92,7 +92,7 @@ class Pool extends events {
 
 const pool = new Pool()
 
-pool.on('task-start', (param) => {
+pool.on('task-start-impl', (param) => {
 })
 
 pool.on('task-completed', (param) => {

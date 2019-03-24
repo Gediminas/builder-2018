@@ -17,7 +17,7 @@ pool.on('task-added', (param) => {
   emitTasks()
 })
 
-pool.on('task-start:after', (param) => {
+pool.on('task-started', (param) => {
   param.task.data.pid = param.task.pid
   param.task.data.status = 'WORKING'
 })

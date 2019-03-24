@@ -11,14 +11,14 @@ const bufferToFullLines = (origBuffer, fnDoOnLine) => {
   return newBuffer
 }
 
-pool.on('task-start', (param) => {
+pool.on('task-start-impl', (param) => {
   const task = param.task
   const emiter = pool
   const child = execFile(task.exec.file, task.exec.args, task.exec.options)
   task.pid = child.pid
   child.bufOut = ''
   child.bufErr = ''
-  emiter.emit('task-start:after', { task })
+  emiter.emit('task-started', { task })
 
   child.stdout.on('data', (data) => {
     child.bufOut += data
