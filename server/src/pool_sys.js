@@ -39,3 +39,9 @@ pool.on('task-start-impl', (param) => {
   })
 })
 
+
+const taskKill = (task) => {
+  kill(task.pid, 'SIGTERM', () => { // SIGKILL
+    emitter.emit('task-killed', { task })
+  })
+}
