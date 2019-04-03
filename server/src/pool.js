@@ -42,7 +42,9 @@ class Pool extends events {
     for (const task of this.activeTasks) {
       if (task.uid === taskUid) {
         emitter.emit('task-killing', { task })
-        taskKill(task);
+        kill(task.pid, 'SIGTERM', () => { // SIGKILL
+          emitter.emit('task-killed', { task })
+        })
         return
       }
     }
