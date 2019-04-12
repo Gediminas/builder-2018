@@ -22,7 +22,6 @@ class PoolExecImpl
       child.bufOut = ''
       child.bufErr = ''
       task.pid = child.pid
-      this.parent.taskStarted(task)
 
       child.stdout.on('data', (data) => {
         child.bufOut += data
@@ -39,7 +38,6 @@ class PoolExecImpl
       })
 
       child.on('close', (exitCode) => {
-        //this.parent.taskCompleted(task, exitCode);
         resolve(exitCode)
       })
     })

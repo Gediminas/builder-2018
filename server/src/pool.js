@@ -82,6 +82,7 @@ class Pool extends events {
       }).catch((e) => {
         this.emit('error', {msg: 'Cannot start any task - ' + e})
       })
+      this.emit('task-started', { task })
       return
     }
     if (!this.activeTasks) {
@@ -99,10 +100,6 @@ class Pool extends events {
       }
     }
     this.emit('task-completed', { task });
-  }
-
-  taskStarted(task) {
-    this.emit('task-started', { task })
   }
 
   taskOutput(task, text) {
