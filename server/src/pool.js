@@ -32,24 +32,23 @@ class Pool extends events {
   }
 
   dropTask(taskUid) {
-    const emitter = this
     for (const i in this.waitingTasks) {
       if (this.waitingTasks[i].uid === taskUid) {
         const task = this.waitingTasks.splice(i, 1)[0]
-        emitter.emit('task-removed', { task })
+        this.emit('task-removed', { task })
         return
       }
     }
     for (const task of this.activeTasks) {
       if (task.uid === taskUid) {
-        emitter.emit('task-killing', { task })
+        this.emit('task-killing', { task })
         this.impl.killTask(task).then(() => {
           this.emit('task-killed', { task })
         })
         return
       }
     }
-    emitter.emit('task-kill-failed', { taskUid })
+    this.emit('task-kill-failed', { taskUid })
   }
 
   activeTasks() {
