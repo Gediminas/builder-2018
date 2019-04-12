@@ -1,5 +1,4 @@
 const assert = require('better-assert')
-const { execFile } = require('child_process')
 const pool   = require('./pool.js')
 
 const getTimeStamp = () => new Date().valueOf()
@@ -72,6 +71,6 @@ pool.on('task-output', (param) => {
   param.time = getTimeStamp()
 })
 
-pool.on('t ask-output:error', (param) => {
+pool.on('task-output:error', (param) => {
   param.time = getTimeStamp()
 })
