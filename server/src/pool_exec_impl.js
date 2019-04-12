@@ -2,10 +2,10 @@ const { execFile } = require('child_process')
 const kill = require('tree-kill')
 const assert = require('better-assert')
 
-const bufferToFullLines = (origBuffer, fnDoOnLine) => {
+const processFullLines = (origBuffer, fnDoOnFullLine) => {
   const lines = origBuffer.split(/\r?\n/)
   const newBuffer = lines.pop()
-  lines.forEach(fnDoOnLine)
+  lines.forEach(fnDoOnFullLine)
   assert(newBuffer === '' || origBuffer.slice(-1) !== '\n')
   return newBuffer
 }
@@ -18,21 +18,21 @@ class PoolExecImpl
 
   startTask(task) {
     const child = execFile(task.exec.file, task.exec.args, task.exec.options)
-    task.pid = child.pid
     child.bufOut = ''
     child.bufErr = ''
+    task.pid = child.pid
     this.parent.taskStarted(task)
 
     child.stdout.on('data', (data) => {
       child.bufOut += data
-      child.bufOut = bufferToFullLines(child.bufOut, (text) => {
+      child.bufOut = processFullLines(child.bufOut, (text) => {
         this.parent.taskOutput(task, text)
       })
     })
 
     child.stderr.on('data', (data) => {
       child.bufErr += data
-      child.bufErr = bufferToFullLines(child.bufErr, (text) => {
+      child.bufErr = processFullLines(child.bufErr, (text) => {
         this.parent.taskOutputError(task, text)
       })
     })
