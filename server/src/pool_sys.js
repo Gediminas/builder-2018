@@ -11,35 +11,36 @@ const bufferToFullLines = (origBuffer, fnDoOnLine) => {
   return newBuffer
 }
 
-class PoolExecImpl {
-
+class PoolExecImpl
+{
   startTask(param) {
-      const task = param.task
-      const emiter = pool
-      const child = execFile(task.exec.file, task.exec.args, task.exec.options)
-      task.pid = child.pid
-      child.bufOut = ''
-      child.bufErr = ''
-      emiter.emit('task-started', { task })
+    const task = param.task
+    const emiter = pool
+    const child = execFile(task.exec.file, task.exec.args, task.exec.options)
+    task.pid = child.pid
+    child.bufOut = ''
+    child.bufErr = ''
+    emiter.emit('task-started', { task })
 
-      child.stdout.on('data', (data) => {
-        child.bufOut += data
-        child.bufOut = bufferToFullLines(child.bufOut, (text) => {
-          emiter.emit('task-output', { task, text })
-        })
+    child.stdout.on('data', (data) => {
+      child.bufOut += data
+      child.bufOut = bufferToFullLines(child.bufOut, (text) => {
+        emiter.emit('task-output', { task, text })
       })
+    })
 
-      child.stderr.on('data', (data) => {
-        child.bufErr += data
-        child.bufErr = bufferToFullLines(child.bufErr, (text) => {
-          emiter.emit('task-output:error', { task, text })
-        })
-      }
-
-      child.on('close', (exitCode) => {
-        pool.onTaskCompleted({task, exitCode});
+    child.stderr.on('data', (data) => {
+      child.bufErr += data
+      child.bufErr = bufferToFullLines(child.bufErr, (text) => {
+        emiter.emit('task-output:error', { task, text })
       })
+    })
+
+    child.on('close', (exitCode) => {
+      pool.onTaskCompleted({task, exitCode});
+    })
   }
+
   killTask(param) {
     const task = param.task
     const emiter = pool

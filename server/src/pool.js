@@ -85,22 +85,17 @@ class Pool extends events {
   }
 
   onTaskCompleted(param) {
+    for (const i in pool.activeTasks) {
+      if (pool.activeTasks[i].uid === param.task.uid) {
+        const closedTask = pool.activeTasks.splice(i, 1)[0]
+        assert(closedTask === param.task)
+        setImmediate(() => pool._processQueue())
+        break
+      }
+    }
     this.emit('task-completed', param);
   }
 }
 
 const pool = new Pool()
-
-pool.on('task-completed', (param) => {
-  for (const i in pool.activeTasks) {
-    if (pool.activeTasks[i].uid === param.task.uid) {
-      const closedTask = pool.activeTasks.splice(i, 1)[0]
-      assert(closedTask === param.task)
-      setImmediate(() => pool._processQueue())
-      return
-    }
-  }
-})
-
-
 module.exports = pool
