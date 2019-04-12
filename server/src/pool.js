@@ -43,7 +43,9 @@ class Pool extends events {
     for (const task of this.activeTasks) {
       if (task.uid === taskUid) {
         emitter.emit('task-killing', { task })
-        this.impl.killTask(task)
+        this.impl.killTask(task).then(() => {
+          this.emit('task-killed', { task })
+        })
         return
       }
     }
@@ -78,7 +80,7 @@ class Pool extends events {
       this.impl.startTask(task).then((exitCode) => {
         this.taskCompleted(task, exitCode)
       }).catch((e) => {
-        this.emit('error', {msg: 'Cannot start any task' + e})
+        this.emit('error', {msg: 'Cannot start any task - ' + e})
       })
       return
     }
@@ -111,9 +113,6 @@ class Pool extends events {
     this.emit('task-output:error', { task, text })
   }
 
-  taskKilled(task) {
-    this.emit('task-killed', { task })
-  }
 }
 
 const pool = new Pool()

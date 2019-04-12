@@ -46,8 +46,10 @@ class PoolExecImpl
   }
 
   killTask(task) {
-    kill(task.pid, 'SIGTERM', () => { // SIGKILL
-      this.parent.taskKilled(task)
+    return new Promise((resolve, reject) => {
+      kill(task.pid, 'SIGTERM', () => { // SIGKILL
+        resolve()
+      })
     })
   }
 }
