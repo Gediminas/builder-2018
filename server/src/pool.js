@@ -75,7 +75,11 @@ class Pool extends events {
       assert(task === check.task)
       this.activeTasks.push(task)
       this.emit('task-starting', { task })
-      this.impl.startTask(task)
+      this.impl.startTask(task).then((exitCode) => {
+        this.taskCompleted(task, exitCode)
+      }).catch((e) => {
+        this.emit('error', {msg: 'Cannot start any task' + e})
+      })
       return
     }
     if (!this.activeTasks) {

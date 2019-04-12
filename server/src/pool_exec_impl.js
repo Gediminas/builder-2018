@@ -17,28 +17,31 @@ class PoolExecImpl
   }
 
   startTask(task) {
-    const child = execFile(task.exec.file, task.exec.args, task.exec.options)
-    child.bufOut = ''
-    child.bufErr = ''
-    task.pid = child.pid
-    this.parent.taskStarted(task)
+    return new Promise((resolve, reject) => {
+      const child = execFile(task.exec.file, task.exec.args, task.exec.options)
+      child.bufOut = ''
+      child.bufErr = ''
+      task.pid = child.pid
+      this.parent.taskStarted(task)
 
-    child.stdout.on('data', (data) => {
-      child.bufOut += data
-      child.bufOut = processFullLines(child.bufOut, (text) => {
-        this.parent.taskOutput(task, text)
+      child.stdout.on('data', (data) => {
+        child.bufOut += data
+        child.bufOut = processFullLines(child.bufOut, (text) => {
+          this.parent.taskOutput(task, text)
+        })
       })
-    })
 
-    child.stderr.on('data', (data) => {
-      child.bufErr += data
-      child.bufErr = processFullLines(child.bufErr, (text) => {
-        this.parent.taskOutputError(task, text)
+      child.stderr.on('data', (data) => {
+        child.bufErr += data
+        child.bufErr = processFullLines(child.bufErr, (text) => {
+          this.parent.taskOutputError(task, text)
+        })
       })
-    })
 
-    child.on('close', (exitCode) => {
-      this.parent.taskCompleted(task, exitCode);
+      child.on('close', (exitCode) => {
+        //this.parent.taskCompleted(task, exitCode);
+        resolve(exitCode)
+      })
     })
   }
 
