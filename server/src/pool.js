@@ -1,5 +1,4 @@
 const events = require('events')
-const kill = require('tree-kill')
 const assert = require('better-assert')
 
 let prevUid = 0
@@ -15,10 +14,11 @@ const generateUid = () => {
 }
 
 class Pool extends events {
-  initialize(_maxWorkers) {
+  initialize(_maxWorkers, _impl) {
     this.waitingTasks = []
     this.activeTasks = []
     this.maxWorkers = _maxWorkers
+    this.impl = _impl
     const param = {}
     this.emit('initialized', param)
   }
@@ -42,9 +42,7 @@ class Pool extends events {
     for (const task of this.activeTasks) {
       if (task.uid === taskUid) {
         emitter.emit('task-killing', { task })
-        kill(task.pid, 'SIGTERM', () => { // SIGKILL
-          emitter.emit('task-killed', { task })
-        })
+        this.impl.killTask({ task })
         return
       }
     }
@@ -78,6 +76,7 @@ class Pool extends events {
       this.activeTasks.push(task)
       emiter.emit('task-starting', { task })
       emiter.emit('task-start-impl',        { task })
+      this.impl.startTask({ task })
       return
     }
     if (!this.activeTasks) {
@@ -91,9 +90,6 @@ class Pool extends events {
 }
 
 const pool = new Pool()
-
-pool.on('task-start-impl', (param) => {
-})
 
 pool.on('task-completed', (param) => {
   for (const i in pool.activeTasks) {
