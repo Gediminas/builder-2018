@@ -13,39 +13,35 @@ const bufferToFullLines = (origBuffer, fnDoOnLine) => {
 
 class PoolExecImpl
 {
-  startTask(param) {
-    const task = param.task
-    const emiter = pool
+  startTask(task) {
     const child = execFile(task.exec.file, task.exec.args, task.exec.options)
     task.pid = child.pid
     child.bufOut = ''
     child.bufErr = ''
-    emiter.emit('task-started', { task })
+    pool.taskStarted(task)
 
     child.stdout.on('data', (data) => {
       child.bufOut += data
       child.bufOut = bufferToFullLines(child.bufOut, (text) => {
-        emiter.emit('task-output', { task, text })
+        pool.taskOutput(task, text)
       })
     })
 
     child.stderr.on('data', (data) => {
       child.bufErr += data
       child.bufErr = bufferToFullLines(child.bufErr, (text) => {
-        emiter.emit('task-output:error', { task, text })
+        pool.taskOutputError(task, text)
       })
     })
 
     child.on('close', (exitCode) => {
-      pool.onTaskCompleted({task, exitCode});
+      pool.taskCompleted(task, exitCode);
     })
   }
 
-  killTask(param) {
-    const task = param.task
-    const emiter = pool
+  killTask(task) {
     kill(task.pid, 'SIGTERM', () => { // SIGKILL
-      emiter.emit('task-killed', { task })
+      pool.taskKilled(task)
     })
   }
 }

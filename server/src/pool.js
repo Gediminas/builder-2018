@@ -19,6 +19,11 @@ class Pool extends events {
     this.activeTasks = []
     this.maxWorkers = _maxWorkers
     this.impl = _impl
+    this.impl.taskStarted     = this.taskStarted
+    this.impl.taskOutput      = this.taskOutput
+    this.impl.taskOutputError = this.taskOutputError
+    this.impl.taskCompleted   = this.taskCompleted
+    this.impl.taskKilled      = this.taskKilled
     const param = {}
     this.emit('initialized', param)
   }
@@ -42,7 +47,7 @@ class Pool extends events {
     for (const task of this.activeTasks) {
       if (task.uid === taskUid) {
         emitter.emit('task-killing', { task })
-        this.impl.killTask({ task })
+        this.impl.killTask(task)
         return
       }
     }
@@ -58,13 +63,12 @@ class Pool extends events {
   }
 
   _processQueue() {
-    const emiter = this
     if (this.activeTasks.length >= this.maxWorkers) {
       return
     }
     for (const i1 in this.waitingTasks) {
       const check = {task: this.waitingTasks[i1]}
-      emiter.emit('task-start-check', check)
+      this.emit('task-start-check', check)
       if (check.skip) {
         continue
       }
@@ -74,26 +78,41 @@ class Pool extends events {
       const task = this.waitingTasks.splice(i1, 1)[0]
       assert(task === check.task)
       this.activeTasks.push(task)
-      emiter.emit('task-starting', { task })
-      emiter.emit('task-start-impl',        { task })
-      this.impl.startTask({ task })
+      this.emit('task-starting', { task })
+      this.impl.startTask(task)
       return
     }
     if (!this.activeTasks) {
-      emiter.emit('error', {msg: 'Cannot start any task'})
+      this.emit('error', {msg: 'Cannot start any task'})
     }
   }
 
-  onTaskCompleted(param) {
+  taskCompleted(task, exitCode) {
     for (const i in pool.activeTasks) {
-      if (pool.activeTasks[i].uid === param.task.uid) {
+      if (pool.activeTasks[i].uid === task.uid) {
         const closedTask = pool.activeTasks.splice(i, 1)[0]
-        assert(closedTask === param.task)
+        assert(closedTask === task)
         setImmediate(() => pool._processQueue())
         break
       }
     }
-    this.emit('task-completed', param);
+    this.emit('task-completed', { task });
+  }
+
+  taskStarted(task) {
+    this.emit('task-started', { task })
+  }
+
+  taskOutput(task, text) {
+    this.emit('task-output', { task, text })
+  }
+
+  taskOutputError(task, text) {
+    this.emit('task-output:error', { task, text })
+  }
+
+  taskKilled(task) {
+    this.emit('task-killed', { task })
   }
 }
 
