@@ -1,7 +1,6 @@
 const { execFile } = require('child_process')
 const kill = require('tree-kill')
 const assert = require('better-assert')
-const pool = require('./pool.js')
 
 const bufferToFullLines = (origBuffer, fnDoOnLine) => {
   const lines = origBuffer.split(/\r?\n/)
@@ -13,35 +12,39 @@ const bufferToFullLines = (origBuffer, fnDoOnLine) => {
 
 class PoolExecImpl
 {
+  initialize(parent) {
+    this.parent = parent
+  }
+
   startTask(task) {
     const child = execFile(task.exec.file, task.exec.args, task.exec.options)
     task.pid = child.pid
     child.bufOut = ''
     child.bufErr = ''
-    pool.taskStarted(task)
+    this.parent.taskStarted(task)
 
     child.stdout.on('data', (data) => {
       child.bufOut += data
       child.bufOut = bufferToFullLines(child.bufOut, (text) => {
-        pool.taskOutput(task, text)
+        this.parent.taskOutput(task, text)
       })
     })
 
     child.stderr.on('data', (data) => {
       child.bufErr += data
       child.bufErr = bufferToFullLines(child.bufErr, (text) => {
-        pool.taskOutputError(task, text)
+        this.parent.taskOutputError(task, text)
       })
     })
 
     child.on('close', (exitCode) => {
-      pool.taskCompleted(task, exitCode);
+      this.parent.taskCompleted(task, exitCode);
     })
   }
 
   killTask(task) {
     kill(task.pid, 'SIGTERM', () => { // SIGKILL
-      pool.taskKilled(task)
+      this.parent.taskKilled(task)
     })
   }
 }

@@ -14,18 +14,14 @@ const generateUid = () => {
 }
 
 class Pool extends events {
-  initialize(_maxWorkers, _impl) {
+
+  initialize(impl, maxWorkers) {
     this.waitingTasks = []
     this.activeTasks = []
-    this.maxWorkers = _maxWorkers
-    this.impl = _impl
-    this.impl.taskStarted     = this.taskStarted
-    this.impl.taskOutput      = this.taskOutput
-    this.impl.taskOutputError = this.taskOutputError
-    this.impl.taskCompleted   = this.taskCompleted
-    this.impl.taskKilled      = this.taskKilled
-    const param = {}
-    this.emit('initialized', param)
+    this.maxWorkers = maxWorkers
+    this.impl = impl
+    this.impl.initialize(this)
+    this.emit('initialized', {})
   }
 
   addTask(productId, taskData) {
