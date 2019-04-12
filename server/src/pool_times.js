@@ -1,4 +1,4 @@
-const assERT = require('better-assert')
+const assert = require('better-assert')
 const { execFile } = require('child_process')
 const pool   = require('./pool.js')
 
