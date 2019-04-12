@@ -78,7 +78,7 @@ class Pool extends events {
       this.activeTasks.push(task)
       this.emit('task-starting', { task })
       this.impl.startTask(task).then((exitCode) => {
-        this.taskCompleted(task, exitCode)
+        this._taskCompleted(task, exitCode)
       }).catch((e) => {
         this.emit('error', {msg: 'Cannot start any task - ' + e})
       })
@@ -90,7 +90,7 @@ class Pool extends events {
     }
   }
 
-  taskCompleted(task, exitCode) {
+  _taskCompleted(task, exitCode) {
     for (const i in pool.activeTasks) {
       if (pool.activeTasks[i].uid === task.uid) {
         const closedTask = pool.activeTasks.splice(i, 1)[0]
