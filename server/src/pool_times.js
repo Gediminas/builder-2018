@@ -70,7 +70,3 @@ pool.on('task-completed', (param) => {
 pool.on('task-output', (param) => {
   param.time = getTimeStamp()
 })
-
-pool.on('task-output:error', (param) => {
-  param.time = getTimeStamp()
-})

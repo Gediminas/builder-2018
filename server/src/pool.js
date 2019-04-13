@@ -20,7 +20,6 @@ class Pool extends events {
     this.activeTasks = []
     this.maxWorkers = maxWorkers
     this.impl = impl
-    this.impl.initialize(this)
     this.emit('initialized', {})
   }
 
@@ -76,7 +75,7 @@ class Pool extends events {
       assert(task === check.task)
       this.activeTasks.push(task)
       this.emit('task-starting', { task })
-      this.impl.startTask(task).then((exitCode) => {
+      this.impl.startTask(task, this._taskOutput.bind({this: this})).then((exitCode) => {
         this._taskCompleted(task, exitCode)
       }).catch((e) => {
         this.emit('error', {msg: 'Cannot start any task - ' + e})
@@ -101,12 +100,8 @@ class Pool extends events {
     this.emit('task-completed', { task });
   }
 
-  taskOutput(task, text) {
-    this.emit('task-output', { task, text })
-  }
-
-  taskOutputError(task, text) {
-    this.emit('task-output:error', { task, text })
+  _taskOutput(task, text, std) {
+    pool.emit('task-output', { task, text, std})
   }
 
 }

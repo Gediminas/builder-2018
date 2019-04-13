@@ -54,19 +54,18 @@ pool.on('task-output', (param) => {
   const text = param.text
   // if (text.indexOf('@title') === 0)
 
-  log(param, ' '.repeat(sub), param.text.green)
-
-  if (text.indexOf('@sub') === 0) {
-    sub++
+  if (param.std == 'stderr') {
+    log(param, ' '.repeat(sub), param.text.bgWhite.red)
   }
-  else if (text.indexOf('@end') === 0) {
-    sub--
+  else {
+    log(param, ' '.repeat(sub), param.text.green)
+
+    if (text.indexOf('@sub') === 0) {
+      sub++
+    }
+    else if (text.indexOf('@end') === 0) {
+      sub--
+    }
   }
-
-
-
 })
 
-pool.on('task-output:error', (param) => {
-  log(param, ' '.repeat(sub), param.text.bgWhite.red)
-})

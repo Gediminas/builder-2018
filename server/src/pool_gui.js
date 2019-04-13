@@ -43,10 +43,6 @@ pool.on('task-output', () => {
   emitTasks()
 })
 
-pool.on('task-output:error', () => {
-  emitTasks()
-})
-
 module.exports.initialize = (_socketio) => {
   socketio = _socketio
 }

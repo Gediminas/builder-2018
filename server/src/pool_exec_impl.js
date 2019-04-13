@@ -12,11 +12,7 @@ const processFullLines = (origBuffer, fnDoOnFullLine) => {
 
 class PoolExecImpl
 {
-  initialize(parent) {
-    this.parent = parent
-  }
-
-  startTask(task) {
+  startTask(task, taskOutput) {
     return new Promise((resolve, reject) => {
       const child = execFile(task.exec.file, task.exec.args, task.exec.options)
       child.bufOut = ''
@@ -26,14 +22,14 @@ class PoolExecImpl
       child.stdout.on('data', (data) => {
         child.bufOut += data
         child.bufOut = processFullLines(child.bufOut, (text) => {
-          this.parent.taskOutput(task, text)
+          taskOutput(task, text, 'stdout')
         })
       })
 
       child.stderr.on('data', (data) => {
         child.bufErr += data
         child.bufErr = processFullLines(child.bufErr, (text) => {
-          this.parent.taskOutputError(task, text)
+          taskOutput(task, text, 'stderr')
         })
       })
 

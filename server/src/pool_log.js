@@ -111,7 +111,3 @@ pool.on('task-output', (param) => {
   ////console.log(`${param.task.product_id}> `.bgBlue, spaces, param.text.blue)
 })
 
-pool.on('task-output:error', (param) => {
-  // let file = working_dir + generateLogName();
-  //flog(file, 'ERROR> '+param.line+'\n');
-})
