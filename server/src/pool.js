@@ -43,7 +43,10 @@ class Pool extends events {
         this.emit('task-killing', { task })
         this.impl.killTask(task).then(() => {
           this.emit('task-killed', { task })
+        }).catch((error) => {
+          this.emit('error', {task, error, from: 'dropTask'})
         })
+
         return
       }
     }
@@ -78,13 +81,13 @@ class Pool extends events {
       this.impl.startTask(task, this._taskOutput.bind({this: this})).then((exitCode) => {
         this._taskCompleted(task, exitCode)
       }).catch((e) => {
-        this.emit('error', {msg: 'Cannot start any task - ' + e})
+        this.emit('error', {task, error, from: '_processQueue'})
       })
       this.emit('task-started', { task })
       return
     }
     if (!this.activeTasks) {
-      this.emit('error', {msg: 'Cannot start any task'})
+      this.emit('error', {task, error, msg: 'Cannot start any task', from: '_processQueue'})
     }
   }
 

@@ -14,10 +14,15 @@ class PoolExecImpl
 {
   startTask(task, taskOutput) {
     return new Promise((resolve, reject) => {
-      const child = execFile(task.exec.file, task.exec.args, task.exec.options)
-      child.bufOut = ''
-      child.bufErr = ''
-      task.pid = child.pid
+      let child = false
+      try {
+        child = execFile(task.exec.file+'a', task.exec.args, task.exec.options)
+        child.bufOut = ''
+        child.bufErr = ''
+        task.pid = child.pid
+      } catch(e) {
+        reject(e)
+      }
 
       child.stdout.on('data', (data) => {
         child.bufOut += data
@@ -41,9 +46,13 @@ class PoolExecImpl
 
   killTask(task) {
     return new Promise((resolve, reject) => {
-      kill(task.pid, 'SIGTERM', () => { // SIGKILL
-        resolve()
-      })
+      try {
+        kill(task.pid, 'SIGTERM', () => { // SIGKILL
+          resolve()
+        })
+      } catch(e) {
+        reject(e)
+      }
     })
   }
 }

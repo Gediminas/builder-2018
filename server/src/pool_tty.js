@@ -31,7 +31,7 @@ const log = (param, ...args) => {
 }
 
 pool.on('initialized',   param => log(param, 'Initialized'.bgGreen))
-pool.on('error',         param => log(param, `ERROR: ${param.msg}`.bgWhite.red))
+pool.on('error',         param => log(param, `ERROR: ${param.msg} ${param.error}`.bgWhite.red))
 pool.on('task-starting', param => log(param, 'Starting'.bgGreen))
 
 pool.on('task-started',  param => log(param,
