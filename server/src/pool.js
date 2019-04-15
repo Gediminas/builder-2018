@@ -15,7 +15,8 @@ const generateUid = () => {
 
 class Pool extends events {
 
-  initialize(impl, maxWorkers) {
+  initialize(impl, products, maxWorkers) {
+    this.products = products
     this.waitingTasks = []
     this.activeTasks = []
     this.maxWorkers = maxWorkers
@@ -51,6 +52,10 @@ class Pool extends events {
       }
     }
     this.emit('task-kill-failed', { taskUid })
+  }
+
+  getProducts() {
+    return this.products
   }
 
   activeTasks() {

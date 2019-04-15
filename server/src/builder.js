@@ -17,7 +17,6 @@ const cfgDef = require('../../_cfg/script_defaults.json')
 
 const io = socketio(cfgApp.server_port)
 
-let g_products = []
 
 cfgApp.script_dir  = path.normalize(__dirname + '/../../' + cfgApp.script_dir)
 cfgApp.working_dir = path.normalize(__dirname + '/../../' + cfgApp.working_dir)
@@ -61,14 +60,14 @@ const loadProducts = (script_dir, on_loaded) => {
 
 const emitState = (emitter) => {
   emitter.emit('state', {
-    products: g_products,
+    products: pool.getProducts(),
     tasks: pool.allTasks(),
     htasks: db.get_history(cfgApp.show_history_limit),
   })
 }
 
 const emitProducts = (emitter) => {
-  setImmediate(() => emitter.emit({ products: g_products }))
+  setImmediate(() => emitter.emit({ products: pool.getProducts() }))
 }
 
 const emitHistory = (emitter) => {
@@ -76,8 +75,8 @@ const emitHistory = (emitter) => {
   setImmediate(() => emitter.emit({ htasks }))
 }
 
-const updateProducts = (db, product_id) => {
-  for (const product of g_products) {
+const updateProducts = (db, products, product_id) => {
+  for (const product of products) {
     if (!product_id || product.product_id === product_id) {
       product.last_task = db.findLast_history({ product_id: product.product_id })
     }
@@ -87,7 +86,7 @@ const updateProducts = (db, product_id) => {
 io.on('connection', function(socket){
   console.log(`Client connected: ${socket.conn.remoteAddress}`.bgBlue)
 
-  // for (const product of g_products) {
+  // for (const product of products) {
   //   product.last_task = db.findLast_history({ product_id: product.product_id })
   // }
   emitState(socket)
@@ -114,7 +113,8 @@ io.on('connection', function(socket){
 // pool =====================================================
 
 pool.on('initialized', (param) => {
-  updateProducts(db)
+  const products = pool.getProducts()
+  updateProducts(db, products)
   emitProducts(io)
 })
 
@@ -137,7 +137,8 @@ pool.on('task-added', (param) => {
     prev_time_diff: last_task ? last_task.time_diff : undefined
   }
 
-  for (const product of g_products) {
+  const products = pool.getProducts()
+  for (const product of products) {
     if (product.product_id === param.task.product_id) {
       param.task.exec = product.exec
       break
@@ -162,7 +163,8 @@ pool.on('task-starting', (param) => {
 
 pool.on('task-completed', (param) => {
   db.add_history(param.task)
-  updateProducts(db, param.task.product_id)
+  const products = pool.getProducts()
+  updateProducts(db, products, param.task.product_id)
   emitProducts(io)
   emitHistory(io)
 })
@@ -177,10 +179,8 @@ console.log(`Socket server starting on port: ${cfgApp.server_port}`.bgBlue)
 console.log('----------------------------------------------------------'.bgBlue)
 
 db.init(cfgApp.db_dir).then(() => {
-  loadProducts(cfgApp.script_dir, (_products) => {
-    g_products = _products
-    updateProducts(db)
+  loadProducts(cfgApp.script_dir, (products) => {
     gui.initialize(io)
-    pool.initialize(poolExecImpl, 2)
+    pool.initialize(poolExecImpl, products, 2)
   })
 })
