@@ -85,7 +85,7 @@ class Pool extends events {
       .catch((error) => {
         this.emit('error', {task, error, from: '_processQueue'})
       })
-      //this.emit('task-started', { task })
+      this.emit('task-started', { task })
       return
     }
     if (!this.activeTasks) {

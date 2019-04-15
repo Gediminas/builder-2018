@@ -1,67 +1,63 @@
-"use strict";
+const Loki = require('lokijs')
 
-const loki = require("lokijs");
+let db_history
+let tb_history
 
-var db_history;
-var tb_history;
+exports.init = path => new Promise((resolve) => {
+  const path_history = `${path}history.json`
+  console.log('db: Loading ', path_history)
 
-exports.init = function(path) {
-  return new Promise(function(resolve, reject){
+  db_history = new Loki(path_history, {
+    verbose         : true,
+    autosave        : true,
+    autosaveInterval: 2000,
+    // autoload: true,//autoupdate: true //use Object.observe to update objects automatically
+  })
 
-    let path_history = path + 'history.json';
-    console.log('db: Loading ' + path_history);
+  db_history.on('error', (e) => {
+    console.log('ERROR: ', e)
+  })
 
-    db_history = new loki(path_history, {
-      verbose: true,
-      //autoload: true,//autoupdate: true //use Object.observe to update objects automatically
-      autosave: true,
-      autosaveInterval: 2000
-    });
+  db_history.loadDatabase({}, (result) => {
+    tb_history = db_history.getCollection('history')
+    if (!tb_history) {
+      console.log('db: Creating ', path_history)
+      tb_history = db_history.addCollection('history', { autoupdate: true })
 
-    db_history.on("error", function(e) {
-        console.log('ERROR: ' + e);
-    });
+      console.log('db: database saving...')
+      db_history.saveDatabase(() => {
+        console.log('db: database saved...')
+      })
+    }
 
-    db_history.loadDatabase({}, function(result){
-        tb_history = db_history.getCollection("history");
-        if (!tb_history){
-          console.log('db: Creating ' + path_history);
-          tb_history = db_history.addCollection("history", {autoupdate: true});
+    tb_history.on('error', (e) => {
+      console.log('ERROR: ', e)
+    })
 
-          console.log('db: database saving...');
-          db_history.saveDatabase(function() {
-            console.log('db: database saved...');
-          });
-        }
+    resolve()
+  })
+})
 
-        tb_history.on("error", function(e) {
-            console.log('ERROR: ' + e);
-        });
-
-        resolve();
-    });
-  });
+exports.add_history = (data) => {
+  const task = tb_history.insert(data)
+  task.id = task.$loki
 }
 
-exports.add_history = function(data) {
-	var task = tb_history.insert(data);
-	task.id = task.$loki;
+exports.get_history = (limit) => {
+  if (limit) {
+    return tb_history.chain().simplesort('$loki', true).limit(limit).data()
+  }
+  return tb_history.chain().simplesort('$loki', true).data()
 }
 
-exports.get_history = function(limit) {
-	if (limit) {
-		return tb_history.chain().simplesort("$loki", true).limit(limit).data();
-	}
-	return tb_history.chain().simplesort("$loki", true).data();
-}
-
-exports.findLast_history = function(query) {
-	//return tb_history.chain().find(query).limit(1).data();
-	//let res = tb_history.chain().find(query).limit(1).data()[0];
-	//let res = tb_history.findOne(query);
-  //let res = tb_history.chain().simplesort('id', false).find(query, true).data()[0];
-	let res = tb_history.chain().find(query).simplesort("$loki",  {desc: true}).limit(1).data()[0];
-  //console.log(res)
+exports.findLast_history = (query) => {
+  // return tb_history.chain().find(query).limit(1).data()
+  // const res = tb_history.chain().find(query).limit(1).data()[0]
+  // const res = tb_history.findOne(query)
+  // const res = tb_history.chain().simplesort('id', false).find(query, true).data()[0]
+  const res = tb_history.chain().find(query).simplesort('$loki', { desc: true })
+    .limit(1)
+    .data()[0]
+  // console.log(res)
   return res
 }
-
