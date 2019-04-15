@@ -12,17 +12,13 @@ const processFullLines = (origBuffer, fnDoOnFullLine) => {
 
 class PoolExecImpl
 {
-  startTask(task, taskOutput) {
+  startTask(task, taskOutput, pool) {
     return new Promise((resolve, reject) => {
-      let child = false
-      try {
-        child = execFile(task.exec.file+'a', task.exec.args, task.exec.options)
-        child.bufOut = ''
-        child.bufErr = ''
-        task.pid = child.pid
-      } catch(e) {
-        reject(e)
-      }
+      const child = execFile(task.exec.file, task.exec.args, task.exec.options)
+      child.bufOut = ''
+      child.bufErr = ''
+      task.pid = child.pid
+      pool.emit('task-started', { task })
 
       child.stdout.on('data', (data) => {
         child.bufOut += data
@@ -38,6 +34,10 @@ class PoolExecImpl
         })
       })
 
+      child.on('error', (error) => {
+        reject(error)
+      })
+
       child.on('close', (exitCode) => {
         resolve(exitCode)
       })
@@ -46,13 +46,13 @@ class PoolExecImpl
 
   killTask(task) {
     return new Promise((resolve, reject) => {
-      try {
-        kill(task.pid, 'SIGTERM', () => { // SIGKILL
+      kill(task.pid, 'SIGTERM', (err) => { // SIGKILL
+        if (err) {
+          reject(e)
+        } else {
           resolve()
-        })
-      } catch(e) {
-        reject(e)
-      }
+        }
+      })
     })
   }
 }
