@@ -50,7 +50,6 @@ const loadProducts = (script_dir, on_loaded) => {
         exec: {
           file    : 'node',
           args    : [script_js],
-          options : { cwd: '' },
         },
       }
     })
@@ -158,7 +157,6 @@ pool.on('task-starting', (param) => {
   sys.ensureDir(working_dir)
 
   param.task.working_dir = working_dir
-  param.task.exec.options.cwd = working_dir
 })
 
 pool.on('task-completed', (param) => {
