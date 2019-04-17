@@ -15,9 +15,10 @@ class PoolExecImpl
   startTask(task, taskOutput, pool) {
     return new Promise((resolve, reject) => {
 
+      const args    = [ task.product.script_path ]
       const options = { cwd: task.working_dir }
 
-      const child = execFile(task.exec.file, task.exec.args, options)
+      const child = execFile(task.product.interpreter, args, options)
       this.bufOut = ''
       this.bufErr = ''
       task.pid = child.pid

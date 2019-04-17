@@ -47,10 +47,8 @@ const loadProducts = (script_dir, on_loaded) => {
         product_id,
         product_name: cfg.product_name,
         cfg,
-        exec: {
-          file    : 'node',
-          args    : [script_js],
-        },
+        interpreter    : 'node',
+        script_path    : script_js,
       }
     })
     on_loaded(products)
@@ -75,11 +73,11 @@ const emitHistory = (emitter) => {
 }
 
 const updateProducts = (db, products, product_id) => {
-  for (const product of products) {
-    if (!product_id || product.product_id === product_id) {
-      product.last_task = db.findLast_history({ product_id: product.product_id })
-    }
-  }
+  // for (const product of products) {
+  //   if (!product_id || product.product_id === product_id) {
+  //     product.last_task = db.findLast_history({ product_id: product.product_id })
+  //   }
+  // }
 }
 
 io.on('connection', function(socket){
@@ -139,7 +137,7 @@ pool.on('task-added', (param) => {
   const products = pool.getProducts()
   for (const product of products) {
     if (product.product_id === param.task.product_id) {
-      param.task.exec = product.exec
+      param.task.product = product
       break
     }
   }
