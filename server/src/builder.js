@@ -72,13 +72,13 @@ const emitHistory = (emitter) => {
   setImmediate(() => emitter.emit({ htasks }))
 }
 
-const updateProducts = (db, products, product_id) => {
+//const updateProducts = (db, products, product_id) => {
   // for (const product of products) {
   //   if (!product_id || product.product_id === product_id) {
   //     product.last_task = db.findLast_history({ product_id: product.product_id })
   //   }
   // }
-}
+//}
 
 io.on('connection', function(socket){
   console.log(`Client connected: ${socket.conn.remoteAddress}`.bgBlue)
@@ -110,8 +110,8 @@ io.on('connection', function(socket){
 // pool =====================================================
 
 pool.on('initialized', (param) => {
-  const products = pool.getProducts()
-  updateProducts(db, products)
+  //const products = pool.getProducts()
+  //updateProducts(db, products)
   emitProducts(io)
 })
 
@@ -159,8 +159,8 @@ pool.on('task-starting', (param) => {
 
 pool.on('task-completed', (param) => {
   db.add_history(param.task)
-  const products = pool.getProducts()
-  updateProducts(db, products, param.task.product_id)
+  //const products = pool.getProducts()
+  //updateProducts(db, products, param.task.product_id)
   emitProducts(io)
   emitHistory(io)
 })

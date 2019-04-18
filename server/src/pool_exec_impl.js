@@ -42,6 +42,9 @@ class PoolExecImpl
       })
 
       child.on('close', (exitCode) => {
+        assert(this.bufOut === '')
+        assert(this.bufErr === '')
+        delete task.pid
         resolve(exitCode)
       })
     })
