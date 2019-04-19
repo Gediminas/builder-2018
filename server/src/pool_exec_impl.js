@@ -19,14 +19,22 @@ class PoolExecImpl
       const options = { cwd: task.working_dir }
 
       const child = execFile(task.product.interpreter, args, options)
+      this.bufOut = ''
+      this.bufErr = ''
       task.pid = child.pid
 
       child.stdout.on('data', (data) => {
-        this._outputStd(taskOutput, task, data)
+        this.bufOut += data
+        this.bufOut = processFullLines(this.bufOut, (text) => {
+          taskOutput(task, text, 'stdout')
+        })
       })
 
       child.stderr.on('data', (data) => {
-        this._outputErr(taskOutput, task, data)
+        this.bufErr += data
+        this.bufErr = processFullLines(this.bufErr, (text) => {
+          taskOutput(task, text, 'stderr')
+        })
       })
 
       child.on('error', (error) => {
@@ -34,8 +42,8 @@ class PoolExecImpl
       })
 
       child.on('close', (exitCode) => {
-        this._outputStd(taskOutput, task)
-        this._outputErr(taskOutput, task)
+        assert(this.bufOut === '') //TODO send \n
+        assert(this.bufErr === '') //TODO send \n
         delete task.pid
         resolve(exitCode)
       })
@@ -51,40 +59,6 @@ class PoolExecImpl
           resolve()
         }
       })
-    })
-  }
-
-  _outputStd(taskOutput, task, data) {
-    if (!data) {
-      if (!this.bufOut || this.bufOut === '') {
-        return
-      }
-      data = '\n'
-    }
-    if (this.bufOut === '') {
-      this.bufOut = data
-    } else {
-      this.bufOut += data
-    }
-    this.bufOut = processFullLines(this.bufOut, (text) => {
-      taskOutput(task, text, 'stdout')
-    })
-  }
-
-  _outputErr(taskOutput, task, data) {
-    if (!data) {
-      if (!this.bufErr || this.bufErr === '') {
-        return
-      }
-      data = '\n'
-    }
-    if (this.bufErr === '') {
-      this.bufErr = data
-    } else {
-      this.bufErr += data
-    }
-    this.bufErr = processFullLines(this.bufErr, (text) => {
-      taskOutput(task, text, 'stderr')
     })
   }
 }
