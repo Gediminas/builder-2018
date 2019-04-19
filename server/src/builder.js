@@ -163,6 +163,7 @@ pool.on('task-completed', (param) => {
   //updateProducts(db, products, param.task.product_id)
   emitProducts(io)
   emitHistory(io)
+  emitState(io)
 })
 
 sys.ensureDir(cfgApp.script_dir)
