@@ -83,18 +83,23 @@ class Pool extends events {
       assert(task === check.task)
       this.activeTasks.push(task)
       this.emit('task-starting', { task })
-      this.impl.startTask(task, this._taskOutput.bind({this: this}), this)
-      .then((exitCode) => {
-        this._taskCompleted(task, exitCode)
-      })
-      .catch((error) => {
-        this.emit('error', {task, error, from: '_processQueue'})
+      this.impl.startTask(task, this._taskOutput.bind( {this: this }), this)
+        .then((exitCode) => {
+          this._taskCompleted(task, exitCode)
+        })
+        .catch((error) => {
+          this.emit('error', { task, error, from: '_processQueue' })
       })
       this.emit('task-started', { task })
       return
     }
     if (!this.activeTasks) {
-      this.emit('error', {task, error, msg: 'Cannot start any task', from: '_processQueue'})
+      this.emit('error', {
+        task : false,
+        error: false,
+        msg  : 'Cannot start any task',
+        from : '_processQueue',
+      })
     }
   }
 
