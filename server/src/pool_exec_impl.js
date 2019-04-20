@@ -11,12 +11,10 @@ const processFullLines = (origBuffer, fnDoOnFullLine) => {
   return newBuffer
 }
 
-class PoolExecImpl
-{
+class PoolExecImpl {
   startTask(task, taskOutput, pool) {
     return new Promise((resolve, reject) => {
-
-      const args    = [ task.product.script_path ]
+      const args    = [task.product.script_path]
       const options = { cwd: task.working_dir }
 
       const child = execFile(task.product.interpreter, args, options)
@@ -43,8 +41,8 @@ class PoolExecImpl
       })
 
       child.on('close', (exitCode) => {
-        assert(child.bufOut === '') //TODO send \n
-        assert(child.bufErr === '') //TODO send \n
+        assert(child.bufOut === '') // TODO send \n
+        assert(child.bufErr === '') // TODO send \n
         delete task.pid
         resolve(exitCode)
       })
