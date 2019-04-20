@@ -7,6 +7,7 @@ const processFullLines = (origBuffer, fnDoOnFullLine) => {
   const newBuffer = lines.pop()
   lines.forEach(fnDoOnFullLine)
   assert(newBuffer === '' || origBuffer.slice(-1) !== '\n')
+  assert(newBuffer === '')
   return newBuffer
 }
 
@@ -19,20 +20,20 @@ class PoolExecImpl
       const options = { cwd: task.working_dir }
 
       const child = execFile(task.product.interpreter, args, options)
-      this.bufOut = ''
-      this.bufErr = ''
+      child.bufOut = ''
+      child.bufErr = ''
       task.pid = child.pid
 
       child.stdout.on('data', (data) => {
-        this.bufOut += data
-        this.bufOut = processFullLines(this.bufOut, (text) => {
+        child.bufOut += data
+        child.bufOut = processFullLines(child.bufOut, (text) => {
           taskOutput(task, text, 'stdout')
         })
       })
 
       child.stderr.on('data', (data) => {
-        this.bufErr += data
-        this.bufErr = processFullLines(this.bufErr, (text) => {
+        child.bufErr += data
+        child.bufErr = processFullLines(child.bufErr, (text) => {
           taskOutput(task, text, 'stderr')
         })
       })
@@ -42,8 +43,8 @@ class PoolExecImpl
       })
 
       child.on('close', (exitCode) => {
-        assert(this.bufOut === '') //TODO send \n
-        assert(this.bufErr === '') //TODO send \n
+        assert(child.bufOut === '') //TODO send \n
+        assert(child.bufErr === '') //TODO send \n
         delete task.pid
         resolve(exitCode)
       })
