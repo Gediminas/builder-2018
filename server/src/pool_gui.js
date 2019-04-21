@@ -1,20 +1,26 @@
 const assert = require('better-assert')
 const pool = require('./pool.js')
 
-let socketio = null
+let io = null
 
-const emitTasks = () => socketio.emit('state', { tasks: pool.allTasks() })
+const emitProducts = emitter =>
+  setImmediate(() =>
+    emitter.emit('state', { products: pool.getProducts() }))
+
+const emitTasks = emitter =>
+  emitter.emit('state', { tasks: pool.allTasks() })
 
 pool.on('initialized', (param) => {
-  emitTasks()
+  emitProducts(io)
+  emitTasks(io)
 })
 
 pool.on('error', (param) => {
-  emitTasks() // activeTasks refresh if cannot start any
+  emitTasks(io) // activeTasks refresh if cannot start any
 })
 
 pool.on('task-added', (param) => {
-  emitTasks()
+  emitTasks(io)
 })
 
 pool.on('task-started', (param) => {
@@ -36,13 +42,13 @@ pool.on('task-completed', (param) => {
   } else {
     param.task.data.status = `(${param.task.status})`
   }
-  emitTasks()
+  emitTasks(io)
 })
 
 pool.on('task-output', () => {
-  emitTasks()
+  emitTasks(io)
 })
 
-module.exports.initialize = (_socketio) => {
-  socketio = _socketio
+module.exports.initialize = (_io) => {
+  io = _io
 }

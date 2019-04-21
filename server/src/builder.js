@@ -63,13 +63,9 @@ const emitState = (emitter) => {
   })
 }
 
-const emitProducts = (emitter) => {
-  setImmediate(() => emitter.emit({ products: pool.getProducts() }))
-}
-
 const emitHistory = (emitter) => {
   const htasks = db.get_history(cfgApp.show_history_limit)
-  setImmediate(() => emitter.emit({ htasks }))
+  emitter.emit('state', { htasks })
 }
 
 //const updateProducts = (db, products, product_id) => {
@@ -80,7 +76,7 @@ const emitHistory = (emitter) => {
   // }
 //}
 
-io.on('connection', function(socket){
+io.on('connection', (socket) => {
   console.log(`Client connected: ${socket.conn.remoteAddress}`.bgBlue)
 
   // for (const product of products) {
@@ -88,13 +84,11 @@ io.on('connection', function(socket){
   // }
   emitState(socket)
 
-  socket.on('task_add', (param) => {
-    pool.addTask(param.product_id, { user_comment: 'user comment' })
-  })
+  socket.on('task_add', param => 
+    pool.addTask(param.product_id, { user_comment: 'user comment' }))
 
-  socket.on('task_kill', (param) => {
-    pool.dropTask(param.task_uid)
-  })
+  socket.on('task_kill', param => 
+    pool.dropTask(param.task_uid))
 
   socket.on('sys_shutdown', (param) => {
     // sys.log("Stoping cron tasks...")
@@ -108,12 +102,6 @@ io.on('connection', function(socket){
 });
 
 // pool =====================================================
-
-pool.on('initialized', (param) => {
-  //const products = pool.getProducts()
-  //updateProducts(db, products)
-  emitProducts(io)
-})
 
 pool.on('task-added', (param) => {
   let product_id = param.task.product_id
@@ -159,11 +147,7 @@ pool.on('task-starting', (param) => {
 
 pool.on('task-completed', (param) => {
   db.add_history(param.task)
-  //const products = pool.getProducts()
-  //updateProducts(db, products, param.task.product_id)
-  emitProducts(io)
   emitHistory(io)
-  emitState(io)
 })
 
 sys.ensureDir(cfgApp.script_dir)
