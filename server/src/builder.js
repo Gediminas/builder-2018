@@ -4,7 +4,7 @@ const path = require('path')
 const fs = require('fs')
 const merge = require('merge')
 const sys = require('./sys_util.js')
-const db = require('./builder_db_utils.js')
+const db = require('./db_history.js')
 const pool = require('./pool.js')
 require('colors')
 const poolExecImpl = require('./pool_exec_impl.js')
@@ -84,10 +84,10 @@ io.on('connection', (socket) => {
   // }
   emitState(socket)
 
-  socket.on('task_add', param => 
+  socket.on('task_add', param =>
     pool.addTask(param.product_id, { user_comment: 'user comment' }))
 
-  socket.on('task_kill', param => 
+  socket.on('task_kill', param =>
     pool.dropTask(param.task_uid))
 
   socket.on('sys_shutdown', (param) => {
