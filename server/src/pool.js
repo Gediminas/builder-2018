@@ -15,17 +15,17 @@ const generateUid = () => {
 
 class Pool extends events {
 
-  initialize(impl, products, maxWorkers) {
+  initialize(impl, products, maxWorkers, pluginOptions) {
     this.products = products
     this.waitingTasks = []
     this.activeTasks = []
     this.maxWorkers = maxWorkers
     this.impl = impl
-    this.emit('initialized', {})
+    this.emit('initialized', { pluginOptions })
   }
 
   addTask(productId, taskData) {
-    const task = { uid: generateUid(), pid: 0 }
+    const task = { uid: generateUid() }
     this.waitingTasks.push(task)
     this.emit('task-added', { task, productId, taskData })
     setImmediate(() => this._processQueue())
@@ -84,8 +84,8 @@ class Pool extends events {
       this.activeTasks.push(task)
       this.emit('task-starting', { task })
       this.impl.startTask(task, this._taskOutput.bind( {this: this }), this)
-        .then((exitCode) => {
-          this._taskCompleted(task, exitCode)
+        .then(() => {
+          this._taskCompleted(task)
         })
         .catch((error) => {
           this.emit('error', { task, error, from: '_processQueue' })
@@ -103,7 +103,7 @@ class Pool extends events {
     }
   }
 
-  _taskCompleted(task, exitCode) {
+  _taskCompleted(task) {
     for (const i in pool.activeTasks) {
       if (pool.activeTasks[i].uid === task.uid) {
         const closedTask = pool.activeTasks.splice(i, 1)[0]

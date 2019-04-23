@@ -20,7 +20,6 @@ pool.on('task-added', (param) => {
   param.task.time_start = 0
   param.task.time_end   = 0
   param.task.time_diff  = 0
-  param.task.exec       = {}
   param.task.data       = param.taskData
 })
 
@@ -59,12 +58,14 @@ pool.on('task-killed', (param) => {
 
 pool.on('task-completed', (param) => {
   param.time = getTimeStamp()
+
   if (param.task.status === 'halting') {
     param.task.status = 'halted'
   } else {
+    assert(param.task.status === 'started')
     param.task.status = 'finished'
   }
-  param.task.exec.exitCode = param.exitCode
+  param.task.data.status = param.task.result
 })
 
 pool.on('task-output', (param) => {

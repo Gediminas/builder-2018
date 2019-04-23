@@ -44,7 +44,14 @@ class PoolExecImpl {
         assert(child.bufOut === '') // TODO send \n
         assert(child.bufErr === '') // TODO send \n
         delete task.pid
-        resolve(exitCode)
+
+        switch (exitCode) {
+        case 0:  task.result = 'OK'; break
+        case 1:  task.result = 'WARNING'; break
+        case 2:  task.result = 'ERROR'; break
+        default: task.result = 'N/A'; break
+        }
+        resolve()
       })
     })
   }

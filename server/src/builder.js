@@ -4,14 +4,17 @@ const path = require('path')
 const fs = require('fs')
 const merge = require('merge')
 const sys = require('./sys_util.js')
-const db = require('./db_history.js')
 const pool = require('./pool.js')
 require('colors')
 const poolExecImpl = require('./pool-core-exe.js')
 require('./pool-core-sys.js')
+
+const db = require('./db_history.js')
+require('./pool-history.js')
 require('./pool-tty.js')
 require('./pool-log.js')
-const gui = require('./pool-gui.js')
+require('./pool-gui.js')
+
 const cfgApp = require('../../_cfg/config.json')
 const cfgDef = require('../../_cfg/script_defaults.json')
 
@@ -63,25 +66,9 @@ const emitState = (emitter) => {
   })
 }
 
-const emitHistory = (emitter) => {
-  const htasks = db.get_history(cfgApp.show_history_limit)
-  emitter.emit('state', { htasks })
-}
-
-//const updateProducts = (db, products, product_id) => {
-  // for (const product of products) {
-  //   if (!product_id || product.product_id === product_id) {
-  //     product.last_task = db.findLast_history({ product_id: product.product_id })
-  //   }
-  // }
-//}
-
 io.on('connection', (socket) => {
   console.log(`Client connected: ${socket.conn.remoteAddress}`.bgBlue)
 
-  // for (const product of products) {
-  //   product.last_task = db.findLast_history({ product_id: product.product_id })
-  // }
   emitState(socket)
 
   socket.on('task_add', param =>
@@ -104,22 +91,11 @@ io.on('connection', (socket) => {
 // pool =====================================================
 
 pool.on('task-added', (param) => {
-  let product_id = param.task.product_id
-  let product_name = param.task.product_id
-  let last_task  = db.findLast_history({"$and": [{ "product_id" : product_id},{"param.status": "OK"}]})
-  if (!last_task) {
-    last_task = db.findLast_history({"$and": [{ "product_id" : product_id},{"param.status": "WARNING"}]})
-  }
-  if (!last_task) {
-    last_task = db.findLast_history({ "product_id" : product_id})
-  }
-  //console.log(last_task);
   param.task.data = {
-    product_name,
+    product_name: param.task.product_id,
     comment:        'comment',
     status:         'QUEUED',
-    pid:            0,
-    prev_time_diff: last_task ? last_task.time_diff : undefined
+    //prev_time_diff: last_task ? last_task.time_diff : undefined
   }
 
   const products = pool.getProducts()
@@ -145,11 +121,6 @@ pool.on('task-starting', (param) => {
   param.task.working_dir = working_dir
 })
 
-pool.on('task-completed', (param) => {
-  db.add_history(param.task)
-  emitHistory(io)
-})
-
 sys.ensureDir(cfgApp.script_dir)
 sys.ensureDir(cfgApp.working_dir)
 sys.ensureDir(cfgApp.db_dir)
@@ -159,9 +130,17 @@ console.log('config:'.bgBlue, JSON.stringify(cfgApp, null, 2).bgBlue)
 console.log(`Socket server starting on port: ${cfgApp.server_port}`.bgBlue)
 console.log('----------------------------------------------------------'.bgBlue)
 
-db.init(cfgApp.db_dir).then(() => {
-  loadProducts(cfgApp.script_dir, (products) => {
-    gui.initialize(io)
-    pool.initialize(poolExecImpl, products, 2)
-  })
+const pluginOptions = {
+  history: {
+    db_dir: cfgApp.db_dir,
+    emitter: io,
+    show_history_limit: cfgApp.show_history_limit,
+  },
+  gui: {
+    emitter: io,
+  },
+}
+
+loadProducts(cfgApp.script_dir, (products) => {
+  pool.initialize(poolExecImpl, products, 2, pluginOptions)
 })
