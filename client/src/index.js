@@ -13,7 +13,7 @@ import { ConnectionStateContainer } from './components/common/ConnectionState'
 
 
 require('./style.css')
-const cfg = require('../../_cfg/config.json')
+const cfg = require('../../_cfg/config.js')
 
 console.log(cfg)
 console.log(cfg.server_address)

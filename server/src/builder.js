@@ -15,15 +15,17 @@ require('./pool-tty.js')
 require('./pool-log.js')
 require('./pool-gui.js')
 
-const cfgApp = require('../../_cfg/config.json')
+const cfgApp = require('../../_cfg/config.js')
 const cfgDef = require('../../_cfg/script_defaults.json')
+
+if (!path.isAbsolute(cfgApp.script_dir))
+  cfgApp.script_dir  = path.normalize(__dirname + '/../../' + cfgApp.script_dir)
+
+if (!path.isAbsolute(cfgApp.working_dir))
+  cfgApp.working_dir = path.normalize(__dirname + '/../../' + cfgApp.working_dir)
 
 const io = socketio(cfgApp.server_port)
 
-
-cfgApp.script_dir  = path.normalize(__dirname + '/../../' + cfgApp.script_dir)
-cfgApp.working_dir = path.normalize(__dirname + '/../../' + cfgApp.working_dir)
-cfgApp.db_dir      = path.normalize(__dirname + '/../../' + cfgApp.db_dir)
 
 const load_cfg = (script_dir, product_id) => {
   const cfgPath = path.normalize(script_dir + product_id + '/script.cfg')
@@ -107,32 +109,17 @@ pool.on('task-added', (param) => {
   }
 })
 
-pool.on('task-starting', (param) => {
-  let product_dir = cfgApp.working_dir + param.task.product_id + '/'
-  let working_dir = product_dir + sys.timeToDir(param.task.time_add) + '/' //FIXME: task.time_start
-
-  console.log(`>> product_dir: ${product_dir}`)
-  console.log(`>> working_dir: ${working_dir}`)
-
-  sys.ensureDir(cfgApp.working_dir)
-  sys.ensureDir(product_dir)
-  sys.ensureDir(working_dir)
-
-  param.task.working_dir = working_dir
-})
-
-sys.ensureDir(cfgApp.script_dir)
-sys.ensureDir(cfgApp.working_dir)
-sys.ensureDir(cfgApp.db_dir)
-
 console.log('----------------------------------------------------------'.bgBlue)
 console.log('config:'.bgBlue, JSON.stringify(cfgApp, null, 2).bgBlue)
 console.log(`Socket server starting on port: ${cfgApp.server_port}`.bgBlue)
 console.log('----------------------------------------------------------'.bgBlue)
 
 const pluginOptions = {
+  sys: {
+    cfg: cfgApp ,
+  },
   history: {
-    db_dir: cfgApp.db_dir,
+    db_dir: cfgApp.working_dir,
     emitter: io,
     show_history_limit: cfgApp.show_history_limit,
   },
