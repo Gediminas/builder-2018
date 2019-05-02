@@ -15,24 +15,25 @@ const emitHistory = (emitter, show_history_limit)  =>
 
 
 pool.on('initialized', (param) => {
-  // const dbPath             = param.pluginOptions.gui.dbPath
-  const show_history_limit = param.pluginOptions.gui.show_history_limit
-  this.io                  = socketio(param.pluginOptions.gui.server_port)
+  this.show_history_limit = param.pluginOptions.gui.show_history_limit
+  const server_port       = param.pluginOptions.gui.server_port
 
-  console.log(`Socket server starting on port: ${param.pluginOptions.gui.server_port}`.bgBlue)
+  console.log(`> Socket server starting on port: ${server_port}`.bgBlue)
 
+  this.io = socketio(server_port)
   this.io.on('connection', (socket) => {
-    console.log(`Client connected: ${socket.conn.remoteAddress}`.bgBlue)
 
-    emitProducts(this.io)
-    emitTasks(this.io)
-    emitHistory(this.io, show_history_limit)
+    console.log(`> Client connected: ${socket.conn.remoteAddress}`.bgBlue)
+
+    emitProducts(socket)
+    emitTasks(socket)
+    emitHistory(socket, this.show_history_limit)
 
     socket.on('task_add', param =>
-              pool.addTask(param.product_id, { user_comment: 'user comment' }))
+      pool.addTask(param.product_id, { user_comment: 'user comment' }))
 
     socket.on('task_kill', param =>
-              pool.dropTask(param.task_uid))
+      pool.dropTask(param.task_uid))
 
     socket.on('sys_shutdown', (param) => {
       // sys.log("Stoping cron tasks...")
@@ -60,7 +61,7 @@ pool.on('task-started', (param) => {
 
 pool.on('task-completed', (param) => {
   emitTasks(this.io)
-  emitHistory(this.io)
+  emitHistory(this.io, this.show_history_limit)
 })
 
 pool.on('task-output', () => {

@@ -1,10 +1,11 @@
 const Loki = require('lokijs')
+require('colors')
 
 let db_history
 let tb_history
 
 exports.init = dbPath => new Promise((resolve) => {
-  console.log('> history db: Loading ', dbPath)
+  console.log('> History db: Loading '.bgBlue, dbPath)
 
   db_history = new Loki(dbPath, {
     verbose         : true,
@@ -20,12 +21,12 @@ exports.init = dbPath => new Promise((resolve) => {
   db_history.loadDatabase({}, (result) => {
     tb_history = db_history.getCollection('history')
     if (!tb_history) {
-      console.log('> history db: Creating ', dbPath)
+      console.log('> History db: Creating '.bgBlue, dbPath)
       tb_history = db_history.addCollection('history', { autoupdate: true })
 
-      console.log('> history db: database saving...')
+      console.log('> History db: database saving...'.bgBlue)
       db_history.saveDatabase(() => {
-        console.log('> history db: database saved...')
+        console.log('> History db: database saved...'.bgBlue)
       })
     }
 

@@ -76,8 +76,11 @@ pool.on('task-added', (param) => {
   }
 })
 
+console.log('')
+console.log('')
 console.log('----------------------------------------------------------'.bgBlue)
-console.log('config:'.bgBlue, JSON.stringify(cfgApp, null, 2).bgBlue)
+console.log('----------------------------------------------------------'.bgBlue)
+console.log('> CONFIG:'.bgBlue, JSON.stringify(cfgApp, null, 2).bgBlue)
 console.log('----------------------------------------------------------'.bgBlue)
 
 const dbPath = `${cfgApp.working_dir}history.json`
