@@ -83,7 +83,7 @@ class Pool extends events {
       assert(task === check.task)
       this.activeTasks.push(task)
       this.emit('task-starting', { task })
-      this.impl.startTask(task, this._taskOutput.bind( {this: this }), this)
+      this.impl.startTask(task, this._taskOutput) //.bind( {this: this })
         .then(() => {
           this._taskCompleted(task)
         })

@@ -12,7 +12,7 @@ const processFullLines = (origBuffer, fnDoOnFullLine) => {
 }
 
 class PoolExecImpl {
-  startTask(task, taskOutput, pool) {
+  startTask(task, taskOutput) {
     return new Promise((resolve, reject) => {
       const args    = [task.product.script_path]
       const options = { cwd: task.working_dir }
