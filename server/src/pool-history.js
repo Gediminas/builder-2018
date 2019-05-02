@@ -9,18 +9,8 @@ const pool   = require('./pool.js')
 // }
 //}
 
-let emitter = null
-let limit = null
-
-const emitHistory = (emitter) => {
-  const htasks = db.get_history(limit)
-  emitter.emit('state', { htasks })
-}
-
 pool.on('initialized', (param) => {
-  db.init(param.pluginOptions.history.db_dir).then(() => {})
-  emitter = param.pluginOptions.history.emitter
-  limit = param.pluginOptions.history.show_history_limit
+  db.init(param.pluginOptions.history.dbPath).then(() => {})
 })
 
 pool.on('error',            param => {})
@@ -40,16 +30,7 @@ pool.on('task-added',       param => {
   */
 })
 
-pool.on('task-removed',     param => {})
-pool.on('task-killing',     param => {})
-pool.on('task-killed',      param => {})
-pool.on('task-kill-failed', param => {})
-
 pool.on('task-completed',   param => {
   db.add_history(param.task)
-  emitHistory(emitter)
 })
-
-pool.on('task-output',      param => {})
-
 

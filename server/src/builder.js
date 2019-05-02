@@ -1,9 +1,7 @@
-const socketio = require('socket.io')
 const glob = require('glob')
 const path = require('path')
 const fs = require('fs')
 const merge = require('merge')
-const sys = require('./sys_util.js')
 const pool = require('./pool.js')
 require('colors')
 const poolExecImpl = require('./pool-core-exe.js')
@@ -24,7 +22,6 @@ if (!path.isAbsolute(cfgApp.script_dir))
 if (!path.isAbsolute(cfgApp.working_dir))
   cfgApp.working_dir = path.normalize(__dirname + '/../../' + cfgApp.working_dir)
 
-const io = socketio(cfgApp.server_port)
 
 
 const load_cfg = (script_dir, product_id) => {
@@ -60,36 +57,6 @@ const loadProducts = (script_dir, on_loaded) => {
   })
 }
 
-const emitState = (emitter) => {
-  emitter.emit('state', {
-    products: pool.getProducts(),
-    tasks: pool.allTasks(),
-    htasks: db.get_history(cfgApp.show_history_limit),
-  })
-}
-
-io.on('connection', (socket) => {
-  console.log(`Client connected: ${socket.conn.remoteAddress}`.bgBlue)
-
-  emitState(socket)
-
-  socket.on('task_add', param =>
-    pool.addTask(param.product_id, { user_comment: 'user comment' }))
-
-  socket.on('task_kill', param =>
-    pool.dropTask(param.task_uid))
-
-  socket.on('sys_shutdown', (param) => {
-    // sys.log("Stoping cron tasks...")
-    // script.destroy_all()
-
-    setTimeout(() => {
-      console.log("Exit.")
-      process.exit(0)
-    }, 100)
-  });
-});
-
 // pool =====================================================
 
 pool.on('task-added', (param) => {
@@ -111,20 +78,20 @@ pool.on('task-added', (param) => {
 
 console.log('----------------------------------------------------------'.bgBlue)
 console.log('config:'.bgBlue, JSON.stringify(cfgApp, null, 2).bgBlue)
-console.log(`Socket server starting on port: ${cfgApp.server_port}`.bgBlue)
 console.log('----------------------------------------------------------'.bgBlue)
+
+const dbPath = `${cfgApp.working_dir}history.json`
 
 const pluginOptions = {
   sys: {
     cfg: cfgApp ,
   },
   history: {
-    db_dir: cfgApp.working_dir,
-    emitter: io,
-    show_history_limit: cfgApp.show_history_limit,
+    dbPath: dbPath,
   },
   gui: {
-    emitter: io,
+    server_port:        cfgApp.server_port,
+    show_history_limit: cfgApp.show_history_limit,
   },
 }
 

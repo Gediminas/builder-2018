@@ -3,11 +3,10 @@ const Loki = require('lokijs')
 let db_history
 let tb_history
 
-exports.init = path => new Promise((resolve) => {
-  const path_history = `${path}history.json`
-  console.log('db: Loading ', path_history)
+exports.init = dbPath => new Promise((resolve) => {
+  console.log('> history db: Loading ', dbPath)
 
-  db_history = new Loki(path_history, {
+  db_history = new Loki(dbPath, {
     verbose         : true,
     autosave        : true,
     autosaveInterval: 2000,
@@ -21,12 +20,12 @@ exports.init = path => new Promise((resolve) => {
   db_history.loadDatabase({}, (result) => {
     tb_history = db_history.getCollection('history')
     if (!tb_history) {
-      console.log('db: Creating ', path_history)
+      console.log('> history db: Creating ', dbPath)
       tb_history = db_history.addCollection('history', { autoupdate: true })
 
-      console.log('db: database saving...')
+      console.log('> history db: database saving...')
       db_history.saveDatabase(() => {
-        console.log('db: database saved...')
+        console.log('> history db: database saved...')
       })
     }
 
