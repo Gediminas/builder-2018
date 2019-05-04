@@ -64,21 +64,6 @@ console.log('----------------------------------------------------------'.bgBlue)
 console.log('> CONFIG:'.bgBlue, JSON.stringify(cfgApp, null, 2).bgBlue)
 console.log('----------------------------------------------------------'.bgBlue)
 
-const dbPath = `${cfgApp.working_dir}history.json`
-
-const pluginOptions = {
-  sys: {
-    cfg: cfgApp ,
-  },
-  history: {
-    dbPath: dbPath,
-  },
-  gui: {
-    server_port:        cfgApp.server_port,
-    show_history_limit: cfgApp.show_history_limit,
-  },
-}
-
 loadProducts(cfgApp.script_dir, (products) => {
-  pool.initialize(poolExecImpl, products, 2, pluginOptions)
+  pool.initialize(poolExecImpl, products, 2, cfgApp)
 })

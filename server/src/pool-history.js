@@ -10,7 +10,8 @@ const pool   = require('./pool.js')
 //}
 
 pool.on('initialized', (param) => {
-  db.init(param.pluginOptions.history.dbPath).then(() => {})
+  const dbPath = `${param.cfg.working_dir}history.json`
+  db.init(dbPath).then(() => {})
 })
 
 pool.on('error',            param => {})

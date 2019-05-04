@@ -15,8 +15,8 @@ const emitHistory = (emitter, show_history_limit)  =>
 
 
 pool.on('initialized', (param) => {
-  this.show_history_limit = param.pluginOptions.gui.show_history_limit
-  const server_port       = param.pluginOptions.gui.server_port
+  this.show_history_limit = param.cfg.show_history_limit
+  const server_port       = param.cfg.server_port
 
   console.log(`> Socket server starting on port: ${server_port}`.bgBlue)
 

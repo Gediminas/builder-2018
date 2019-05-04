@@ -6,7 +6,7 @@ const getTimeStamp = () => new Date().valueOf()
 
 
 pool.on('initialized', (param) => {
-  this.cfg = param.pluginOptions.sys.cfg
+  this.working_dir = param.cfg.working_dir
   param.time = getTimeStamp()
 })
 
@@ -52,14 +52,14 @@ pool.on('task-starting', (param) => {
   param.task.status     = 'starting'
   param.task.time_start = param.time
 
-  const product_dir = this.cfg.working_dir + param.task.product_id + '/'
+  const product_dir = this.working_dir + param.task.product_id + '/'
   const shared_dir  = product_dir + '/shared/'
   const working_dir = product_dir + sys.timeToDir(param.task.time_start) + '/'
 
   console.log(`>> product_dir: ${product_dir}`)
   console.log(`>> working_dir: ${working_dir}`)
 
-  sys.ensureDir(this.cfg.working_dir)
+  sys.ensureDir(this.working_dir)
   sys.ensureDir(product_dir)
   sys.ensureDir(shared_dir)
   sys.ensureDir(working_dir)

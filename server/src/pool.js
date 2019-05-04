@@ -15,13 +15,13 @@ const generateUid = () => {
 
 class Pool extends events {
 
-  initialize(impl, products, maxWorkers, pluginOptions) {
+  initialize(impl, products, maxWorkers, cfg) {
     this.products = products
     this.waitingTasks = []
     this.activeTasks = []
     this.maxWorkers = maxWorkers
     this.impl = impl
-    this.emit('initialized', { pluginOptions })
+    this.emit('initialized', { cfg })
   }
 
   addTask(productId, taskData) {
