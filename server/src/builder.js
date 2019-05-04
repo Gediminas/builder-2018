@@ -57,25 +57,6 @@ const loadProducts = (script_dir, on_loaded) => {
   })
 }
 
-// pool =====================================================
-
-pool.on('task-added', (param) => {
-  param.task.data = {
-    product_name: param.task.product_id,
-    comment:        'comment',
-    status:         'QUEUED',
-    //prev_time_diff: last_task ? last_task.time_diff : undefined
-  }
-
-  const products = pool.getProducts()
-  for (const product of products) {
-    if (product.product_id === param.task.product_id) {
-      param.task.product = product
-      break
-    }
-  }
-})
-
 console.log('')
 console.log('')
 console.log('----------------------------------------------------------'.bgBlue)
