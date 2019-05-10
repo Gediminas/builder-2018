@@ -13,16 +13,9 @@ require('./pool-tty.js')
 require('./pool-log.js')
 require('./pool-gui.js')
 
-const cfgApp = require('../../_cfg/config.js')
-const cfgDef = require('../../_cfg/script_defaults.json')
-
-if (!path.isAbsolute(cfgApp.script_dir)) {
-  cfgApp.script_dir  = path.normalize(`${__dirname}/../../${cfgApp.script_dir}`)
-}
-
-if (!path.isAbsolute(cfgApp.working_dir)) {
-  cfgApp.working_dir  = path.normalize(`${__dirname}/../../${cfgApp.working_dir}`)
-}
+const LoadCfg = require('./load-cfg.js')
+const cfgApp = LoadCfg.loadAppCfg()
+const cfgDef = LoadCfg.loadDefCfg()
 
 const load_cfg = (script_dir, product_id) => {
   const cfgPath = path.normalize(script_dir + product_id + '/script.cfg')
