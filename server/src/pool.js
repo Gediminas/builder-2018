@@ -15,11 +15,11 @@ const generateUid = () => {
 
 class Pool extends events {
 
-  initialize(impl, products, maxWorkers, cfg) {
+  initialize(impl, products, cfg) {
     this.products = products
     this.waitingTasks = []
     this.activeTasks = []
-    this.maxWorkers = maxWorkers
+    this.maxWorkers = cfg.maxWorkers
     this.impl = impl
     this.emit('initialized', { cfg })
   }

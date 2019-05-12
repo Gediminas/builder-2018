@@ -4,5 +4,6 @@
   "server_access":      "127.0.0.1",
   "show_history_limit": "5",
   "script_dir":         "../_scripts/",
-  "working_dir":        "../_working/"
+  "working_dir":        "../_working/",
+  "maxWorkers":         2
 }

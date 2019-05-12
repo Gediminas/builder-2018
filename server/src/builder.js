@@ -20,5 +20,5 @@ console.log('> CONFIG:'.bgBlue, JSON.stringify(cfgApp, null, 2).bgBlue)
 console.log('----------------------------------------------------------'.bgBlue)
 
 productLoader(cfgApp.script_dir, (products) => {
-  pool.initialize(poolExecImpl, products, 2, cfgApp)
+  pool.initialize(poolExecImpl, products, cfgApp)
 })
