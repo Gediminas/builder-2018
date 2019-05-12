@@ -6,13 +6,13 @@ require('./pool-tty.js')
 require('./pool-log.js')
 require('./pool-gui.js')
 
-const db = require('./db_history.js')
-const loadProducts = require('./load-products.js')
-const LoadCfg = require('./load-cfg.js')
+const db = require('./loaders/history_loader.js')
+const productLoader = require('./loaders/product_loader.js')
+const configLoader = require('./loaders/config_loader.js')
 
 require('colors')
 
-const cfgApp = LoadCfg.loadAppCfg()
+const cfgApp = configLoader.loadAppCfg()
 
 
 console.log('')
@@ -22,6 +22,6 @@ console.log('----------------------------------------------------------'.bgBlue)
 console.log('> CONFIG:'.bgBlue, JSON.stringify(cfgApp, null, 2).bgBlue)
 console.log('----------------------------------------------------------'.bgBlue)
 
-loadProducts(cfgApp.script_dir, (products) => {
+productLoader(cfgApp.script_dir, (products) => {
   pool.initialize(poolExecImpl, products, 2, cfgApp)
 })

@@ -2,9 +2,9 @@ const fs = require('fs')
 const glob = require('glob')
 const path = require('path')
 const merge = require('merge')
-const LoadCfg = require('./load-cfg.js')
+const configLoader = require('./config_loader.js')
 
-const cfgDef = LoadCfg.loadDefCfg()
+const cfgDef = configLoader.loadDefCfg()
 
 const load_cfg = (script_dir, product_id) => {
   const cfgPath = path.normalize(script_dir + product_id + '/script.cfg')

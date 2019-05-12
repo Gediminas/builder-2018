@@ -1,7 +1,7 @@
 const socketio = require('socket.io')
 const assert = require('better-assert')
 const pool = require('./pool.js')
-const db = require('./db_history.js')
+const db = require('./loaders/history_loader.js')
 require('colors')
 
 const emitProducts = emitter =>

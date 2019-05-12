@@ -1,5 +1,5 @@
-const db = require('./db_history.js')
 const pool   = require('./pool.js')
+const db = require('./loaders/history_loader.js')
 
 //const updateProducts = (db, products, product_id) => {
 // for (const product of products) {
