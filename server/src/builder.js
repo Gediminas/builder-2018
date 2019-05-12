@@ -5,15 +5,12 @@ require('./pool-history.js')
 require('./pool-tty.js')
 require('./pool-log.js')
 require('./pool-gui.js')
+require('colors')
 
-const db = require('./loaders/history_loader.js')
 const productLoader = require('./loaders/product_loader.js')
 const configLoader = require('./loaders/config_loader.js')
 
-require('colors')
-
 const cfgApp = configLoader.loadAppCfg()
-
 
 console.log('')
 console.log('')
