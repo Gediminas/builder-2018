@@ -21,7 +21,9 @@ class Pool extends events {
     this.activeTasks = []
     this.maxWorkers = cfg.maxWorkers
     this.impl = impl
+    console.log('init started')
     this.emit('initialized', { cfg })
+    console.log('init finished')
   }
 
   addTask(productId, taskData) {

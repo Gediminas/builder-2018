@@ -1,24 +1,24 @@
 const path = require('path')
-const cfg = require('../../../cfg/config.json')
-const cfgDef = require('../../../cfg/script_defaults.json')
+const config = require('../../../cfg/config.json')
+const script_defaults = require('../../../cfg/script_defaults.json')
 
-class LoadCfg {
+class ConfigLoader {
+  init() {
+    this.data = {}
+    this.data.appConfig = config
+    this.data.script_defaults = script_defaults
 
-  loadAppCfg() {
-    if (!path.isAbsolute(cfg.script_dir)) {
-      cfg.script_dir  = path.normalize(__dirname + '/../../' + cfg.script_dir)
+    if (!path.isAbsolute(this.data.appConfig.script_dir)) {
+      this.data.appConfig.script_dir =
+        path.normalize(__dirname + '/../../' + this.data.appConfig.script_dir)
     }
-    if (!path.isAbsolute(cfg.working_dir)) {
-      cfg.working_dir = path.normalize(__dirname + '/../../' + cfg.working_dir)
+    if (!path.isAbsolute(this.data.appConfig.working_dir)) {
+      this.data.appConfig.working_dir =
+        path.normalize(__dirname + '/../../' + this.data.appConfig.working_dir)
     }
-    return cfg
   }
-
-  loadDefCfg() {
-    return cfgDef
-  }
-
 }
 
-const loadCfg = new LoadCfg()
-module.exports = loadCfg
+const configLoader = new ConfigLoader()
+configLoader.init()
+module.exports = configLoader

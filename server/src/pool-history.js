@@ -11,7 +11,8 @@ const db = require('./loaders/history_loader.js')
 
 pool.on('initialized', (param) => {
   const dbPath = `${param.cfg.working_dir}history.json`
-  db.init(dbPath).then(() => {})
+  console.log('history db loading')
+  db.init(dbPath).then(() => {console.log('history db loaded')})
 })
 
 pool.on('error',            param => {})

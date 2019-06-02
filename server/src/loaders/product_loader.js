@@ -4,7 +4,7 @@ const path = require('path')
 const merge = require('merge')
 const configLoader = require('./config_loader.js')
 
-const cfgDef = configLoader.loadDefCfg()
+const cfgDef = configLoader.data.script_defaults
 
 const load_cfg = (script_dir, product_id) => {
   const cfgPath = path.normalize(script_dir + product_id + '/script.cfg')

@@ -10,7 +10,7 @@ require('colors')
 const productLoader = require('./loaders/product_loader.js')
 const configLoader = require('./loaders/config_loader.js')
 
-const cfgApp = configLoader.loadAppCfg()
+const cfgApp = configLoader.data.appConfig
 
 console.log('')
 console.log('')
@@ -19,6 +19,8 @@ console.log('----------------------------------------------------------'.bgBlue)
 console.log('> CONFIG:'.bgBlue, JSON.stringify(cfgApp, null, 2).bgBlue)
 console.log('----------------------------------------------------------'.bgBlue)
 
+console.log('products loading')
 productLoader(cfgApp.script_dir, (products) => {
+  console.log('products loaded')
   pool.initialize(poolExecImpl, products, cfgApp)
 })
