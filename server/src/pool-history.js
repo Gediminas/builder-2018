@@ -21,7 +21,7 @@ pool.on('initialized', (param) => {
     for (let product of products) {
       let last_task = db.findLast_history({ product_id: product.product_id })
       product.stats = {
-        status: last_task ? last_task.status : 'N/A',
+        status: last_task ? last_task.data.status : 'N/A',
       }
     }
 
