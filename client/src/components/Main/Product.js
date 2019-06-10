@@ -11,7 +11,7 @@ export default class extends PureComponent {
     let task_id       = this.props.product.getIn(['last_task', 'id'])
     let comment      = this.props.product.getIn(['last_task', 'data', 'comment'])
     let pid          = this.props.product.getIn(['last_task', 'data', 'pid'])
-    let task_status   = this.props.product.getIn(['last_task', 'data', 'status'])
+    let task_status   = this.props.product.getIn(['stats', 'status'])
     let at           = this.props.product.getIn(['cfg', 'at'])
     let cron         = this.props.product.getIn(['cfg', 'cron'])
     let prio         = this.props.product.getIn(['cfg', 'prio'])
@@ -30,6 +30,7 @@ export default class extends PureComponent {
         time_diff_t   = toHHMMSS(time_diff)
     }
     let log_link = `log/${product_id}/${time_start_d}`
+    //console.log(log_link)
 
     return (
       <div className='row'>
