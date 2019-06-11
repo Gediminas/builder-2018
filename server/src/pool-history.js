@@ -22,6 +22,7 @@ pool.on('initialized', (param) => {
       let last_task = db.findLast_history({ product_id: product.product_id })
       product.stats = {
         status: last_task ? last_task.data.status : 'N/A',
+        last_task_uid: last_task ? last_task.uid : '',
       }
     }
 
@@ -54,7 +55,10 @@ pool.on('task-completed',   param => {
     if (product.product_id != param.task.product_id) {
       continue
     }
+
     product.stats.status = param.task.status
+    product.stats.last_task_uid = param.task.uid
+
     console.log('history db stats updated for product ' + product.product_id)
     break
   }

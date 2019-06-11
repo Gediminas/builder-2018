@@ -30,7 +30,7 @@ export default class extends PureComponent {
         time_diff_t   = toHHMMSS(time_diff)
     }
     let log_link = `log/${product_id}/${time_start_d}`
-    //console.log(log_link)
+    console.log(log_link)
 
     return (
       <div className='row'>
