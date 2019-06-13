@@ -1,9 +1,14 @@
 import React, { PureComponent } from 'react'
 import {connect} from 'react-redux'
 import * as actionCreators from '../../action_creators'
-import {time_to_dir} from '../../tools/date_time.js'
+//import {time_to_dir} from '../../tools/date_time.js'
 
 export class LogViewer extends PureComponent {
+
+  componentDidMount() {
+    console.log('LogMount')
+  }
+
   render() {
     if (!this.props.products) {
       return <div> <h2>LogViewer</h2><div>No products exist</div> </div>
@@ -57,6 +62,10 @@ export class LogViewer extends PureComponent {
 }
 
 function mapStateToProps(state) {
+
+  // let product = this.props.products.find(product => product.get('product_id') === product_id)
+  // task_uid = product.getIn(['stats', 'last_task_uid'])
+
   return {
     products: state.get('products'),
   }

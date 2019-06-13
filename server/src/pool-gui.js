@@ -62,6 +62,7 @@ pool.on('task-started', (param) => {
 pool.on('task-completed', (param) => {
   emitTasks(this.io)
   emitHistory(this.io, this.show_history_limit)
+  emitProducts(this.io)
 })
 
 pool.on('task-output', () => {
