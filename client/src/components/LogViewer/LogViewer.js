@@ -6,8 +6,8 @@ import * as actionCreators from '../../action_creators'
 
 export class LogViewer extends PureComponent {
 
-  constructor(props) {
-    super(props);
+  constructor() {
+    super();
     this.state = {
       product_id: false,
       task_uid  : false,

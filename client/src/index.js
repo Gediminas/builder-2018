@@ -51,42 +51,19 @@ function onShutdownClick() {
   socket.emit('sys_shutdown')
 }
 
-// https://github.com/tshaddix/webext-redux/wiki/Advanced-Usage#initializing-ui-components
-const unsubscribe = store.subscribe(() => {
-  unsubscribe(); // make sure to only fire once
-  ReactDOM.render(
-      <Provider store={store}>
-        <div>
-          <ConnectionStateContainer />
-          <div id='div_debug'>
-            <button id='btn_sys_shutdown' type='button' onClick={onShutdownClick}>SHUTDOWN</button>
-          </div>
-          <BrowserRouter> 
-            <Switch>
-              <Route exact path='/'                       component={BuilderContainer} />
-              <Route exact path='/log/:prod_id/:task_uid?' component={LogViewerContainer} />
-            </Switch>
-          </BrowserRouter>
-        </div>
-      </Provider>
-      , document.getElementById('root'));
-});
-
-/*
-  ReactDOM.render((
+ReactDOM.render((
   <Provider store={store}>
-  <div>
-  <ConnectionStateContainer />
-  <div id='div_debug'>
-  <button id='btn_sys_shutdown' type='button' onClick={onShutdownClick}>SHUTDOWN</button>
-  </div>
-  <BrowserRouter> 
-  <Switch>
-  <Route exact path='/'                       component={BuilderContainer} />
-  <Route exact path='/log/:prod_id/:task_uid?' component={LogViewerContainer} />
-  </Switch>
-  </BrowserRouter>
-  </div>
+    <div>
+      <ConnectionStateContainer />
+      <div id='div_debug'>
+        <button id='btn_sys_shutdown' type='button' onClick={onShutdownClick}>SHUTDOWN</button>
+      </div>
+      <BrowserRouter> 
+        <Switch>
+          <Route exact path='/'                       component={BuilderContainer} />
+          <Route exact path='/log/:prod_id/:task_uid?' component={LogViewerContainer} />
+        </Switch>
+      </BrowserRouter>
+    </div>
   </Provider>
-  ), document.getElementById('root'))
-*/
+), document.getElementById('root'))
