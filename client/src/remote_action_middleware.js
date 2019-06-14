@@ -14,6 +14,12 @@ export default socket => store => next => action => {
         'pid':    action.pid
       })
       break
+    case 'REQUEST-LOG':
+      console.log('Emit request_log to server')
+      socket.emit('request_log', {
+        'task_uid': action.task_uid,
+      })
+      break
     default:
       break
      }

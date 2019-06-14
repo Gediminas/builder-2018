@@ -16,7 +16,16 @@ export function add_task(state, entry) {
 }
 
 export function kill_task(state, entry) {
-    return state
+  return state
+}
+
+export function request_log(state, entry/*, task_uid*/) {
+  return state
+  // return state.set('logs', Map({
+  //   task_uid: {
+  //     fetching: true,
+  //   }
+  // }))
 }
 
 export default function(state = Map(), action) {
@@ -28,7 +37,9 @@ export default function(state = Map(), action) {
     case 'ADD_TASK':
         return add_task(state, action.product_id)
     case 'KILL_TASK':
-        return kill_task(state, action.task_uid, action.pid)
+      return kill_task(state, action.task_uid, action.pid)
+    case 'REQUEST-LOG':
+      return request_log(state, action.task_uid)
     default:
         break
     }

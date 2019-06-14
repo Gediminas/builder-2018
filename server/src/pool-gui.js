@@ -35,6 +35,10 @@ pool.on('initialized', (param) => {
     socket.on('task_kill', param =>
       pool.dropTask(param.task_uid))
 
+    socket.on('request_log', param => {
+      console.log('request_log', param)
+    })
+
     socket.on('sys_shutdown', (param) => {
       // sys.log("Stoping cron tasks...")
       // script.destroy_all()
