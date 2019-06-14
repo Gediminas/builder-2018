@@ -2,7 +2,6 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import { BrowserRouter, Route, Switch } from 'react-router-dom'
 import { createStore, applyMiddleware } from 'redux'
-//import {Store, applyMiddleware} from 'webext-redux';
 import { Provider } from 'react-redux'
 import io from 'socket.io-client'
 import reducer from './reducer'
@@ -29,9 +28,6 @@ const createStoreWithMiddleware = applyMiddleware(
     remoteActionMiddleware(socket)
 )(createStore)
 const store = createStoreWithMiddleware(reducer)
-// const proxyStore = new Store();
-// const store = applyMiddleware(proxyStore, remoteActionMiddleware(socket), reducer)
-
 
 let connection_events = [
     'connect',
@@ -55,27 +51,9 @@ function onShutdownClick() {
   socket.emit('sys_shutdown')
 }
 
-ReactDOM.render((
-  <Provider store={store}>
-  <div>
-    <ConnectionStateContainer />
-    <div id='div_debug'>
-      <button id='btn_sys_shutdown' type='button' onClick={onShutdownClick}>SHUTDOWN</button>
-    </div>
-    <BrowserRouter> 
-      <Switch>
-        <Route exact path='/'                       component={BuilderContainer} />
-        <Route exact path='/log/:prod_id/:task_uid?' component={LogViewerContainer} />
-      </Switch>
-    </BrowserRouter>
-  </div>
-  </Provider>
-), document.getElementById('root'))
-
-/*
-store.ready().then(() => {
-  // The store implements the same interface as Redux's store
-  // so you can use tools like `react-redux` no problem!
+// https://github.com/tshaddix/webext-redux/wiki/Advanced-Usage#initializing-ui-components
+const unsubscribe = store.subscribe(() => {
+  unsubscribe(); // make sure to only fire once
   ReactDOM.render(
       <Provider store={store}>
         <div>
@@ -94,4 +72,21 @@ store.ready().then(() => {
       , document.getElementById('root'));
 });
 
+/*
+  ReactDOM.render((
+  <Provider store={store}>
+  <div>
+  <ConnectionStateContainer />
+  <div id='div_debug'>
+  <button id='btn_sys_shutdown' type='button' onClick={onShutdownClick}>SHUTDOWN</button>
+  </div>
+  <BrowserRouter> 
+  <Switch>
+  <Route exact path='/'                       component={BuilderContainer} />
+  <Route exact path='/log/:prod_id/:task_uid?' component={LogViewerContainer} />
+  </Switch>
+  </BrowserRouter>
+  </div>
+  </Provider>
+  ), document.getElementById('root'))
 */

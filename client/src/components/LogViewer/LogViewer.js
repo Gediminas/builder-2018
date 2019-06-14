@@ -13,40 +13,46 @@ export class LogViewer extends PureComponent {
       task_uid  : false,
       error     : false,
     }
-  }
-
-  getDerivedStateFromProps() {
-    console.log('getDerivedStateFromProps')
-
+    this.task_uid   = false
+    this.product_id = false
+    this.loaded = false
   }
 
   componentDidMount() {
-    console.log('componentDidMount')
-
     let task_uid   = this.props.match.params.task_uid
     let product_id = this.props.match.params.prod_id
-
     this.setState({ product_id, task_uid})
+  }
 
-    //console.log(this.props)
+  load() {
+    //console.log('load', this.props)
+
+    this.task_uid   = this.props.match.params.task_uid
+    this.product_id = this.props.match.params.prod_id
+
+    let task_uid = this.props.match.params.task_uid
 
     if (!task_uid) {
-       if (!this.props.products) {
-         this.setState({ error: 18501 })
+       if (!this.props.data.products) {
+         //this.setState({ error: 18501 })
+         //console.log('  no products')
          return;
        }
-       let product = this.props.products.find(product => product.get('product_id') === this.state.product_id)
+       let product = this.props.data.products.find(product => product.get('product_id') === this.state.product_id)
        if (!product) {
-         this.setState({ error: 18502 })
+         //this.setState({ error: 18502 })
          return;
        }
       task_uid = product.getIn(['stats', 'last_task_uid'])
     }
 
     if (task_uid) {
-      console.log('task_uid ', task_uid)
+      //console.log('request task_uid ', task_uid)
       this.props.request_log(task_uid)
     }
+
+    this.loaded = true;
+    //console.log('  OK')
   }
 
   componentWillUnmount() {
@@ -54,45 +60,11 @@ export class LogViewer extends PureComponent {
   }
 
 
-  //componentDidUpdate() {
-
-    //let task_uid = this.props.match.params.task_uid
-    // console.log('task_uid ', task_uid)
-
-    //this.props.request_log(task_uid)
-
-    //this.setState({ product_id : this.props.match.params.prod_id })
-    //this.setState({ task_uid   : this.props.match.params.task_uid })
-
-    //if (this.props.products) {
-    //  console.log(this.props.products.toJS())
-    //}
-
-    // if (!this.props.products) {
-    //   this.setState({ error: 18501 })
-    //   console.log('componentDidMount END')
-    //   return;
-    // }
-
-    // if (!this.state.task_uid) {
-    //   let product = this.props.products.find(product => product.get('product_id') === this.state.product_id)
-    //   if (!product) {
-    //     this.setState({ error: 18502 })
-    //     console.log('componentDidMount END')
-    //     return;
-    //   }
-    //   this.setState({ task_uid: product.getIn(['stats', 'last_task_uid']) })
-    //   console.log('componentDidMount END')
-    // }
-
-    // if (!this.state.task_uid) {
-    //   this.setState({ error: 18503 })
-    //   console.log('componentDidMount END')
-    //   return;
-    // }
-  //}
-
   render() {
+    if (!this.loaded) {
+      this.load()
+    }
+
     let task_uid = this.props.match.params.task_uid
 
     if (this.state.error) {
@@ -123,7 +95,6 @@ export class LogViewer extends PureComponent {
 }
 
 function mapStateToProps(state) {
-  console.log('mapStateToProps', state)
   return {
     data: {
       products: state.get('products'),
