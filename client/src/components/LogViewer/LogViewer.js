@@ -20,15 +20,17 @@ export class LogViewer extends PureComponent {
     let product_id = this.props.match.params.prod_id
     this.setState({ product_id, task_uid})
 
-    // load after products are initialized
-    this.initTimerId = setInterval(() => {
-      console.log('init')
-      if (this.props.data.products) {
-        clearInterval(this.initTimerId)
-        this.initTimerId = false
-        this._load()
-      }
-    }, 100);
+    if (!task_uid) {
+      this.initTimerId = setInterval(() => {
+        console.log('init')
+        if (this.props.data.products) {
+          // load after products are initialized
+          clearInterval(this.initTimerId)
+          this.initTimerId = false
+          this._load()
+        }
+      }, 100);
+    }
   }
 
   componentWillUnmount() {
@@ -38,7 +40,6 @@ export class LogViewer extends PureComponent {
 
   render() {
 
-    let task_uid = this.props.match.params.task_uid
 
     if (this.state.error) {
       return (
@@ -57,7 +58,7 @@ export class LogViewer extends PureComponent {
         <hr/>
         <div> <button type="button"
                       className="btn btn_addtask"
-                      onClick={() => this.props.request_log(task_uid)}>
+                      onClick={() => this.props.request_log(this.state.task_uid)}>
                 + 
               </button>
         </div>
@@ -66,28 +67,23 @@ export class LogViewer extends PureComponent {
   }
 
   _load() {
-    this.task_uid   = this.props.match.params.task_uid
-    this.product_id = this.props.match.params.prod_id
-
-    let task_uid = this.props.match.params.task_uid
+    let task_uid   = this.props.match.params.task_uid
+    let product_id = this.props.match.params.prod_id
 
     if (!task_uid) {
-      if (!this.props.data.products) {
-        //this.setState({ error: 18501 })
-        //console.log('  no products')
-        return;
-      }
       let product = this.props.data.products.find(product => product.get('product_id') === this.state.product_id)
       if (!product) {
-        //this.setState({ error: 18502 })
+        this.setState({ product_id, error: 18501 })
         return;
       }
       task_uid = product.getIn(['stats', 'last_task_uid'])
     }
-
-    if (task_uid) {
-      this.props.request_log(task_uid)
+    if (!task_uid) {
+      this.setState({ product_id, error: 18502 })
+      return;
     }
+    this.setState({ task_uid })
+    this.props.request_log(task_uid)
   }
 
 }
