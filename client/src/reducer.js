@@ -39,7 +39,7 @@ export default function(state = Map(), action) {
     case 'KILL_TASK':
       return kill_task(state, action.task_uid, action.pid)
     case 'REQUEST-LOG':
-      return request_log(state, action.task_uid)
+      return request_log(state, action.product_id, action.task_uid)
     default:
         break
     }

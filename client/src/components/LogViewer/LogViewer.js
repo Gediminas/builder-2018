@@ -58,7 +58,7 @@ export class LogViewer extends PureComponent {
         <hr/>
         <div> <button type="button"
                       className="btn btn_addtask"
-                      onClick={() => this.props.request_log(this.state.task_uid)}>
+                      onClick={() => this.props.request_log(this.state.product_id, this.state.task_uid)}>
                 + 
               </button>
         </div>
@@ -83,7 +83,7 @@ export class LogViewer extends PureComponent {
       return;
     }
     this.setState({ task_uid })
-    this.props.request_log(task_uid)
+    this.props.request_log(product_id, task_uid)
   }
 
 }

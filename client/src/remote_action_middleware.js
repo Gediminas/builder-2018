@@ -15,8 +15,9 @@ export default socket => store => next => action => {
       })
       break
     case 'REQUEST-LOG':
-      console.log('Emit request_log to server, task_uid:', action.task_uid)
+      console.log('Emit request_log to server, task_uid:', action)
       socket.emit('request_log', {
+        'product_id': action.product_id,
         'task_uid': action.task_uid,
       })
       break
