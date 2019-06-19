@@ -1,17 +1,9 @@
 const events = require('events')
 const assert = require('better-assert')
 
-let prevUid = 0
-const generateUid = () => {
-  let uid = 0
-  do {
-    assert(uid === 0) // temp check
-    uid = new Date().valueOf()
-  }
-  while (prevUid === uid)
-  prevUid = uid
-  return uid
-}
+let uidTail = 0;
+const generateUid = () =>
+  Math.floor(new Date().valueOf() / 1000) * 1000 + (++uidTail) % 1000
 
 class Pool extends events {
 

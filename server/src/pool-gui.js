@@ -29,14 +29,14 @@ pool.on('initialized', (param) => {
     emitTasks(socket)
     emitHistory(socket, this.show_history_limit)
 
-    socket.on('task_add', date =>
-      pool.addTask(date.product_id, { user_comment: 'user comment' }))
+    socket.on('task_add', data =>
+      pool.addTask(data.product_id, { user_comment: 'user comment' }))
 
-    socket.on('task_kill', date =>
-      pool.dropTask(date.task_uid))
+    socket.on('task_kill', data =>
+      pool.dropTask(data.task_uid))
 
-    socket.on('request_log', date => {
-      console.log('request_log', date, param.task.working_dir)
+    socket.on('request_log', data => {
+      console.log('request_log', data)
     })
 
     socket.on('sys_shutdown', (param) => {
