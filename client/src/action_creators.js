@@ -29,11 +29,12 @@ export function kill_task(task_uid, pid) {
   }
 }
 
-export function request_log(product_id, task_uid) {
+export function request_log(product_id, task_uid, start_time) {
   return {
     meta: {remote: true},
     type: 'REQUEST-LOG',
     product_id,
     task_uid,
+    start_time,
   }
 }

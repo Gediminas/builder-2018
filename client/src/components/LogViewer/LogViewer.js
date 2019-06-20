@@ -11,6 +11,7 @@ export class LogViewer extends PureComponent {
     this.state = {
       product_id: false,
       task_uid:   false,
+      start_time: false,
       log: ['empty'],
     }
   }
@@ -52,13 +53,13 @@ export class LogViewer extends PureComponent {
 
     return (
       <div>
-        <h3> Log: "{this.state.product_id}" ({this.state.task_uid})</h3>
+        <h3> Log: "{this.state.product_id}" [{this.state.start_time}] ({this.state.task_uid})</h3>
         <hr/>
         <div>{this.state.log} </div>
         <hr/>
         <div> <button type="button"
                       className="btn btn_addtask"
-                      onClick={() => this.props.request_log(this.state.product_id, this.state.task_uid)}>
+                      onClick={() => this.props.request_log(this.state.product_id, this.state.task_uid, this.state.start_time)}>
                 + 
               </button>
         </div>
@@ -69,6 +70,7 @@ export class LogViewer extends PureComponent {
   _load() {
     let task_uid   = this.props.match.params.task_uid
     let product_id = this.props.match.params.prod_id
+    let start_time = false
 
     if (!task_uid) {
       let product = this.props.data.products.find(product => product.get('product_id') === this.state.product_id)
@@ -77,13 +79,14 @@ export class LogViewer extends PureComponent {
         return;
       }
       task_uid = product.getIn(['stats', 'last_task_uid'])
+      start_time = product.getIn(['stats', 'last_start_time'])
     }
     if (!task_uid) {
       this.setState({ product_id, error: 18502 })
       return;
     }
-    this.setState({ task_uid })
-    this.props.request_log(product_id, task_uid)
+    this.setState({ task_uid, start_time })
+    this.props.request_log(product_id, task_uid, start_time)
   }
 
 }

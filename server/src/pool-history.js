@@ -58,6 +58,7 @@ pool.on('task-completed',   param => {
 
     product.stats.status = param.task.status
     product.stats.last_task_uid = param.task.uid
+    product.stats.last_start_time = param.task.time_start
 
     console.log('history db stats updated for product ' + product.product_id)
     break

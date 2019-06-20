@@ -19,6 +19,7 @@ export default socket => store => next => action => {
       socket.emit('request_log', {
         'product_id': action.product_id,
         'task_uid': action.task_uid,
+        'start_time': action.start_time,
       })
       break
     default:
