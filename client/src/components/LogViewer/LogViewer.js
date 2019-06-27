@@ -1,8 +1,6 @@
 import React, {useState, useEffect} from 'react'
 import {connect} from 'react-redux'
 import * as actionCreators from '../../action_creators'
-//import {toJS} from 'immutable'
-//import {time_to_dir} from '../../tools/date_time.js'
 
 function LogViewer(props) {
   const [state, setState] = useState({
@@ -11,7 +9,6 @@ function LogViewer(props) {
     start_time : false,
     state_log  : [],
   })
-
 
   useEffect(() => {
     setState({
@@ -23,34 +20,29 @@ function LogViewer(props) {
 
     if (!state.task_uid) {
       if (props.data.products) {
-        //console.log('TRY GO')
         const taskUid = _load(props, state.product_id)
         setState({
           ...state,
           task_uid: taskUid,
         })
-        //console.log('OK', taskUid);
       }
     }
   }, [state.product_id, props.data.products])
 
-  //console.log('RENDER', state, props.data)
-
-    return (
-      <div>
-        <h3> Log: "{state.product_id}" [{state.start_time}] ({state.task_uid})</h3>
-        <hr/>
-        <div>{state.state_log} </div>
-        <hr/>
-        <div> <button type="button"
-                      className="btn btn_addtask"
-                      onClick={() => props.request_log(state.product_id, state.task_uid, state.start_time)}>
-                + 
-              </button>
-        </div>
+  return (
+    <div>
+      <h3> Log: "{state.product_id}" [{state.start_time}] ({state.task_uid})</h3>
+      <hr/>
+      <div>{state.state_log} </div>
+      <hr/>
+      <div> <button type="button"
+                            className="btn btn_addtask"
+                            onClick={() => props.request_log(state.product_id, state.task_uid, state.start_time)}>
+                            + 
+                          </button>
       </div>
-    )
-
+    </div>
+  )
 }
 
 function _load(props, product_id) {
