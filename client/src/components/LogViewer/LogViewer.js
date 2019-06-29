@@ -27,7 +27,8 @@ function LogViewer(props) {
         })
       }
     }
-  }, [state.product_id, props.data.products])
+  }, [props.match.params.prod_id, props.match.params.task_uid, props.data.products ])
+  //, state.product_id
 
   return (
     <div>

@@ -14,7 +14,7 @@ export default class extends PureComponent {
     let product_name   = this.props.task.getIn(['data', 'product_name'])
     let prev_time_diff = this.props.task.getIn(['data', 'prev_time_diff'])
     let duration       = time_to_now(time_start)
-    let percent        = Math.floor(100 * duration / prev_time_diff)
+    let percent        = prev_time_diff ? Math.floor(100 * duration / prev_time_diff) : 10
 
     duration       = toHHMMSS(duration)
     prev_time_diff = toHHMMSS(prev_time_diff)
