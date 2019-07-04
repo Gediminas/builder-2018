@@ -32,13 +32,13 @@ function LogViewer(props) {
 
   return (
     <div>
-      <h3> Log: "{state.product_id}" [{state.start_time}] ({state.task_uid})</h3>
+      <h3> Log: "{state.product_id}" ({state.task_uid})</h3>
       <hr/>
       <div>{state.state_log} </div>
       <hr/>
       <div> <button type="button"
                             className="btn btn_addtask"
-                            onClick={() => props.request_log(state.product_id, state.task_uid, state.start_time)}>
+                            onClick={() => props.request_log(state.product_id, state.task_uid)}>
                             + 
                           </button>
       </div>
@@ -52,11 +52,10 @@ function _load(props, product_id) {
     return;
   }
   let task_uid = product.getIn(['stats', 'last_task_uid'])
-  let start_time = product.getIn(['stats', 'last_start_time'])
   if (!task_uid) {
     return;
   }
-  props.request_log(product_id, task_uid, start_time)
+  props.request_log(product_id, task_uid)
   return task_uid;
 }
 
