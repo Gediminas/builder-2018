@@ -36,7 +36,40 @@ pool.on('initialized', (param) => {
       pool.dropTask(data.task_uid))
 
     socket.on('request_log', data => {
-      console.log('request_log', data)
+      console.log('>> Request for logs received', data)
+
+      let task_uid = data.task_uid
+
+      if (!task_uid) {
+        let products = pool.getProducts()
+        let product = products.find(_product => _product.product_id === data.product_id)
+        task_uid = product.stats.last_task_uid
+        console.log('found', task_uid)
+      }
+
+      // if (!product) {
+      //   return;
+      // }
+      // let task_uid = product.getIn(['stats', 'last_task_uid'])
+      // if (!task_uid) {
+      //   return;
+      // }
+      // props.request_log(product_id, task_uid)
+
+
+      // for (let product of products) {
+      //   if (product.id === data.product_id) {
+      //     socket.emit('state', { logs: ['here will be', 'logs'] })
+      //   }
+
+      // }
+
+      let key = data.task_uid || data.product_id
+      let logs = {}
+      logs[key] = ['Here will be logs of ', data.product_id, task_uid]
+      socket.emit('state', { logs })
+
+      console.log('>> Logs sent back: ', logs)
     })
 
     socket.on('sys_shutdown', (param) => {
