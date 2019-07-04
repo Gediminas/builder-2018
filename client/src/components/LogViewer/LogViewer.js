@@ -6,35 +6,23 @@ function LogViewer(props) {
   const [state, setState] = useState({
     product_id : false,
     task_uid   : false,
-    start_time : false,
-    state_log  : [],
+    logs       : [],
   })
 
   useEffect(() => {
     setState({
       ...state,
       product_id: props.match.params.prod_id,
-      task_uid:   props.match.params.task_uid,
+      task_uid:   props.match.params.task_uid || 0,
     })
-    //console.log('EFF SET', props.match.params)
-
-    if (!state.task_uid) {
-      if (props.data.products) {
-        const taskUid = _load(props, state.product_id)
-        setState({
-          ...state,
-          task_uid: taskUid,
-        })
-      }
-    }
-  }, [props.match.params.prod_id, props.match.params.task_uid, props.data.products ])
-  //, state.product_id
+    props.request_log(props.match.params.prod_id, props.match.params.task_uid)
+  }, [props.match.params.prod_id, props.match.params.task_uid])
 
   return (
     <div>
       <h3> Log: "{state.product_id}" ({state.task_uid})</h3>
       <hr/>
-      <div>{state.state_log} </div>
+      <div>{state.logs} </div>
       <hr/>
       <div> <button type="button"
                             className="btn btn_addtask"
@@ -46,23 +34,13 @@ function LogViewer(props) {
   )
 }
 
-function _load(props, product_id) {
-  let product = props.data.products.find(product => product.get('product_id') === product_id)
-  if (!product) {
-    return;
-  }
-  let task_uid = product.getIn(['stats', 'last_task_uid'])
-  if (!task_uid) {
-    return;
-  }
-  props.request_log(product_id, task_uid)
-  return task_uid;
-}
-
-function mapStateToProps(state) {
+function mapStateToProps(state, ownProps) {
+  const product_id = ownProps.match.params.prod_id || 0
+  const task_uid = ownProps.match.params.task_uid || 0
+  console.log("Client: mapStateToProps ", product_id, task_uid);
   return {
     data: {
-      products: state.get('products'),
+      logs: state.getIn('logs', task_uid) || [],
     }
   }
 }
