@@ -94,15 +94,12 @@ class Pool extends events {
   }
 
   _taskCompleted(task) {
-    for (const i in pool.activeTasks) {
-      if (pool.activeTasks[i].uid === task.uid) {
-        const closedTask = pool.activeTasks.splice(i, 1)[0]
-        assert(closedTask === task)
-        setImmediate(() => pool._processQueue())
-        break
-      }
-    }
-    this.emit('task-completed', { task });
+    const i = this.activeTasks.indexOf(task)
+    assert(i !== -1)
+    const closedTask = this.activeTasks.splice(i, 1)[0]
+    assert(closedTask === task)
+    setImmediate(() => this._processQueue())
+    this.emit('task-completed', { task })
   }
 
   _taskOutput(task, text, std) {
