@@ -40,12 +40,6 @@ pool.on('task-added', (param) => {
   }
 })
 
-pool.on('task-start-check', (param) => {
-  //do not alow 2 instances of the same product
-  param.skip = false;
-  param.lambda_skip = e => e.product_id === param.task.product_id;
-})
-
 pool.on('task-starting', (param) => {
   param.time = getTimeStamp()
   assert(param.task.status === 'queued')

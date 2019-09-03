@@ -67,6 +67,11 @@ class PoolExecImpl {
       })
     })
   }
+
+  CanRun(task, activeTasks) {
+    const found_active = activeTasks.find(_task => _task.product_id === task.product_id)
+    return found_active ? true : false
+  }
 }
 
 
