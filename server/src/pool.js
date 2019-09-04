@@ -19,9 +19,12 @@ class Pool extends events {
   }
 
   addTask(productId, taskData) {
-    const task = { uid: generateUid() }
+    const task = {
+      uid: generateUid(),
+      product_id: productId,
+    }
     this.waitingTasks.push(task)
-    this.emit('task-added', { task, productId, taskData })
+    this.emit('task-added', { task, taskData })
     setImmediate(() => this._processQueue())
   }
 
