@@ -22,6 +22,7 @@ class Pool extends events {
     const task = {
       uid: generateUid(),
       product_id: productId,
+      data: taskData,
     }
     this.waitingTasks.push(task)
     this.emit('task-added', { task, taskData })

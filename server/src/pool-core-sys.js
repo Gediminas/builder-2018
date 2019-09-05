@@ -21,14 +21,10 @@ pool.on('task-added', (param) => {
   param.task.time_start = 0
   param.task.time_end   = 0
   param.task.time_diff  = 0
-  param.task.data       = param.taskData
-
-  param.task.data = {
-    product_name: param.task.product_id,
-    //comment:        'comment',
-    status:         'QUEUED',
-    //prev_time_diff: last_task ? last_task.time_diff : undefined
-  }
+  param.task.data.product_name = param.task.product_id
+  param.task.data.status = 'QUEUED'
+  //param.task.data.comment =        'comment',
+  //param.task.data.prev_time_diff = last_task ? last_task.time_diff : undefined
 
   const products = pool.getProducts()
   for (const product of products) {
