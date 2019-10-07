@@ -10,11 +10,12 @@ const db = require('./loaders/history_loader.js')
 //}
 
 pool.on('initialized', (param) => {
+  console.log('plugin: history: initializing start')
   const dbPath = `${param.cfg.working_dir}history.json`
-  console.log('history db loading')
+  console.log('plugin: history: DB loading', dbPath)
 
   db.init(dbPath).then(() => {
-    console.log('history db loaded')
+    console.log('plugin: history: DB loaded')
 
     // Update stats for products
     const products = pool.getProducts()
@@ -26,8 +27,10 @@ pool.on('initialized', (param) => {
       }
     }
 
-    console.log('history db stats updated for all products')
+    console.log('plugin: history: stats updated for all products')
+    console.log('plugin: history: initialized')
   })
+  console.log('plugin: history: initializing done')
 })
 
 pool.on('error',            param => {})

@@ -15,15 +15,16 @@ const emitHistory = (emitter, show_history_limit)  =>
 
 
 pool.on('initialized', (param) => {
+  console.log('plugin: gui: initializing start')
   this.show_history_limit = param.cfg.show_history_limit
   const server_port       = param.cfg.server_port
 
-  console.log(`> Socket server starting on port: ${server_port}`.bgBlue)
+  console.log(`plugin: gui: Socket server starting on port: ${server_port}`.bgBlue)
 
   this.io = socketio(server_port)
   this.io.on('connection', (socket) => {
 
-    console.log(`> Client connected: ${socket.conn.remoteAddress}`.bgBlue)
+    console.log(`plugin: gui: Client connected: ${socket.conn.remoteAddress}`.bgBlue)
 
     emitProducts(socket)
     emitTasks(socket)
@@ -36,7 +37,7 @@ pool.on('initialized', (param) => {
       pool.dropTask(data.task_uid))
 
     socket.on('request_log', data => {
-      console.log('>> Request for logs received', data)
+      console.log('plugin: gui: Request for logs received', data)
 
       let task_uid = data.task_uid
 
@@ -44,7 +45,7 @@ pool.on('initialized', (param) => {
         let products = pool.getProducts()
         let product = products.find(_product => _product.product_id === data.product_id)
         task_uid = product.stats.last_task_uid
-        console.log('found', task_uid)
+        console.log('plugin: gui: found', task_uid)
       }
 
       // if (!product) {
@@ -82,6 +83,7 @@ pool.on('initialized', (param) => {
       }, 100)
     });
   });
+  console.log('plugin: gui: initializing done')
 })
 
 pool.on('error', (param) => {
