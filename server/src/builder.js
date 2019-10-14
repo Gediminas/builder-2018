@@ -14,10 +14,10 @@ const cfgApp = configLoader.data.appConfig
 
 console.log('')
 console.log('')
-console.log('----------------------------------------------------------'.bgBlue)
-console.log('----------------------------------------------------------'.bgBlue)
-console.log('> CONFIG:'.bgBlue, JSON.stringify(cfgApp, null, 2).bgBlue)
-console.log('----------------------------------------------------------'.bgBlue)
+console.log('----------------------------------------------------------'.blue)
+console.log('----------------------------------------------------------'.blue)
+console.log('> CONFIG:'.blue, JSON.stringify(cfgApp, null, 2).blue)
+console.log('----------------------------------------------------------'.blue)
 
 console.log('products loading')
 productLoader(cfgApp.script_dir, (products) => {

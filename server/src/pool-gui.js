@@ -14,11 +14,11 @@ pool.on('initialized', (param) => {
   console.log('plugin: gui: initializing start')
   const server_port       = param.cfg.server_port
 
-  console.log(`plugin: gui: Socket server starting on port: ${server_port}`.bgBlue)
+  console.log(`plugin: gui: Socket server starting on port: ${server_port}`.blue)
 
   this.io = socketio(server_port)
   this.io.on('connection', (socket) => {
-    console.log(`plugin: gui: Client connected: ${socket.conn.remoteAddress}`.bgBlue)
+    console.log(`plugin: gui: Client connected: ${socket.conn.remoteAddress}`.blue)
     pool.emit('client-connected', { socket })
   });
   console.log('plugin: gui: initializing done')
