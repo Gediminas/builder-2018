@@ -38,8 +38,8 @@ pool.on('initialized', (param) => {
 })
 
 pool.on('client-connected', (param) => {
-  this.socket = param.socket
-  emitHistory(this.socket, this.show_history_limit)
+  this.io = param.io
+  emitHistory(param.socket, this.show_history_limit)
 })
 
 pool.on('error',            param => {})

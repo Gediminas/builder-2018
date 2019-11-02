@@ -19,25 +19,22 @@ pool.on('initialized', (param) => {
   this.io = socketio(server_port)
   this.io.on('connection', (socket) => {
     console.log(`plugin: gui: Client connected: ${socket.conn.remoteAddress}`.blue)
-    pool.emit('client-connected', { socket })
+    pool.emit('client-connected', { socket, io: this.io })
   });
   console.log('plugin: gui: initializing done')
 })
 
 pool.on('client-connected', (param) => {
-  this.socket = param.socket
-  let socket = this.socket
+  emitProducts(param.socket)
+  emitTasks(param.socket)
 
-  emitProducts(socket)
-  emitTasks(socket)
-
-  socket.on('task_add', data =>
+  param.socket.on('task_add', data =>
             pool.addTask(data.product_id, { user_comment: 'user comment' }))
 
-  socket.on('task_kill', data =>
+  param.socket.on('task_kill', data =>
             pool.dropTask(data.task_uid))
 
-  socket.on('request_log', data => {
+  param.socket.on('request_log', data => {
     console.log('plugin: gui: Request for logs received', data)
 
     let task_uid = data.task_uid
@@ -61,7 +58,7 @@ pool.on('client-connected', (param) => {
 
     // for (let product of products) {
     //   if (product.id === data.product_id) {
-    //     socket.emit('state', { logs: ['here will be', 'logs'] })
+    //     param.socket.emit('state', { logs: ['here will be', 'logs'] })
     //   }
 
     // }
@@ -69,12 +66,12 @@ pool.on('client-connected', (param) => {
     let key = data.task_uid || data.product_id
     let logs = {}
     logs[key] = ['Here will be logs of ', data.product_id, task_uid]
-    socket.emit('state', { logs })
+    param.socket.emit('state', { logs })
 
     console.log('>> Logs sent back: ', logs)
   })
 
-  socket.on('sys_shutdown', (param) => {
+  param.socket.on('sys_shutdown', (param) => {
     // sys.log("Stoping cron tasks...")
     // script.destroy_all()
 
