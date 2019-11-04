@@ -25,8 +25,9 @@ function LogViewer(props) {
       <hr/>
       <div>
       {
-        props.logs.map((logLine) => {
-          return '> ' + logLine
+        props.logs.map((logLine, i) => {
+          const line_nr = i+1
+          return (<div key={line_nr}>{line_nr}: {logLine} </div>)
         })
       }
       </div>
@@ -43,7 +44,7 @@ function LogViewer(props) {
 
 function mapStateToProps(state, ownProps) {
   const product_id = ownProps.match.params.prod_id || ''
-  const task_uid = ownProps.match.params.task_uid  || 0
+  //const task_uid = ownProps.match.params.task_uid  || 0
   const logs = state.getIn(['logs', product_id])   || []
   return { logs }
 }
