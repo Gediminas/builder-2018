@@ -40,35 +40,21 @@ pool.on('client-connected', (param) => {
     let task_uid = data.task_uid
 
     if (!task_uid) {
-      let products = pool.getProducts()
-      let product = products.find(_product => _product.product_id === data.product_id)
+      const products = pool.getProducts()
+      const product = products.find(_product => _product.product_id === data.product_id)
       task_uid = product.stats.last_task_uid
       console.log('plugin: gui: found', task_uid)
     }
 
-    // if (!product) {
-    //   return;
-    // }
-    // let task_uid = product.getIn(['stats', 'last_task_uid'])
-    // if (!task_uid) {
-    //   return;
-    // }
-    // props.request_log(product_id, task_uid)
-
-
-    // for (let product of products) {
-    //   if (product.id === data.product_id) {
-    //     param.socket.emit('state', { logs: ['here will be', 'logs'] })
-    //   }
-
-    // }
-
-    let key = data.task_uid || data.product_id
-    let logs = {}
+    const key = data.task_uid || data.product_id
+    const logs = {}
     logs[key] = ['Here will be logs of ', data.product_id, task_uid]
+
+    console.log('plugin: gui: Sending logs to client: ', logs)
     param.socket.emit('state', { logs })
 
-    console.log('>> Logs sent back: ', logs)
+    // subscribe the client and send only updates
+    // if log is 'active'
   })
 
   param.socket.on('sys_shutdown', (param) => {
