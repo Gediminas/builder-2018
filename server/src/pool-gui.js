@@ -1,4 +1,5 @@
 const socketio = require('socket.io')
+const path = require('path')
 const assert = require('better-assert')
 const pool = require('./pool.js')
 require('colors')
@@ -49,6 +50,33 @@ pool.on('client-connected', (param) => {
     const key = data.task_uid || data.product_id
     const logs = {}
     logs[key] = ['Here will be logs of ', data.product_id, task_uid]
+    {
+      console.log(param)
+      console.log(data)
+
+      /*
+      const log_dir = generateLogName(this.working_dir)
+      glob('* /*.log', { cwd: log_dir, matchBase: 1 }, (err, files) => {
+        if (err) {
+          return
+        }
+        let products = files.map((file) => {
+          const product_id = path.dirname(file)
+          const cfg = load_cfg(script_dir, product_id)
+          const script_js   = script_dir + file
+          return {
+            product_id,
+            product_name: cfg.product_name,
+            cfg,
+            interpreter    : 'node',
+            script_path    : script_js,
+          }
+        })
+        on_loaded(products)
+      })
+      */
+
+    }
 
     console.log('plugin: gui: Sending logs to client: ', logs)
     param.socket.emit('state', { logs })
