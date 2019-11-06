@@ -34,7 +34,7 @@ pool.on('client-connected', (param) => {
   param.socket.on('task_kill', data =>
             pool.dropTask(data.task_uid))
 
-  param.socket.on('request_log', data => {
+  param.socket.on('request_log', (data) => {
     console.log('plugin: gui: Request for logs received', data)
 
     let task_uid = data.task_uid
