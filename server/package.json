@@ -4,7 +4,7 @@
   "description": "Automatated tasks server",
   "main": "./src/builder.js",
   "scripts": {
-    "start": "bash forever.sh node ./src/builder.js",
+    "start": "nodemon ./src/builder.js",
     "test": "npm test"
   },
   "repository": {
