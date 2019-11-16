@@ -5,7 +5,7 @@ let db_history
 let tb_history
 
 exports.init = dbPath => new Promise((resolve) => {
-  console.log('> History db: Loading '.blue, dbPath)
+  console.log('history-loader: Loading '.blue, dbPath)
 
   db_history = new Loki(dbPath, {
     verbose         : true,
@@ -15,23 +15,23 @@ exports.init = dbPath => new Promise((resolve) => {
   })
 
   db_history.on('error', (e) => {
-    console.log('ERROR: ', e)
+    console.log('history-loader: ERROR: ', e)
   })
 
   db_history.loadDatabase({}, (result) => {
     tb_history = db_history.getCollection('history')
     if (!tb_history) {
-      console.log('> History db: Creating '.blue, dbPath)
+      console.log('history-loader: Creating '.blue, dbPath)
       tb_history = db_history.addCollection('history', { autoupdate: true })
 
-      console.log('> History db: database saving...'.blue)
+      console.log('history-loader: Database saving...'.blue)
       db_history.saveDatabase(() => {
-        console.log('> History db: database saved...'.blue)
+        console.log('history-loader: Database saved...'.blue)
       })
     }
 
     tb_history.on('error', (e) => {
-      console.log('ERROR: ', e)
+      console.log('history-loader: ERROR: ', e)
     })
 
     resolve()
