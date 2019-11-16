@@ -23,7 +23,7 @@ const loadProducts = (script_dir, on_loaded) => {
     if (err) {
       return
     }
-    let products = files.map((file) => {
+    const products = files.map((file) => {
       const product_id = path.dirname(file)
       const cfg = load_cfg(script_dir, product_id)
       const script_js   = script_dir + file
@@ -31,8 +31,8 @@ const loadProducts = (script_dir, on_loaded) => {
         product_id,
         product_name: cfg.product_name,
         cfg,
-        interpreter    : 'node',
-        script_path    : script_js,
+        interpreter : 'node',
+        script_path : script_js,
       }
     })
     on_loaded(products)

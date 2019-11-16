@@ -2,15 +2,15 @@ const pool   = require('./pool.js')
 const db = require('./loaders/history_loader.js')
 
 const emitHistory = (emitter, show_history_limit)  =>
-      emitter.emit('state', { htasks: db.get_history(show_history_limit) })
+  emitter.emit('state', { htasks: db.get_history(show_history_limit) })
 
-//const updateProducts = (db, products, product_id) => {
-// for (const product of products) {
-//   if (!product_id || product.product_id === product_id) {
-//     product.last_task = db.findLast_history({ product_id: product.product_id })
-//   }
+// const updateProducts = (db, products, product_id) => {
+//  for (const product of products) {
+//    if (!product_id || product.product_id === product_id) {
+//      product.last_task = db.findLast_history({ product_id: product.product_id })
+//    }
+//  }
 // }
-//}
 
 pool.on('initialized', (param) => {
   console.log('plugin: history: initializing start')
@@ -23,10 +23,10 @@ pool.on('initialized', (param) => {
 
     // Update stats for products
     const products = pool.getProducts()
-    for (let product of products) {
-      let last_task = db.findLast_history({ product_id: product.product_id })
+    for (const product of products) {
+      const last_task = db.findLast_history({ product_id: product.product_id })
       product.stats = {
-        status: last_task ? last_task.data.status : 'N/A',
+        status       : last_task ? last_task.data.status : 'N/A',
         last_task_uid: last_task ? last_task.uid : '',
       }
     }
