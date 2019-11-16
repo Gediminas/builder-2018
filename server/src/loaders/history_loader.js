@@ -64,5 +64,4 @@ class HistoryLoader {
 }
 
 const historyLoader = new HistoryLoader()
-historyLoader.init()
 module.exports = historyLoader
