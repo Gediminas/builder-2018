@@ -14,6 +14,7 @@ const emitTasks = emitter =>
 pool.on('initialized', (param) => {
   console.log('plugin: gui: initializing start')
   const server_port       = param.cfg.server_port
+  this.working_dir        = param.cfg.working_dir
 
   console.log(`plugin: gui: Socket server starting on port: ${server_port}`.blue)
 
@@ -36,7 +37,7 @@ pool.on('client-connected', (param) => {
             pool.dropTask(data.task_uid))
 
   param.socket.on('request_log', (data) => {
-    console.log('plugin: gui: Request for logs received', data)
+    console.log('plugin: gui: Request for logs received: ', data.product_id, data.task_uid)
 
     let task_uid = data.task_uid
 
@@ -49,10 +50,16 @@ pool.on('client-connected', (param) => {
 
     const key = data.task_uid || data.product_id
     const logs = {}
-    logs[key] = ['Here will be logs of ', data.product_id, task_uid]
+    logs[key] = [
+      'Here will be logs of ',
+      data.product_id, task_uid,
+      this.working_dir,
+      this.working_dir + '/' + data.product_id + '/',
+    ]
+
     {
-      console.log(param)
-      console.log(data)
+      //console.log(param)
+      //console.log(data)
 
       /*
       const log_dir = generateLogName(this.working_dir)
