@@ -9,15 +9,12 @@ require('colors')
 // let sub = 0
 // let subNr = 0
 
-const pad = (number, desiredLength) =>
-  '0'.repeat(desiredLength - String(number).length) + number
-
 const generateLogName = (task) => {
   if (!task.temp || task.temp.namingStack.length === 0) {
     return task.working_dir + '_main.log'
   }
   const name = task.temp.namingStack.reduce((accumulated, sub) => {
-    return (accumulated ? ('.' + accumulated) : '') + pad(sub, 3)
+    return (accumulated ? ('.' + accumulated) : '') + sub.toString().padStart(3, '0')
   }, '')
   return task.working_dir + name + '.log'
 }
