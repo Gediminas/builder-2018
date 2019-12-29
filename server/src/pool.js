@@ -1,9 +1,6 @@
 const events = require('events')
 const assert = require('better-assert')
-
-let uidTail = 0;
-const generateUid = () =>
-  Math.floor(new Date().valueOf() / 1000) * 1000 + (++uidTail) % 1000
+const sys = require('./sys_util');
 
 class Pool extends events {
 
@@ -20,7 +17,7 @@ class Pool extends events {
 
   addTask(productId, taskData) {
     const task = {
-      uid: generateUid(),
+      uid: sys.generateUid(),
       product_id: productId,
       data: taskData,
     }

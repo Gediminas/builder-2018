@@ -4,6 +4,12 @@ const assert = require('better-assert')
 const pool = require('./pool.js')
 require('colors')
 
+//???
+const db = require('./loaders/history_loader.js')
+const sys = require('./sys_util');
+const fs = require('fs')
+
+
 const emitProducts = emitter =>
   emitter.emit('state', { products: pool.getProducts() })
 
@@ -48,48 +54,26 @@ pool.on('client-connected', (param) => {
       console.log('plugin: gui: found', task_uid)
     }
 
-    const key = data.task_uid || data.product_id
-    const logs = {}
-    logs[key] = [
-      'Here will be logs of ',
-      data.product_id, task_uid,
-      this.working_dir,
-      this.working_dir + '/' + data.product_id + '/',
-    ]
+    const task = db.findLast_history({ uid: task_uid })
+    const task_dir = this.working_dir + data.product_id +
+          '/' + sys.timeToDir(task.time_start)
 
-    {
-      //console.log(param)
-      //console.log(data)
+    fs.readFile(task_dir + '/_main.log', 'utf8', (error, content) => {
+      if (error) {
+        console.log('ERROR', error)
+        return
+      }
 
-      /*
-      const log_dir = generateLogName(this.working_dir)
-      glob('* /*.log', { cwd: log_dir, matchBase: 1 }, (err, files) => {
-        if (err) {
-          return
-        }
-        let products = files.map((file) => {
-          const product_id = path.dirname(file)
-          const cfg = load_cfg(script_dir, product_id)
-          const script_js   = script_dir + file
-          return {
-            product_id,
-            product_name: cfg.product_name,
-            cfg,
-            interpreter    : 'node',
-            script_path    : script_js,
-          }
-        })
-        on_loaded(products)
-      })
-      */
+      const key = data.task_uid || data.product_id
+      const logs = {}
+      logs[key] = content.split('\n')
 
-    }
+      console.log('plugin: gui: Sending logs to client: ', logs)
+      param.socket.emit('state', { logs })
 
-    console.log('plugin: gui: Sending logs to client: ', logs)
-    param.socket.emit('state', { logs })
-
-    // subscribe the client and send only updates
-    // if log is 'active'
+      // subscribe the client and send only updates
+      // if log is 'active'
+    })
   })
 
   param.socket.on('sys_shutdown', (param) => {
