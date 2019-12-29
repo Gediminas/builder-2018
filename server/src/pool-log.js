@@ -3,9 +3,6 @@ const assert = require('better-assert')
 const pool = require('./pool.js')
 require('colors')
 
-const namingStack = [];
-let lastSubNr = 0;
-
 // let titleRenamed = ''
 // const logCombi = []
 // let logCombiLastSub = 0
@@ -15,14 +12,14 @@ let lastSubNr = 0;
 const pad = (number, desiredLength) =>
   '0'.repeat(desiredLength - String(number).length) + number
 
-const generateLogName = (rootPath) => {
-  if (namingStack.length === 0) {
-    return rootPath + '_main.log'
+const generateLogName = (task) => {
+  if (!task.temp || task.temp.namingStack.length === 0) {
+    return task.working_dir + '_main.log'
   }
-  const name = namingStack.reduce((accumulated, sub) => {
+  const name = task.temp.namingStack.reduce((accumulated, sub) => {
     return (accumulated ? ('.' + accumulated) : '') + pad(sub, 3)
   }, '')
-  return rootPath + name + '.log'
+  return task.working_dir + name + '.log'
 }
 
 const flog = (file, text) =>
@@ -37,8 +34,18 @@ pool.on('error', (param) => {
   // log(param, `ERROR: ${param.msg}`.bgWhite.red)
 })
 
+pool.on('task-starting', (param) => {
+  if (!param.task.temp) {
+    param.task.temp = {}
+  }
+  param.task.temp.namingStack = []
+  param.task.temp.lastSubNr = 0
+})
+
 pool.on('task-completed', (param) => {
-  // flog(file, '!! '+param.line+'\n');
+  delete param.task.temp.namingStack
+  delete param.task.temp.stSubNr
+
 })
 
 pool.on('task-output', (param) => {
@@ -48,12 +55,12 @@ pool.on('task-output', (param) => {
   }
   else if (text.indexOf('@sub') === 0) {
 
-    let file =  generateLogName(param.task.working_dir);
+    let file =  generateLogName(param.task)
     flog(file, text)
 
-    namingStack.push(++lastSubNr);
+    param.task.temp.namingStack.push(++param.task.temp.lastSubNr)
 
-    file = generateLogName(param.task.working_dir);
+    file = generateLogName(param.task)
     flog(file, text)
 
   //   sub++
@@ -83,11 +90,11 @@ pool.on('task-output', (param) => {
   }
   else if (text.indexOf('@end') === 0) {
 
-    file = generateLogName(param.task.working_dir);
+    file = generateLogName(param.task.working_dir)
     flog(file, text)
 
-    assert(namingStack.length)
-    lastSubNr = namingStack.pop()
+    assert(param.task.temp.namingStack.length)
+    param.task.temp.lastSubNr = param.task.temp.namingStack.pop()
 
     // sub--
     // if (logCombi.length) {
@@ -98,7 +105,7 @@ pool.on('task-output', (param) => {
     // titleRenamed = '';
     // let file = param.task.working_dir + generateLogName()
 
-    file = generateLogName(param.task.working_dir);
+    file = generateLogName(param.task)
     flog(file, text)
 
     //flog(file, `OUT-> ${text}\n`)
