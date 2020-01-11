@@ -1,9 +1,8 @@
 const events = require('events')
 const assert = require('better-assert')
-const sys = require('./sys_util');
+const sys = require('./sys_util')
 
 class Pool extends events {
-
   initialize(impl, products, cfg) {
     this.products = products
     this.waitingTasks = []
@@ -17,9 +16,9 @@ class Pool extends events {
 
   addTask(productId, taskData) {
     const task = {
-      uid: sys.generateUid(),
+      uid       : sys.generateUid(),
       product_id: productId,
-      data: taskData,
+      data      : taskData,
     }
     this.waitingTasks.push(task)
     this.emit('task-added', { task, taskData })
@@ -40,7 +39,7 @@ class Pool extends events {
         this.impl.killTask(task).then(() => {
           this.emit('task-killed', { task })
         }).catch((error) => {
-          this.emit('error', {task, error, from: 'dropTask'})
+          this.emit('error', { task, error, from: 'dropTask' })
         })
 
         return
@@ -74,13 +73,13 @@ class Pool extends events {
       assert(task === check_task)
       this.activeTasks.push(task)
       this.emit('task-starting', { task })
-      this.impl.startTask(task, this._taskOutput) //.bind( {this: this })
+      this.impl.startTask(task, this._taskOutput) // .bind( {this: this })
         .then(() => {
           this._taskCompleted(task)
         })
         .catch((error) => {
           this.emit('error', { task, error, from: '_processQueue' })
-      })
+        })
       this.emit('task-started', { task })
       return
     }
@@ -104,9 +103,8 @@ class Pool extends events {
   }
 
   _taskOutput(task, text, std) {
-    pool.emit('task-output', { task, text, std})
+    this.emit('task-output', { task, text, std })
   }
-
 }
 
 const pool = new Pool()
