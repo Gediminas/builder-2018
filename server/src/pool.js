@@ -103,7 +103,7 @@ class Pool extends events {
   }
 
   _taskOutput(task, text, std) {
-    this.emit('task-output', { task, text, std })
+    pool.emit('task-output', { task, text, std })
   }
 }
 
