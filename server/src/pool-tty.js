@@ -30,24 +30,24 @@ const log = (param, ...args) => {
   console.log(sys.timeToString(param.time).grey, ...args)
 }
 
-pool.on('initialized',   param => log(param, 'Initialized'.bgGreen))
-pool.on('error',         param => log(param, `ERROR: ${param.msg} ${param.error}`.bgWhite.red))
-pool.on('task-starting', param => log(param, 'Starting'.bgGreen))
+pool.on('initialized',   param => log(param, '>> tty: Initialized'.bgGreen))
+pool.on('error',         param => log(param, `>> tty: ERROR: ${param.msg} ${param.error}`.bgWhite.red))
+pool.on('task-starting', param => log(param, '>> tty: Starting'.bgGreen))
 
 pool.on('task-started',  param => log(param,
-  `Started: pid=${param.task.pid}`.bgGreen))
+  `>> tty: Started: pid=${param.task.pid}`.bgGreen))
 
-pool.on('task-added',      param => log(param, 'Added'.bgGreen))
-pool.on('task-removed',    param => log(param, 'Removed'.bgRed))
-pool.on('task-killing',       param => log(param, 'Killing'.bgRed))
-pool.on('task-killed', param => log(param, 'Killed'.bgRed))
+pool.on('task-added',      param => log(param, '>> tty: Added'.bgGreen))
+pool.on('task-removed',    param => log(param, '>> tty: Removed'.bgRed))
+pool.on('task-killing',       param => log(param, '>> tty: Killing'.bgRed))
+pool.on('task-killed', param => log(param, '>> tty: Killed'.bgRed))
 
 pool.on('task-kill-failed', param => log(param,
-  `WARNING: Kill Failed ${param.taskUid}`
+  `>> tty: WARNING: Kill Failed ${param.taskUid}`
     .bgWhite.red))
 
 pool.on('task-completed', param => log(param,
-  `Finished: ${param.task.status}, pid=${param.task.pid}}`
+  `>> tty: Finished: ${param.task.status}, pid=${param.task.pid}}`
     .bgGreen))
 
 pool.on('task-output', (param) => {

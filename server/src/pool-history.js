@@ -13,13 +13,13 @@ const emitHistory = (emitter, show_history_limit)  =>
 // }
 
 pool.on('initialized', (param) => {
-  console.log('plugin: history: initializing start')
+  console.log('>> history: initializing start')
   this.show_history_limit = param.cfg.show_history_limit
   const dbPath = `${param.cfg.working_dir}history.json`
-  console.log('plugin: history: DB loading', dbPath)
+  console.log('>> history: DB loading', dbPath)
 
   db.init(dbPath).then(() => {
-    console.log('plugin: history: DB loaded')
+    console.log('>> history: DB loaded')
 
     // Update stats for products
     const products = pool.getProducts()
@@ -31,10 +31,10 @@ pool.on('initialized', (param) => {
       }
     }
 
-    console.log('plugin: history: stats updated for all products')
-    console.log('plugin: history: initialized')
+    console.log('>> history: stats updated for all products')
+    console.log('>> history: initialized')
   })
-  console.log('plugin: history: initializing done')
+  console.log('>> history: initializing done')
 })
 
 pool.on('client-connected', (param) => {

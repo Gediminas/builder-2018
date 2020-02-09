@@ -18,18 +18,18 @@ const emitTasks = emitter =>
 
 
 pool.on('initialized', (param) => {
-  console.log('plugin: gui: initializing start')
+  console.log('>> gui: initializing start')
   const server_port       = param.cfg.server_port
   this.working_dir        = param.cfg.working_dir
 
-  console.log(`plugin: gui: Socket server starting on port: ${server_port}`.blue)
+  console.log(`>> gui: Socket server starting on port: ${server_port}`.blue)
 
   this.io = socketio(server_port)
   this.io.on('connection', (socket) => {
-    console.log(`plugin: gui: Client connected: ${socket.conn.remoteAddress}`.blue)
+    console.log(`>> gui: Client connected: ${socket.conn.remoteAddress}`.blue)
     pool.emit('client-connected', { socket, io: this.io })
   });
-  console.log('plugin: gui: initializing done')
+  console.log('>> gui: initializing done')
 })
 
 pool.on('client-connected', (param) => {
@@ -43,7 +43,7 @@ pool.on('client-connected', (param) => {
             pool.dropTask(data.task_uid))
 
   param.socket.on('request_log', (data) => {
-    console.log('plugin: gui: Request for logs received: ', data.product_id, data.task_uid)
+    console.log('>> gui: Request for logs received: ', data.product_id, data.task_uid)
 
     let task_uid = data.task_uid
 
@@ -51,7 +51,7 @@ pool.on('client-connected', (param) => {
       const products = pool.getProducts()
       const product = products.find(_product => _product.product_id === data.product_id)
       task_uid = product.stats.last_task_uid
-      console.log('plugin: gui: found', task_uid)
+      console.log('>> gui: found', task_uid)
     }
 
     const task = db.findLast_history({ uid: task_uid })
@@ -68,7 +68,7 @@ pool.on('client-connected', (param) => {
       const logs = {}
       logs[key] = content.split('\n')
 
-      console.log('plugin: gui: Sending logs to client: ', logs)
+      console.log('>> gui: Sending logs to client: ', logs)
       param.socket.emit('state', { logs })
 
       // subscribe the client and send only updates
