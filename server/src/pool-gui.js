@@ -29,16 +29,18 @@ const emitHistory = (emitter, show_history_limit)  =>
 
 
 pool.on('initialized', (param) => {
-  console.log('>> history: initializing start')
+  console.log('>> gui: Init start')
+
+  const dbPath            = `${param.cfg.working_dir}history.json`
+  const server_port       = param.cfg.server_port
+  this.working_dir        = param.cfg.working_dir
   this.show_history_limit = param.cfg.show_history_limit
-  const dbPath = `${param.cfg.working_dir}history.json`
-  console.log('>> history: DB loading', dbPath)
 
+  console.log('>> gui: DB loading:', dbPath)
   db.init(dbPath).then(() => {
-
-
-    console.log('>> history: DB loaded')
+    console.log('>> gui: DB loaded')
     // Update stats for products
+    console.log('>> gui: Updating stats for all products from DB')
     const products = pool.getProducts()
     for (const product of products) {
       const last_task = db.findLast_history({ product_id: product.product_id })
@@ -47,26 +49,14 @@ pool.on('initialized', (param) => {
         last_task_uid: last_task ? last_task.uid : '',
       }
     }
-    console.log('>> history: stats updated for all products')
-    console.log('>> history: initialized')
-
-
-    console.log('>> gui: initializing start')
-    const server_port       = param.cfg.server_port
-    this.working_dir        = param.cfg.working_dir
-
-    console.log(`>> gui: Socket server starting on port: ${server_port}`.blue)
-
+    console.log(`>> gui: Socket server starting on port: ${server_port}`.magenta)
     this.io = socketio(server_port)
     this.io.on('connection', (socket) => {
-      console.log(`>> gui: Client connected: ${socket.conn.remoteAddress}`.blue)
+      console.log(`>>>> gui: Client connected: ${socket.conn.remoteAddress}`.yellow)
       pool.emit('client-connected', { socket, io: this.io })
     });
-    console.log('>> gui: initializing done')
-
-
   })
-  console.log('>> history: initializing done')
+  console.log('>> gui: Init end')
 })
 
 pool.on('client-connected', (param) => {
@@ -76,13 +66,13 @@ pool.on('client-connected', (param) => {
   emitTasks(param.socket)
 
   param.socket.on('task_add', data =>
-            pool.addTask(data.product_id, { user_comment: 'user comment' }))
+    pool.addTask(data.product_id, { user_comment: 'user comment' }))
 
   param.socket.on('task_kill', data =>
-            pool.dropTask(data.task_uid))
+    pool.dropTask(data.task_uid))
 
   param.socket.on('request_log', (data) => {
-    console.log('>> gui: Request for logs received: ', data.product_id, data.task_uid)
+    console.log('>>>> gui: request_log: Request for logs received: ', data.product_id, data.task_uid)
 
     let task_uid = data.task_uid
 
@@ -90,7 +80,7 @@ pool.on('client-connected', (param) => {
       const products = pool.getProducts()
       const product = products.find(_product => _product.product_id === data.product_id)
       task_uid = product.stats.last_task_uid
-      console.log('>> gui: found', task_uid)
+      console.log('>>>> gui: request_log: found', task_uid)
     }
 
     const task = db.findLast_history({ uid: task_uid })
@@ -107,7 +97,7 @@ pool.on('client-connected', (param) => {
       const logs = {}
       logs[key] = content.split('\n')
 
-      console.log('>> gui: Sending logs to client: ', logs)
+      console.log('>> gui: request_log: Sending logs to client: ', logs)
       param.socket.emit('state', { logs })
 
       // subscribe the client and send only updates
