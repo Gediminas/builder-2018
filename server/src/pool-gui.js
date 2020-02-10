@@ -16,23 +16,62 @@ const emitProducts = emitter =>
 const emitTasks = emitter =>
   emitter.emit('state', { tasks: pool.allTasks() })
 
+const emitHistory = (emitter, show_history_limit)  =>
+  emitter.emit('state', { htasks: db.get_history(show_history_limit) })
+
+// const updateProducts = (db, products, product_id) => {
+//  for (const product of products) {
+//    if (!product_id || product.product_id === product_id) {
+//      product.last_task = db.findLast_history({ product_id: product.product_id })
+//    }
+//  }
+// }
+
 
 pool.on('initialized', (param) => {
-  console.log('>> gui: initializing start')
-  const server_port       = param.cfg.server_port
-  this.working_dir        = param.cfg.working_dir
+  console.log('>> history: initializing start')
+  this.show_history_limit = param.cfg.show_history_limit
+  const dbPath = `${param.cfg.working_dir}history.json`
+  console.log('>> history: DB loading', dbPath)
 
-  console.log(`>> gui: Socket server starting on port: ${server_port}`.blue)
+  db.init(dbPath).then(() => {
 
-  this.io = socketio(server_port)
-  this.io.on('connection', (socket) => {
-    console.log(`>> gui: Client connected: ${socket.conn.remoteAddress}`.blue)
-    pool.emit('client-connected', { socket, io: this.io })
-  });
-  console.log('>> gui: initializing done')
+
+    console.log('>> history: DB loaded')
+    // Update stats for products
+    const products = pool.getProducts()
+    for (const product of products) {
+      const last_task = db.findLast_history({ product_id: product.product_id })
+      product.stats = {
+        status       : last_task ? last_task.data.status : 'N/A',
+        last_task_uid: last_task ? last_task.uid : '',
+      }
+    }
+    console.log('>> history: stats updated for all products')
+    console.log('>> history: initialized')
+
+
+    console.log('>> gui: initializing start')
+    const server_port       = param.cfg.server_port
+    this.working_dir        = param.cfg.working_dir
+
+    console.log(`>> gui: Socket server starting on port: ${server_port}`.blue)
+
+    this.io = socketio(server_port)
+    this.io.on('connection', (socket) => {
+      console.log(`>> gui: Client connected: ${socket.conn.remoteAddress}`.blue)
+      pool.emit('client-connected', { socket, io: this.io })
+    });
+    console.log('>> gui: initializing done')
+
+
+  })
+  console.log('>> history: initializing done')
 })
 
 pool.on('client-connected', (param) => {
+  this.io = param.io
+  emitHistory(param.socket, this.show_history_limit)
   emitProducts(param.socket)
   emitTasks(param.socket)
 
@@ -93,6 +132,16 @@ pool.on('error', (param) => {
 
 pool.on('task-added', (param) => {
   emitTasks(this.io)
+  /*
+  let product_id = param.task.product_id
+  let last_task  = db.findLast_history({"$and": [{ "product_id" : product_id},{"param.status": "OK"}]})
+  if (!last_task) {
+    last_task = db.findLast_history({"$and": [{ "product_id" : product_id},{"param.status": "WARNING"}]})
+  }
+  if (!last_task) {
+    last_task = db.findLast_history({ "product_id" : product_id})
+  }
+  */
 })
 
 pool.on('task-started', (param) => {
@@ -100,8 +149,25 @@ pool.on('task-started', (param) => {
 })
 
 pool.on('task-completed', (param) => {
+  db.add_history(param.task)
+
+  const products = pool.getProducts()
+  for (let product of products) {
+    if (product.product_id != param.task.product_id) {
+      continue
+    }
+
+    product.stats.status = param.task.status
+    product.stats.last_task_uid = param.task.uid
+    product.stats.last_start_time = param.task.time_start
+
+    console.log('history db stats updated for product ' + product.product_id)
+    break
+  }
+
   emitTasks(this.io)
   emitProducts(this.io)
+  emitHistory(this.io, this.show_history_limit)
 })
 
 pool.on('task-output', () => {

@@ -1,7 +1,7 @@
 const pool = require('./pool.js')
 const poolExecImpl = require('./pool-core-exe.js')
 require('./pool-core-sys.js')
-require('./pool-history.js')
+//require('./pool-history.js')
 require('./pool-tty.js')
 require('./pool-log.js')
 require('./pool-gui.js')
