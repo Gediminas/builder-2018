@@ -10,12 +10,7 @@ function Products(props) {
           <div className='cell_header'></div>
           <div className='cell_header'>Product</div>
           <div className='cell_header'>Status</div>
-          <div className='cell_header'>Autotester</div>
-          <div className='cell_header'>Cron</div>
-          <div className='cell_header'>Prio</div>
-          <div className='cell_header'>Span</div>
-          <div className='cell_header'>Last</div>
-          <div className='cell_header'>Comment</div>
+          <div className='cell_header'>Accessed</div>
           <div className='cell_header'>debug</div>
         </div>
         {

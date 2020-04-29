@@ -8,7 +8,6 @@ import reducer from './reducer'
 import { set_state, set_connection_state } from './action_creators'
 import remoteActionMiddleware from './remote_action_middleware'
 import { BuilderContainer } from './components/Main/Builder'
-import { LogViewerContainer } from './components/LogViewer/LogViewer'
 import { ConnectionStateContainer } from './components/common/ConnectionState'
 
 
@@ -61,7 +60,6 @@ ReactDOM.render((
       <BrowserRouter> 
         <Switch>
           <Route exact path='/'                       component={BuilderContainer} />
-          <Route exact path='/log/:prod_id/:task_uid?' component={LogViewerContainer} />
         </Switch>
       </BrowserRouter>
     </div>
