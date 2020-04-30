@@ -14,7 +14,7 @@ export default class extends PureComponent {
       ? (
           <div className='row_header'>
             <div className='cell_header'></div>
-            <div className='cell_header'>Product</div>
+            <div className='cell_header'>Project</div>
             <div className='cell_header'>Progress</div>
             <div className='cell_header'>Start</div>
             <div className='cell_header'>Comment</div>

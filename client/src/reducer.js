@@ -35,11 +35,11 @@ export default function(state = Map(), action) {
     case 'SET_STATE':
         return set_state(state, action.state)
     case 'ADD_TASK':
-        return add_task(state, action.product_id)
+        return add_task(state, action.project_id)
     case 'KILL_TASK':
       return kill_task(state, action.task_uid, action.pid)
     case 'REQUEST-LOG':
-      return request_log(state, action.product_id, action.task_uid, action.start_time)
+      return request_log(state, action.project_id, action.task_uid, action.start_time)
     default:
         break
     }

@@ -7,7 +7,7 @@ import io from 'socket.io-client'
 import reducer from './reducer'
 import { set_state, set_connection_state } from './action_creators'
 import remoteActionMiddleware from './remote_action_middleware'
-import { ManagerViewContainer } from './components/Main/ManagerView'
+import { ProcessViewContainer } from './components/Main/ProcessView'
 import { ConnectionStateContainer } from './components/common/ConnectionState'
 
 
@@ -59,7 +59,7 @@ ReactDOM.render((
       </div>
       <BrowserRouter> 
         <Switch>
-          <Route exact path='/' component={ManagerViewContainer} />
+          <Route exact path='/' component={ProcessViewContainer} />
         </Switch>
       </BrowserRouter>
     </div>

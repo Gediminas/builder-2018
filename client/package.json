@@ -1,6 +1,6 @@
 {
-  "name": "builder-client",
-  "version": "4.0.0",
+  "name": "WebManagerViewer",
+  "version": "0.0.1",
   "private": true,
   "dependencies": {
     "immutable": "^3.8.1",

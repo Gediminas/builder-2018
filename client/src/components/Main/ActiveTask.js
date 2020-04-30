@@ -6,12 +6,12 @@ export default class extends PureComponent {
   render() {
     //let task_id       = this.props.task.get('id')
     let task_uid        = this.props.task.get('uid')
-    //let product_id     = this.props.task.get('product_id')
+    //let project_id     = this.props.task.get('project_id')
     let time_start     = this.props.task.get('time_start')
     let comment        = this.props.task.getIn(['data', 'comment'])
     let pid            = this.props.task.getIn(['data', 'pid'])
     //let status         = this.props.task.getIn(['data', 'status'])
-    let product_name   = this.props.task.getIn(['data', 'product_name'])
+    let project_name   = this.props.task.getIn(['data', 'project_name'])
     let prev_time_diff = this.props.task.getIn(['data', 'prev_time_diff'])
     let duration       = time_to_now(time_start)
     let percent        = prev_time_diff ? Math.floor(100 * duration / prev_time_diff) : 10
@@ -31,7 +31,7 @@ export default class extends PureComponent {
             -
           </button>
         </div>
-        <div className='cell'>{product_name}</div>
+        <div className='cell'>{project_name}</div>
         <div className='cell progress'>
           <progress value={percent} max='100'></progress>
           {duration} / {prev_time_diff}

@@ -5,7 +5,7 @@ export default socket => store => next => action => {
     switch(action.type) {
     case 'ADD_TASK':
       socket.emit('task_add', {
-        'product_id': action.product_id
+        'project_id': action.project_id
       })
       break
     case 'KILL_TASK':
@@ -17,7 +17,7 @@ export default socket => store => next => action => {
     case 'REQUEST-LOG':
       console.log('Emit request_log to server, task_uid:', action)
       socket.emit('request_log', {
-        'product_id': action.product_id,
+        'project_id': action.project_id,
         'task_uid': action.task_uid,
       })
       break

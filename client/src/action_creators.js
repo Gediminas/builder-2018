@@ -12,11 +12,11 @@ export function set_state(state) {
   }
 }
 
-export function add_task(product_id) {
+export function add_task(project_id) {
   return {
     meta: {remote: true},
     type: 'ADD_TASK',
-    product_id,
+    project_id,
   }
 }
 
@@ -29,11 +29,11 @@ export function kill_task(task_uid, pid) {
   }
 }
 
-export function request_log(product_id, task_uid, start_time) {
+export function request_log(project_id, task_uid, start_time) {
   return {
     meta: {remote: true},
     type: 'REQUEST-LOG',
-    product_id,
+    project_id,
     task_uid,
     start_time,
   }
