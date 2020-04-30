@@ -6,7 +6,6 @@ function Project(props) {
   let project_name = props.project.get('project_name')
   let task_id      = props.project.getIn(['last_task', 'id'])
   let pid          = props.project.getIn(['last_task', 'data', 'pid'])
-  let task_status  = props.project.getIn(['stats', 'status'])
   let time_start   = props.project.getIn(['last_task', 'time_start'])
   let debug        = props.project.getIn(['cfg', 'debug'])
 
@@ -29,7 +28,6 @@ function Project(props) {
         </button>
       </div>
       <div className='cell'>{project_name}</div>
-      <div className='cell status' name={task_status}> {task_status} </div>
       <div className='cell'>
         <a className='date_small'> {time_start_d} </a>
         &nbsp;

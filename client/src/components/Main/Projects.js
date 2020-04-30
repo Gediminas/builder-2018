@@ -7,9 +7,8 @@ function Projects(props) {
     <div className='projects'>
       <div className='table'>
         <div className='row_header'>
-          <div className='cell_header'></div>
+          <div className='cell_header'>Actions</div>
           <div className='cell_header'>Project</div>
-          <div className='cell_header'>Status</div>
           <div className='cell_header'>Accessed</div>
           <div className='cell_header'>debug</div>
         </div>
