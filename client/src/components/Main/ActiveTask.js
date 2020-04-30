@@ -31,7 +31,7 @@ export default class extends PureComponent {
           &nbsp;
           <a className='time_large'> {time_start_t} </a>
         </div>
-        <div className='cell'>{pid}</div>
+        <div className='cell'>pid={pid} duration={duration}</div>
       </div>
     )
   }
