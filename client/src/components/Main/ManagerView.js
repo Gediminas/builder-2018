@@ -6,14 +6,9 @@ import * as actionCreators from '../../action_creators'
 import Products from './Products'
 import ActiveTasks from './ActiveTasks'
 
-//import {fromJS} from 'immutable'
-import 'immutable-console-log'
+//import 'immutable-console-log'
 
-export class Builder extends PureComponent {
-
-  componentDidMount() {
-  }
-
+export class ManagerView extends PureComponent {
   render() {
     return (
       <div>
@@ -34,8 +29,7 @@ function mapStateToProps(state, ownProps) {
   }
 }
 
-export const BuilderContainer = connect(
+export const ManagerViewContainer = connect(
   mapStateToProps,
   actionCreators
-)(Builder)
-
+)(ManagerView)
