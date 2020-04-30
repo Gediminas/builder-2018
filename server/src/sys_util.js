@@ -9,15 +9,6 @@ exports.timeToString = timestamp => moment(timestamp)
 exports.timeToDir = timestamp => moment(timestamp)
   .format('YYYY-MM-DD_HH-mm-ss_SSS')
 
-//exports.uidToDir = (uid) => {
-  //const timestamp = Math.floor(uid / 1000) * 1000
-  //const nr = uid % 1000
-  //let dir = moment(timestamp).format('YYYY-MM-DD_HH.mm.ss_')
-  //dir += nr.toString().padStart(3, "0")
-  //const dir = uid.toString()
-  //return dir
-//}
-
 var uidTail = 0;
 exports.generateUid = () =>
   Math.floor(new Date().valueOf() / 1000) * 1000 + (++uidTail) % 1000
