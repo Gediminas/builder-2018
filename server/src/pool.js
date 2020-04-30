@@ -19,7 +19,7 @@ const startTask = (task, taskOutput) => {
     const args    = task.project.args
     const options = { cwd: task.working_dir }
 
-    const child = execFile(task.project.interpreter, args, options)
+    const child = execFile(task.project.exe, args, options)
     child.bufOut = ''
     child.bufErr = ''
     task.pid = child.pid

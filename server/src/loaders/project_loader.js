@@ -27,11 +27,9 @@ const loadProjects = (script_dir, on_loaded) => {
       const full_path   = script_dir + file
       return {
         id: full_path,
-        project_id: file,
-        project_name: file,
+        project_name: full_path,
         cfg: {},
-        interpreter : 'notepad',
-        script_path : full_path,
+        exe : 'notepad',
         args: [full_path],
       }
     })

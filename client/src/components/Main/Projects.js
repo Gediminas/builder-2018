@@ -15,8 +15,8 @@ function Projects(props) {
         </div>
         {
           projects.map((project) => {
-            let project_id = project.get('project_id')
-            return <Project key={project_id} project={project} add_task={props.add_task} />
+            let id = project.get('id')
+            return <Project key={id} project={project} add_task={props.add_task} />
           })
         }
       </div>
