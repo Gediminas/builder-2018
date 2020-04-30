@@ -19,20 +19,18 @@ const load_cfg = (script_dir, product_id) => {
 }
 
 const loadProducts = (script_dir, on_loaded) => {
-  glob('*/index.*', { cwd: script_dir, matchBase: 1 }, (err, files) => {
+  glob('*.mxk', { cwd: script_dir, matchBase: 1 }, (err, files) => {
     if (err) {
       return
     }
     const products = files.map((file) => {
-      const product_id = path.dirname(file)
-      const cfg = load_cfg(script_dir, product_id)
-      const script_js   = script_dir + file
+      const full_path   = script_dir + file
       return {
-        product_id,
-        product_name: cfg.product_name,
-        cfg,
-        interpreter : 'node',
-        script_path : script_js,
+        product_id: file,
+        product_name: file,
+        cfg: {},
+        interpreter : 'notepad',
+        script_path : full_path,
       }
     })
     on_loaded(products)
