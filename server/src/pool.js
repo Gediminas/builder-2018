@@ -16,7 +16,7 @@ const processFullLines = (origBuffer, fnDoOnFullLine) => {
 
 const startTask = (task, taskOutput) => {
   return new Promise((resolve, reject) => {
-    const args    = [task.product.script_path]
+    const args    = task.product.args
     const options = { cwd: task.working_dir }
 
     const child = execFile(task.product.interpreter, args, options)

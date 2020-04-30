@@ -19,18 +19,20 @@ const load_cfg = (script_dir, product_id) => {
 }
 
 const loadProducts = (script_dir, on_loaded) => {
-  glob('*.mxk', { cwd: script_dir, matchBase: 1 }, (err, files) => {
+  glob('*.mxk*', { cwd: script_dir, matchBase: 1 }, (err, files) => {
     if (err) {
       return
     }
     const products = files.map((file) => {
       const full_path   = script_dir + file
       return {
+        id: full_path,
         product_id: file,
         product_name: file,
         cfg: {},
         interpreter : 'notepad',
         script_path : full_path,
+        args: [full_path],
       }
     })
     on_loaded(products)
