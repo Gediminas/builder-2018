@@ -37,8 +37,12 @@ pool.on('client-connected', (param) => {
   emitProjects(param.socket)
   emitTasks(param.socket)
 
-  param.socket.on('task_add', data =>
-    pool.addTask(data.project_id, { user_comment: 'user comment' }))
+  param.socket.on('task_add', data => {
+    if (!data.project_id) {
+      return;
+    }
+    pool.addTask(data.project_id, {})
+  })
 
   param.socket.on('task_kill', data =>
     pool.dropTask(data.task_uid))

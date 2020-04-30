@@ -16,13 +16,22 @@ const processFullLines = (origBuffer, fnDoOnFullLine) => {
 
 const startTask = (task, taskOutput) => {
   return new Promise((resolve, reject) => {
+    console.log('task', task)
     const args    = task.project.args
     const options = { cwd: task.working_dir }
+
+    console.log("LAUNCH")
+    console.log(task.project.project_name)
+    console.log(task.project.id)
+    console.log(task.project.exe)
+    console.log(task.project.args)
 
     const child = execFile(task.project.exe, args, options)
     child.bufOut = ''
     child.bufErr = ''
     task.pid = child.pid
+
+    console.log('pid=', child.pid)
 
     child.stdout.on('data', (data) => {
       child.bufOut += data

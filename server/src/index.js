@@ -17,7 +17,7 @@ console.log('> CONFIG:'.blue, JSON.stringify(cfgApp, null, 2).blue)
 console.log('----------------------------------------------------------'.blue)
 
 console.log('projects loading')
-projectLoader(cfgApp.script_dir, (projects) => {
+projectLoader(cfgApp, (projects) => {
   console.log('projects loaded')
   pool.initialize(projects, cfgApp)
 })

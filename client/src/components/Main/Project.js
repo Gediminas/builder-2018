@@ -2,7 +2,7 @@ import React from 'react'
 import {toDate, toTime} from '../../tools/date_time.js'
 
 function Project(props) {
-  let project_id   = props.project.get('project_id')
+  let project_id   = props.project.get('id')
   let project_name = props.project.get('project_name')
   let task_id      = props.project.getIn(['last_task', 'id'])
   let pid          = props.project.getIn(['last_task', 'data', 'pid'])

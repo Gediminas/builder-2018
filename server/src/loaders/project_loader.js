@@ -13,28 +13,36 @@ const load_cfg = (script_dir, project_id) => {
   const srv = JSON.parse(fs.readFileSync(srvPath, 'utf8'))
   const mrg = merge.recursive(true, cfgDef, cfg, srv)
   if (!mrg.project_name) {
-    mrg.project_name = project_id
+    mrg.project_name = id
   }
   return mrg
 }
 
-const loadProjects = (script_dir, on_loaded) => {
-  glob('*.mxk*', { cwd: script_dir, matchBase: 1 }, (err, files) => {
+const loadProjects = (cfg, on_loaded) => {
+  glob('*.*', { cwd: cfg.project_dir, matchBase: 1 }, (err, files) => {
     if (err) {
       return
     }
-    const projects = files.map((file) => {
-      const full_path   = script_dir + file
+    const projects = files.map((fname) => {
+      let fpath  = path.resolve(cfg.project_dir + fname)
+      let fext   = path.extname(fname)
+      let params = cfg.launch[fext];
+      if (!params) {
+        console.log("ERROR: not supported extension", fext);
+        return false;
+      }
+      let fixed_args = params.args.map((arg) => {
+        if (arg === "<prj>")
+          return fpath
+        return arg
+      })
+      //console.log(fpath, fixed_args)
       return {
-        id: full_path,
-        project_name: full_path,
+        id:           fpath,
+        project_name: fpath,
+        exe : params.exe,
+        args: fixed_args,
         cfg: {},
-
-        //exe : 'notepad',
-        //args: [full_path],
-
-        exe : 'd:\\mx\\m\\bin\\MatrixKozijnD.exe',
-        args: ["-m", "-o", full_path, "-e", "d:\\mx\\port.txt"],
       }
     })
     on_loaded(projects)

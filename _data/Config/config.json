@@ -3,7 +3,23 @@
   "server_port":        "1234",
   "server_access":      "127.0.0.1",
   "show_history_limit": "5",
-  "script_dir":         "../_data/Projects/",
-  "working_dir":        "../_data/Working/",
-  "maxWorkers":         2
+  "maxWorkers":         2,
+
+  "project_dir": "../_data/Projects/",
+  "working_dir": "../_data/Working/",
+
+  "launch": {
+  	".mxk":  {
+  		"exe": "d:\\mx\\m\\bin\\MatrixKozijnD.exe",
+  		"args": ["-m", "-e", "d:\\mx\\port.txt", "-o", "<prj>"]
+  	},
+  	".mxkp":  {
+  		"exe": "d:\\mx\\m\\bin\\MatrixKozijnPVCD.exe",
+  		"args": ["-m", "-e", "d:\\mx\\port.txt", "-o", "<prj>"]
+  	},
+  	".txt":  {
+  		"exe": "notepad",
+  		"args": ["<prj>"]
+  	}
+  }
 }
