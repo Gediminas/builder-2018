@@ -29,8 +29,12 @@ const loadProjects = (script_dir, on_loaded) => {
         id: full_path,
         project_name: full_path,
         cfg: {},
-        exe : 'notepad',
-        args: [full_path],
+
+        //exe : 'notepad',
+        //args: [full_path],
+
+        exe : 'd:\\mx\\m\\bin\\MatrixKozijnD.exe',
+        args: ["-m", "-o", full_path, "-e", "d:\\mx\\port.txt"],
       }
     })
     on_loaded(projects)
