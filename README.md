@@ -2,14 +2,11 @@
 
 ## Install
 
-cd server
-npm install
-cd ..
-cp config.json www_data/Config/config.json
-<edit> www_data/Config/config.json
+* node.js 12+ version: https://nodejs.org/en/
+* install.cmd
 
 ## Run server
 
-cd server
-npm start
+* run_server.cmd
+* run_client.cmd
 
