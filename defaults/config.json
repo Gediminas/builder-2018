@@ -3,7 +3,7 @@
   "server_port":        "1234",
   "server_access":      "127.0.0.1",
   "show_history_limit": "5",
-  "script_dir":         "../_scripts/",
-  "working_dir":        "../_working/",
+  "script_dir":         "../_data/Projects/",
+  "working_dir":        "../_data/Working/",
   "maxWorkers":         2
 }
