@@ -18,15 +18,15 @@ pool.on('task-added', (param) => {
   param.task.time_start = 0
   param.task.time_end   = 0
   param.task.time_diff  = 0
-  param.task.data.product_name = param.task.product_id
+  param.task.data.project_name = param.task.project_id
   param.task.data.status = 'QUEUED'
   //param.task.data.comment =        'comment',
   //param.task.data.prev_time_diff = last_task ? last_task.time_diff : undefined
 
-  const products = pool.getProducts()
-  for (const product of products) {
-    if (product.product_id === param.task.product_id) {
-      param.task.product = product
+  const projects = pool.getProjects()
+  for (const project of projects) {
+    if (project.project_id === param.task.project_id) {
+      param.task.project = project
       break
     }
   }
@@ -38,17 +38,17 @@ pool.on('task-starting', (param) => {
   param.task.status     = 'starting'
   param.task.time_start = param.time
 
-  const product_dir = this.working_dir + param.task.product_id + '/'
-  const shared_dir  = product_dir + '/shared/'
-  const working_dir = product_dir + sys.timeToDir(param.task.time_start) + '/'
+  const project_dir = this.working_dir + param.task.project_id + '/'
+  const shared_dir  = project_dir + '/shared/'
+  const working_dir = project_dir + sys.timeToDir(param.task.time_start) + '/'
 
   console.log(`>> task_uid: ${param.task.uid}`)
   console.log(`>> time_start: ${param.task.time_start}`)
-  console.log(`>> product_dir: ${product_dir}`)
+  console.log(`>> project_dir: ${project_dir}`)
   console.log(`>> working_dir: ${working_dir}`)
 
   sys.ensureDir(this.working_dir)
-  sys.ensureDir(product_dir)
+  sys.ensureDir(project_dir)
   sys.ensureDir(shared_dir)
   sys.ensureDir(working_dir)
 

@@ -16,10 +16,10 @@ const processFullLines = (origBuffer, fnDoOnFullLine) => {
 
 const startTask = (task, taskOutput) => {
   return new Promise((resolve, reject) => {
-    const args    = task.product.args
+    const args    = task.project.args
     const options = { cwd: task.working_dir }
 
-    const child = execFile(task.product.interpreter, args, options)
+    const child = execFile(task.project.interpreter, args, options)
     child.bufOut = ''
     child.bufErr = ''
     task.pid = child.pid
@@ -71,13 +71,13 @@ const killTask = (task) => {
 }
 
 const CanRun = (task, activeTasks) => {
-  const found_active = activeTasks.find(_task => _task.product_id === task.product_id)
+  const found_active = activeTasks.find(_task => _task.project_id === task.project_id)
   return found_active ? true : false
 }
 
 class Pool extends events {
-  initialize(products, cfg) {
-    this.products = products
+  initialize(projects, cfg) {
+    this.projects = projects
     this.waitingTasks = []
     this.activeTasks = []
     this.maxWorkers = cfg.maxWorkers
@@ -86,10 +86,10 @@ class Pool extends events {
     console.log('init finished')
   }
 
-  addTask(productId, taskData) {
+  addTask(projectId, taskData) {
     const task = {
       uid       : sys.generateUid(),
-      product_id: productId,
+      project_id: projectId,
       data      : taskData,
     }
     this.waitingTasks.push(task)
@@ -120,8 +120,8 @@ class Pool extends events {
     this.emit('task-kill-failed', { taskUid })
   }
 
-  getProducts() {
-    return this.products
+  getProjects() {
+    return this.projects
   }
 
   activeTasks() {

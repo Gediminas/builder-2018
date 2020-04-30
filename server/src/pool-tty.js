@@ -25,7 +25,7 @@ const log = (param, ...args) => {
     // }
     const colorFnc = worker2ColorFnc[0]
     args.unshift(colorFnc(param.task.uid))
-    args.unshift(colorFnc(param.task.product_id))
+    args.unshift(colorFnc(param.task.project_id))
   }
   console.log(sys.timeToString(param.time).grey, ...args)
 }

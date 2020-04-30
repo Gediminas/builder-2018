@@ -4,7 +4,7 @@ require('./pool-tty.js')
 require('./pool-socket.js')
 require('colors')
 
-const productLoader = require('./loaders/project_loader.js')
+const projectLoader = require('./loaders/project_loader.js')
 const configLoader = require('./loaders/config_loader.js')
 
 const cfgApp = configLoader.data.appConfig
@@ -16,8 +16,8 @@ console.log('----------------------------------------------------------'.blue)
 console.log('> CONFIG:'.blue, JSON.stringify(cfgApp, null, 2).blue)
 console.log('----------------------------------------------------------'.blue)
 
-console.log('products loading')
-productLoader(cfgApp.script_dir, (products) => {
-  console.log('products loaded')
-  pool.initialize(products, cfgApp)
+console.log('projects loading')
+projectLoader(cfgApp.script_dir, (projects) => {
+  console.log('projects loaded')
+  pool.initialize(projects, cfgApp)
 })

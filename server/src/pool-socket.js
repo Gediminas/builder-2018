@@ -9,8 +9,8 @@ const sys = require('./sys_util');
 const fs = require('fs')
 
 
-const emitProducts = emitter =>
-  emitter.emit('state', { products: pool.getProducts() })
+const emitProjects = emitter =>
+  emitter.emit('state', { projects: pool.getProjects() })
 
 const emitTasks = emitter =>
   emitter.emit('state', { tasks: pool.allTasks() })
@@ -34,11 +34,11 @@ pool.on('initialized', (param) => {
 
 pool.on('client-connected', (param) => {
   this.io = param.io
-  emitProducts(param.socket)
+  emitProjects(param.socket)
   emitTasks(param.socket)
 
   param.socket.on('task_add', data =>
-    pool.addTask(data.product_id, { user_comment: 'user comment' }))
+    pool.addTask(data.project_id, { user_comment: 'user comment' }))
 
   param.socket.on('task_kill', data =>
     pool.dropTask(data.task_uid))
@@ -67,20 +67,20 @@ pool.on('task-started', (param) => {
 })
 
 pool.on('task-completed', (param) => {
-  const products = pool.getProducts()
-  for (let product of products) {
-    if (product.product_id != param.task.product_id) {
+  const projects = pool.getProjects()
+  for (let project of projects) {
+    if (project.project_id != param.task.project_id) {
       continue
     }
 
-    //product.stats.status = param.task.status
-    //product.stats.last_task_uid = param.task.uid
-    //product.stats.last_start_time = param.task.time_start
+    //project.stats.status = param.task.status
+    //project.stats.last_task_uid = param.task.uid
+    //project.stats.last_start_time = param.task.time_start
     break
   }
 
   emitTasks(this.io)
-  emitProducts(this.io)
+  emitProjects(this.io)
 })
 
 pool.on('task-output', () => {
