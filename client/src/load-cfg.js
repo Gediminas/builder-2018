@@ -1,3 +1,3 @@
-const cfg = require('../../cfg/config.json')
+const cfg = require('../../_data/Config/config.json')
 
 module.exports = cfg
