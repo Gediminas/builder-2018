@@ -18,7 +18,7 @@
     "chai": "^3.5.0",
     "css-loader": "^0.28.4",
     "immutable-console-log": "^1.0.0",
-    "jsdom": "^10.1.0",
+    "jsdom": "^16.5.0",
     "mocha": "^3.4.1",
     "react-scripts": "0.9.5",
     "react-test-utils": "0.0.1",
